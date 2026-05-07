@@ -7,6 +7,22 @@ description: Submit a task for review by optionally creating an NKIA-format comm
 
 Use this skill when task development is ready for PR/MR review.
 
+## Critical: Merge 금지
+
+This skill never merges or approves PR/MR.
+
+- Do not run `gh pr merge`, `glab mr merge`, `gh pr review --approve`, `glab mr approve`, or equivalent API calls.
+- Merge must be performed manually by the user or teammate after validation passes.
+
+## Critical: Embedded Code Review Workflow
+
+Claude `/submit` delegates to `/code-review`. Codex `$ship` must perform that code-review workflow internally instead of using a separate skill.
+
+- Do not create or call a separate `code-review` skill.
+- During the review phase, follow [code_review_ruleset.md](references/code_review_ruleset.md) and [platform_operations.md](references/platform_operations.md).
+- Review comments must be Korean and must use the `# MR 코드 리뷰 결과` format.
+- Re-review must update the existing review comment instead of adding duplicates.
+
 ## First Step
 
 Read [linear-convention.md](../_shared/linear-convention.md). `$ship` operates on task issues. It should not ship a parent feature directly.
@@ -38,9 +54,13 @@ Before running the review stage, also read:
    - validate branch name, every commit message, PR/MR metadata, changed code, tests, security, performance, and scope
    - write Korean review output using the ruleset template
    - post or update exactly one `# MR 코드 리뷰 결과` comment
-9. Auto-fix review comments when safe, recommit, push, and rerun review. Stop after a bounded loop or when changes need human judgment.
-10. When validation passes, report that the PR/MR is ready for human merge.
-11. Never merge or approve automatically.
+9. Judge the review result:
+   - `전체 판정: 승인` with no Critical/Warning blockers: stop and wait for manual merge
+   - `전체 판정: 수정 후 승인 권장`: auto-fix safe items and re-review
+   - `전체 판정: 수정 필요`: auto-fix safe Critical/blocking items and re-review
+10. Auto-fix review comments when safe, recommit, push, and rerun review up to 3 total review attempts. Stop earlier when changes need human judgment.
+11. When validation passes, report that the PR/MR is ready for human merge.
+12. Never merge or approve automatically.
 
 ## Scope Rules
 
@@ -55,6 +75,23 @@ Before running the review stage, also read:
 - `전체 판정: 승인` means code validation passed and manual merge may proceed.
 - The final response must include the PR/MR URL, verdict, issue counts, and "manual merge required".
 - If the PR/MR is merged later, use `$finish` to validate evidence and update Linear. `$ship` does not finish Linear work.
+
+## Pass Output
+
+When validation passes, use this shape:
+
+```text
+=== 코드 리뷰 통과 ===
+
+PR/MR: {url}
+리뷰 결과: 승인
+남은 이슈: Critical 0, Warning 0
+
+PR/MR을 확인하고 수동으로 merge해주세요.
+머지 후 $finish {linear-task-id} 로 Linear 마무리를 진행할 수 있습니다.
+
+===========================
+```
 
 ## References
 

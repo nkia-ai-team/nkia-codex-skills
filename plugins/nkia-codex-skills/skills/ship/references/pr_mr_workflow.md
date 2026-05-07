@@ -121,7 +121,7 @@ Summary와 Changes 섹션만 작성합니다. Test plan 섹션은 불필요.
 
 ## 6. 리뷰 루프 상세
 
-`$ship`의 리뷰 단계는 별도 code-review 스킬로 분리하지 않습니다. PR/MR 생성 이후 `$ship` 안에서 Claude Code Skills의 code-review 방식과 동일한 검증을 수행하고, 검증 결과를 PR/MR 코멘트로 남긴 뒤 수동 머지 지점에서 멈춥니다.
+Claude `/submit`은 PR/MR 생성 후 `/code-review` 하위 스킬을 실행합니다. Codex `$ship`은 별도 code-review 스킬로 분리하지 않고, 같은 code-review workflow를 `$ship` 내부 단계로 수행합니다. 검증 결과를 PR/MR 코멘트로 남긴 뒤 수동 머지 지점에서 멈춥니다.
 
 ### 6.1 리뷰 입력 수집
 
@@ -172,9 +172,11 @@ GitHub/GitLab별 조회, pagination, large file 처리는 [platform_operations.m
 
 | 코멘트 내용 | `$ship` 처리 |
 |------------|--------------|
-| `전체 판정: 승인` | 검증 통과. PR/MR URL과 함께 수동 머지 필요를 보고하고 종료 |
+| `전체 판정: 승인` + Critical 0, Warning 0 | 검증 통과. PR/MR URL과 함께 수동 머지 필요를 보고하고 종료 |
+| `전체 판정: 승인` + Info만 남음 | 개선 가치가 있으면 1회 수정/재리뷰, 아니면 수동 머지 대기로 종료 |
 | `전체 판정: 수정 후 승인 권장` | 수정 가능한 항목은 자동 수정 후 재리뷰, 나머지는 사용자에게 보고 |
 | `전체 판정: 수정 필요` | Critical/blocker 중심으로 수정 가능한 항목만 자동 수정, 위험한 변경은 사용자에게 보고 |
+| 3회 초과 | 자동 수정 루프 중단, 남은 지적사항을 사용자에게 인계 |
 
 `전체 판정: 승인`은 approve/merge가 아닙니다. 사람이 PR/MR 화면에서 직접 approve/merge해야 합니다.
 
@@ -209,7 +211,35 @@ glab mr approve
 4. 수정 가능한 항목 자동 수정
 5. 수정 불가 항목은 사용자에게 보고
 6. 자동 수정 후 재커밋, push, 재리뷰를 수행
-7. 반복은 bounded loop로 제한하고, 같은 유형의 지적이 반복되면 사용자 판단으로 넘김
+7. 반복은 최대 3회 review attempt로 제한하고, 같은 유형의 지적이 반복되면 사용자 판단으로 넘김
+
+### 코드 리뷰 자동 수정 한도 초과 시 출력
+
+    === 코드 리뷰 자동 수정 한도 초과 ===
+
+    3회 자동 수정을 시도했지만 아직 지적사항이 남아있습니다.
+
+    남은 지적사항:
+    - [Critical] src/api/auth.ts:42 — SQL injection 가능성
+    - [Warning] src/utils/parser.ts:15 — 무한 루프 가능성
+
+    직접 확인하고 수정해주세요.
+    수정 후 $ship을 다시 실행하면 됩니다.
+
+    ===========================
+
+### 코드 리뷰 통과 시 출력
+
+    === 코드 리뷰 통과 ===
+
+    PR/MR: {url}
+    리뷰 결과: 승인
+    남은 이슈: Critical 0, Warning 0
+
+    PR/MR을 확인하고 수동으로 merge해주세요.
+    머지 후 $finish {linear-task-id} 로 Linear 마무리를 진행할 수 있습니다.
+
+    ===========================
 
 ### 자동 수정 불가 시 출력
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Finish"
+  short_description: "Validate evidence and roll up status"
+  default_prompt: "Use $finish NKIAAI-305 to validate evidence and update Linear."

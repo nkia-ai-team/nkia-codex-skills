@@ -1,0 +1,4 @@
+interface:
+  display_name: "Task"
+  short_description: "Create executable child task issues"
+  default_prompt: "Use $task to create child implementation tasks under this feature."

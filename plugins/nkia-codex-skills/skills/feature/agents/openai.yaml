@@ -1,0 +1,4 @@
+interface:
+  display_name: "Feature"
+  short_description: "Create parent Linear feature issues"
+  default_prompt: "Use $feature to define a parent Linear feature."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Start"
+  short_description: "Start a task and create branch"
+  default_prompt: "Use $start NKIAAI-305 to start a task issue."

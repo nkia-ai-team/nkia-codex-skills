@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ship"
+  short_description: "Push PR/MR and run review loop"
+  default_prompt: "Use $ship to push this task branch and open a PR or MR."

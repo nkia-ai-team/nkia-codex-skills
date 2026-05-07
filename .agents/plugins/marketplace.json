@@ -1,0 +1,20 @@
+{
+  "name": "nkia-codex-marketplace",
+  "interface": {
+    "displayName": "NKIA Codex Marketplace"
+  },
+  "plugins": [
+    {
+      "name": "nkia-codex-skills",
+      "source": {
+        "source": "local",
+        "path": "./plugins/nkia-codex-skills"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Weekly"
+  short_description: "Prepare NKIA weekly reports"
+  default_prompt: "Use $weekly to prepare this week's team report."

@@ -1,0 +1,38 @@
+{
+  "name": "nkia-codex-skills",
+  "version": "0.1.0",
+  "description": "Codex skills for NKIA feature/task workflows and weekly reporting.",
+  "author": {
+    "name": "NKIA-AI Team"
+  },
+  "repository": "https://github.com/nkia-ai-team/nkia-codex-skills",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "linear",
+    "github",
+    "gitlab",
+    "feature",
+    "task",
+    "weekly-report",
+    "google-sheets",
+    "workflow"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "NKIA Codex Skills",
+    "shortDescription": "NKIA Linear workflow and weekly report skills",
+    "longDescription": "Codex skills for NKIA-AI feature/task planning, task start, PR/MR shipping, evidence validation, parent feature roll-up, and weekly work reporting.",
+    "developerName": "NKIA-AI Team",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use $feature to define a parent Linear feature.",
+      "Use $task to create child implementation tasks.",
+      "Use $weekly to prepare the weekly report."
+    ]
+  }
+}

@@ -121,6 +121,76 @@ Summary와 Changes 섹션만 작성합니다. Test plan 섹션은 불필요.
 
 ## 6. 리뷰 루프 상세
 
+`$ship`의 리뷰 단계는 별도 code-review 스킬로 분리하지 않습니다. PR/MR 생성 이후 `$ship` 안에서 Claude Code Skills의 code-review 방식과 동일한 검증을 수행하고, 검증 결과를 PR/MR 코멘트로 남긴 뒤 수동 머지 지점에서 멈춥니다.
+
+### 6.1 리뷰 입력 수집
+
+리뷰 전에 다음 데이터를 빠짐없이 수집합니다.
+
+| 항목 | 규칙 |
+|------|------|
+| PR/MR metadata | 제목, 본문, 작성자, 상태, base/head branch, 추가/삭제 라인, 변경 파일 |
+| Commits | 모든 커밋을 조회합니다. 최신 커밋만 검증하지 않습니다. |
+| Diff | 개별 커밋 diff가 아니라 base → head 전체 diff를 리뷰합니다. |
+| 대용량 파일 | diff가 축소/누락되면 head branch의 전체 파일 내용을 별도 조회합니다. |
+
+GitHub/GitLab별 조회, pagination, large file 처리는 [platform_operations.md](platform_operations.md)를 따릅니다.
+
+### 6.2 병렬 검증 항목
+
+리뷰 입력 수집이 끝나면 아래 항목은 서로 독립적으로 검증할 수 있습니다.
+
+1. 브랜치명 검증
+   - Linear 자동 생성 브랜치 형식
+   - type prefix와 작업 내용 일치
+2. 커밋 메시지 검증
+   - 모든 커밋 대상
+   - 브랜치의 Linear task ID와 커밋의 Linear task ID 일치
+3. PR/MR metadata 검토
+   - 제목/본문/task 링크/target branch/test evidence
+4. 코드 변경 분석
+   - task scope와 변경 파일 매핑
+   - parent feature는 context로만 사용
+5. 품질/보안/성능/테스트 검토
+   - [code_review_ruleset.md](code_review_ruleset.md)의 checklist 적용
+
+### 6.3 리뷰 코멘트 작성/갱신
+
+리뷰 결과는 한국어로 작성하고, `# MR 코드 리뷰 결과`로 시작하는 하나의 코멘트만 관리합니다.
+
+재리뷰 시 새 코멘트를 추가하지 않고 기존 코멘트를 업데이트합니다.
+
+1. 기존 리뷰 코멘트를 검색합니다.
+2. 기존 코멘트가 있으면 리뷰 히스토리를 보존합니다.
+3. 새 커밋에서 변경된 파일만 재리뷰하고, 변경되지 않은 파일의 기존 판단은 유지합니다.
+4. 해소된 지적사항은 `해소`로 표시합니다.
+5. 브랜치/커밋/metadata/verdict 섹션은 항상 최신 상태로 갱신합니다.
+
+코멘트 조회/생성/수정 명령은 [platform_operations.md Section 3](platform_operations.md)를 따릅니다.
+
+### 6.4 판정 기준
+
+| 코멘트 내용 | `$ship` 처리 |
+|------------|--------------|
+| `전체 판정: 승인` | 검증 통과. PR/MR URL과 함께 수동 머지 필요를 보고하고 종료 |
+| `전체 판정: 수정 후 승인 권장` | 수정 가능한 항목은 자동 수정 후 재리뷰, 나머지는 사용자에게 보고 |
+| `전체 판정: 수정 필요` | Critical/blocker 중심으로 수정 가능한 항목만 자동 수정, 위험한 변경은 사용자에게 보고 |
+
+`전체 판정: 승인`은 approve/merge가 아닙니다. 사람이 PR/MR 화면에서 직접 approve/merge해야 합니다.
+
+### 6.5 금지 명령
+
+`$ship`은 다음 명령을 실행하지 않습니다.
+
+```bash
+gh pr merge
+glab mr merge
+gh pr review --approve
+glab mr approve
+```
+
+동등한 approve/merge API 호출도 금지합니다.
+
 ### 리뷰 결과 파싱
 
 `$ship`의 review 단계가 PR/MR에 게시한 코멘트에서 판정을 파싱합니다:
@@ -138,6 +208,8 @@ Summary와 Changes 섹션만 작성합니다. Test plan 섹션은 불필요.
 3. 수정 가능 여부 판단 (SKILL.md의 자동 수정 범위 참조)
 4. 수정 가능한 항목 자동 수정
 5. 수정 불가 항목은 사용자에게 보고
+6. 자동 수정 후 재커밋, push, 재리뷰를 수행
+7. 반복은 bounded loop로 제한하고, 같은 유형의 지적이 반복되면 사용자 판단으로 넘김
 
 ### 자동 수정 불가 시 출력
 

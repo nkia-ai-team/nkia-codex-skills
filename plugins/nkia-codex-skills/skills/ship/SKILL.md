@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Submit a task for review by optionally creating an NKIA-format commit, pushing the current branch, opening a GitHub PR or GitLab MR, running the code review loop, and keeping the PR/MR scoped to the Linear task.
+description: Submit a task for review by optionally creating an NKIA-format commit, pushing the current branch, opening a GitHub PR or GitLab MR, running a Claude-style Korean code validation loop, and stopping before manual merge.
 ---
 
 # Ship
@@ -10,6 +10,11 @@ Use this skill when task development is ready for PR/MR review.
 ## First Step
 
 Read [linear-convention.md](../_shared/linear-convention.md). `$ship` operates on task issues. It should not ship a parent feature directly.
+
+Before running the review stage, also read:
+
+- [code_review_ruleset.md](references/code_review_ruleset.md) — branch/commit validation, code review checklist, verdict template, severity levels.
+- [platform_operations.md](references/platform_operations.md) — GitHub/GitLab fetch, pagination, large diff handling, comment update/create, auth handling.
 
 ## Workflow
 
@@ -28,15 +33,28 @@ Read [linear-convention.md](../_shared/linear-convention.md). `$ship` operates o
    - task ID and task title are primary
    - parent feature is context
    - include concise summary and changes
-8. Run code review.
+8. Run the code validation/review stage:
+   - fetch complete PR/MR metadata, all commits, and full base-to-head diff
+   - validate branch name, every commit message, PR/MR metadata, changed code, tests, security, performance, and scope
+   - write Korean review output using the ruleset template
+   - post or update exactly one `# MR 코드 리뷰 결과` comment
 9. Auto-fix review comments when safe, recommit, push, and rerun review. Stop after a bounded loop or when changes need human judgment.
-10. Never merge automatically.
+10. When validation passes, report that the PR/MR is ready for human merge.
+11. Never merge or approve automatically.
 
 ## Scope Rules
 
 - A PR/MR should map to one task.
 - Flag unrelated changes that belong to another task.
 - Do not claim the parent feature is complete just because one task ships.
+
+## Review And Merge Boundary
+
+- `$ship` may create, push, review, comment, safe-fix, and re-review.
+- `$ship` must not run `gh pr merge`, `glab mr merge`, `gh pr review --approve`, or equivalent merge/approval commands.
+- `전체 판정: 승인` means code validation passed and manual merge may proceed.
+- The final response must include the PR/MR URL, verdict, issue counts, and "manual merge required".
+- If the PR/MR is merged later, use `$finish` to validate evidence and update Linear. `$ship` does not finish Linear work.
 
 ## References
 

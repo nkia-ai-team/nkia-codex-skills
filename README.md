@@ -27,7 +27,7 @@ $feature → $task → $start → (개발) → $ship → (머지) → $finish
 | `$feature` | 고객/제품 관점의 상위 Linear Feature 이슈 생성·정리 |
 | `$task` | Feature 하위의 실제 개발 Task 이슈 생성·분해 |
 | `$start` | Task 착수, 브랜치 생성, In Progress 전환 |
-| `$ship` | 커밋, push, PR/MR 생성, 코드 리뷰 루프 |
+| `$ship` | 커밋, push, PR/MR 생성, 코드 검증/리뷰 루프, 수동 머지 대기 |
 | `$finish` | 증빙 수집, AC 검증, Task/Feature 상태 정리 |
 | `$weekly` | Linear/Git/Calendar 기반 주간업무보고 작성 및 Google Sheet 기록 |
 
@@ -226,9 +226,14 @@ UI repo는 기존 팀 규칙에 따라 `develop-10.x.y_z-chat-{function}` 형식
 - 원격 branch push
 - GitHub PR 또는 GitLab MR 생성
 - PR/MR 제목과 본문에 Task ID를 primary로, parent Feature를 context로 작성
-- 코드 리뷰 실행
+- Claude Code Skills 방식의 코드 검증/리뷰 실행
+  - 브랜치명, 모든 커밋 메시지, PR/MR metadata 검증
+  - base → head 전체 diff 기반 품질/보안/성능/테스트 리뷰
+  - 대용량 diff는 원본 파일을 별도 조회해 검토
+  - `# MR 코드 리뷰 결과` 코멘트를 생성하거나 기존 코멘트를 갱신
 - 안전한 리뷰 지적사항은 자동 수정 후 재커밋/재리뷰
-- merge는 수행하지 않음
+- 검증 통과 시에도 merge/approve는 수행하지 않음
+- `전체 판정: 승인` 이후 사람이 PR/MR 화면에서 수동 merge
 
 사용 예시:
 

@@ -1,7 +1,7 @@
 {
   "name": "nkia-codex-skills",
   "version": "0.1.0",
-  "description": "Codex skills for NKIA feature/task workflows and weekly reporting.",
+  "description": "Codex skills for NKIA feature/task workflows, PR/MR validation, and weekly reporting.",
   "author": {
     "name": "NKIA-AI Team"
   },
@@ -22,7 +22,7 @@
   "interface": {
     "displayName": "NKIA Codex Skills",
     "shortDescription": "NKIA Linear workflow and weekly report skills",
-    "longDescription": "Codex skills for NKIA-AI feature/task planning, task start, PR/MR shipping, evidence validation, parent feature roll-up, and weekly work reporting.",
+    "longDescription": "Codex skills for NKIA-AI feature/task planning, task start, PR/MR shipping with Korean code validation, evidence validation, parent feature roll-up, and weekly work reporting.",
     "developerName": "NKIA-AI Team",
     "category": "Productivity",
     "capabilities": [

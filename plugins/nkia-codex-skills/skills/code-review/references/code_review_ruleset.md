@@ -2,7 +2,7 @@
 
 본 문서는 Codex 등 AI 도구가 Pull Request / Merge Request 코드 리뷰를 수행할 때 따라야 할 규칙을 정의합니다.
 
-CodeRabbit 등 상용 도구 수준 이상의 체계적인 코드 리뷰를 목표로 합니다.
+CodeRabbit은 의존성이 아니라 품질 기준점입니다. Codex가 GitHub/GitLab CLI/API로 직접 수집한 PR/MR 데이터를 바탕으로, 상용 리뷰 도구 수준의 체계적인 코드 리뷰를 수행하는 것을 목표로 합니다.
 
 ---
 
@@ -308,8 +308,18 @@ catch (ResourceNotFoundException e) {
 
 ### 6.1 전체 요약
 
-```markdown
+````markdown
 # MR 코드 리뷰 결과
+
+```review-verdict
+VERDICT: needs-fix
+CRITICAL: 0
+WARNING: 1
+INFO: 0
+AUTOFIX_SAFE: yes
+BLOCKED_REASON: none
+MANUAL_MERGE_REQUIRED: yes
+```
 
 ## 요약
 
@@ -317,13 +327,41 @@ catch (ResourceNotFoundException e) {
 |------|------|
 | 브랜치명 | ✅ Pass |
 | 커밋 메시지 | ⚠️ 1건 수정 필요 |
+| Diff 완전성 | ✅ Pass |
+| Linear Scope | ✅ Pass |
 | 코드 품질 | ✅ Pass |
 | 보안 | ✅ Pass |
 | 성능 | ⚠️ 개선 권장 |
 | 테스트 | ❌ 테스트 추가 필요 |
 
 **전체 판정:** ⚠️ 수정 후 승인 권장
+````
+
+### 6.1.1 Structured Verdict Block
+
+리뷰 코멘트 최상단에는 `$ship`이 파싱할 수 있는 fenced block을 반드시 포함합니다.
+
+````markdown
+```review-verdict
+VERDICT: approved | needs-fix | blocked
+CRITICAL: {number}
+WARNING: {number}
+INFO: {number}
+AUTOFIX_SAFE: yes | partial | no
+BLOCKED_REASON: none | {reason}
+MANUAL_MERGE_REQUIRED: yes
 ```
+````
+
+판정 규칙:
+
+| VERDICT | 조건 |
+|---------|------|
+| approved | Critical 0, Warning 0, Diff 완전성 Pass, blocking scope/security/test issue 없음 |
+| needs-fix | Critical 또는 Warning이 있거나, 수정 후 재리뷰가 필요한 품질/보안/성능/테스트 이슈가 있음 |
+| blocked | PR/MR 데이터 불완전, 인증 실패, diff 누락, 대용량 파일 조회 실패, Linear scope 검증 불가가 치명적일 때 |
+
+`approved`여도 merge/approve는 사람이 직접 수행합니다.
 
 ### 6.2 상세 코멘트 형식
 
@@ -369,6 +407,8 @@ if (size > MAX_PAGE_SIZE) {
 }
 ```
 
+**수정 분류:** `autofix-safe`
+
 ---
 
 ### 📦 파일: `trace_callback.py` (대용량 파일)
@@ -390,6 +430,16 @@ if (size > MAX_PAGE_SIZE) {
 | Warning | 🟡 | 개선 권장 사항 | 수정 권장 |
 | Info | 🔵 | 제안, 스타일 | 선택적 수정 |
 | Praise | 🟢 | 좋은 코드 | 칭찬/참고 |
+
+### 6.3.1 자동 수정 분류
+
+모든 Critical/Warning/Info 지적사항에는 아래 중 하나를 붙입니다.
+
+| 분류 | 의미 |
+|------|------|
+| `autofix-safe` | Codex가 안전하게 수정 가능. 포맷, import, 상수화, 명확한 null check, 작은 테스트 보강 등 |
+| `manual-required` | 아키텍처, DB schema, 외부 API contract, 제품 요구사항 판단이 필요 |
+| `owner-decision` | 여러 해결책이 가능하고 owner 의사결정이 필요한 변경 |
 
 ### 6.4 리뷰 히스토리
 

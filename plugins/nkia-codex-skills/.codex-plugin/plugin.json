@@ -12,6 +12,7 @@
     "linear",
     "github",
     "gitlab",
+    "code-review",
     "feature",
     "task",
     "weekly-report",
@@ -21,8 +22,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "NKIA Codex Skills",
-    "shortDescription": "NKIA Linear workflow and weekly report skills",
-    "longDescription": "Codex skills for NKIA-AI feature/task planning, task start, PR/MR shipping with Korean code validation, evidence validation, parent feature roll-up, and weekly work reporting.",
+    "shortDescription": "NKIA Linear, code review, and weekly report skills",
+    "longDescription": "Codex skills for NKIA-AI feature/task planning, task start, standalone PR/MR code review, PR/MR shipping with Korean validation, evidence validation, parent feature roll-up, and weekly work reporting.",
     "developerName": "NKIA-AI Team",
     "category": "Productivity",
     "capabilities": [
@@ -32,6 +33,7 @@
     "defaultPrompt": [
       "Use $feature to define a parent Linear feature.",
       "Use $task to create child implementation tasks.",
+      "Use $code-review to validate a GitHub PR or GitLab MR.",
       "Use $weekly to prepare the weekly report."
     ]
   }

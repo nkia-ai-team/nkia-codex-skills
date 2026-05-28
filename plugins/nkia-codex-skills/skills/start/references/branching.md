@@ -147,6 +147,15 @@ Section 1에서 캐싱한 `$BASE`(예: `develop-10.2.4_3-chat`)를 base로 featu
 
 `$start`에서는 직접 사용하지 않지만, `$ship`에서 사용하는 타겟 브랜치는 **task 브랜치가 실제로 뽑힌 base branch**입니다.
 
+기본 target branch 형태는 `$start`의 base branch 컨벤션과 같습니다.
+
+| 레포 | 기본 타겟 |
+|------|----------|
+| lucida-ui | 최신 `develop-10.x.y_z-chat` |
+| lucida-chat-ap | 최신 `develop-10.x.y_z` |
+| lucida-chat-ai | 최신 `develop-10.x.y_z` |
+| 기타 | 최신 `develop-10.x.y_z` |
+
 `$ship`은 레포 이름이나 최신 versioned branch만으로 target을 고르지 않습니다. 원격 후보 branch와 현재 HEAD의 커밋 거리(`<candidate>..HEAD`)를 비교해 가장 가까운 base를 선택합니다.
 
 이 방식은 다음 상황을 안전하게 처리합니다.

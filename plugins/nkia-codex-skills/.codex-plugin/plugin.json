@@ -1,6 +1,6 @@
 {
   "name": "nkia-codex-skills",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Codex skills for NKIA feature/task workflows, multi-repo auto-dev, PR/MR validation, and weekly reporting.",
   "author": {
     "name": "NKIA-AI Team"
@@ -26,7 +26,7 @@
   "interface": {
     "displayName": "NKIA Codex Skills",
     "shortDescription": "NKIA Linear, multi-repo dev, code review, and weekly report skills",
-    "longDescription": "Codex skills for NKIA-AI feature/task planning, task start, multi-repo auto-dev and auto-submit orchestration, standalone commit generation, standalone PR/MR code review, PR/MR shipping with Korean validation, post-merge wrap-up, evidence validation, parent feature roll-up, and weekly work reporting.",
+    "longDescription": "Codex skills for NKIA-AI feature/task planning, task start, multi-repo auto-dev and auto-submit orchestration, standalone commit generation, standalone PR/MR code review, PR/MR shipping with Korean validation, post-merge wrap-up, evidence validation, parent feature roll-up, and weekly work reporting with template-based Sheet tab creation.",
     "developerName": "NKIA-AI Team",
     "category": "Productivity",
     "capabilities": [

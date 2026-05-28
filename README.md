@@ -2,7 +2,7 @@
 
 NKIA-AI 팀의 Codex 플러그인 마켓플레이스입니다. Linear 기반 기능/태스크 관리, 개발 착수, PR/MR 제출, 머지 후 마무리, 주간업무보고 자동화를 Codex 스킬로 제공합니다.
 
-현재 버전: **v0.2.2**
+현재 버전: **v0.2.3**
 
 ## 개요
 
@@ -412,6 +412,7 @@ NKIA-AI 팀 주간업무보고를 생성합니다. Linear, Git commit, Google Ca
 - Linear attachment의 PR/MR URL에서 repo를 식별하고 commit 로그로 상세 보강
 - Calendar에서 연차/반차 이벤트 조회
 - Google Sheet 입력 전 미리보기
+- 대상 주간 탭이 없으면 템플릿 탭을 복사해 날짜 탭 생성
 - 사용자 확인 후 지정 row의 `B:D`, `F:G`만 기록
 - `E` 컬럼(투입시간)은 기록하지 않음
 
@@ -438,9 +439,12 @@ $weekly --reconfigure
   "reporterName": "장재훈",
   "googleEmail": "jhjangwork@gmail.com",
   "calendarName": "AI연구소",
-  "spreadsheetId": "17VHfLRTWJOmh9I59XWnqw3TPa8iHh9NC4iEhoJViJxQ"
+  "spreadsheetId": "17VHfLRTWJOmh9I59XWnqw3TPa8iHh9NC4iEhoJViJxQ",
+  "templateTabName": "템플릿"
 }
 ```
+
+`templateTabName`은 선택 값입니다. 생략하면 `$weekly`는 `템플릿`, `Template`, `template` 순서로 복사할 탭을 찾습니다.
 
 출력 형식:
 

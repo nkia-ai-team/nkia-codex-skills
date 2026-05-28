@@ -2,7 +2,7 @@
 
 NKIA-AI 팀의 Codex 플러그인 마켓플레이스입니다. Linear 기반 기능/태스크 관리, 개발 착수, PR/MR 제출, 머지 후 마무리, 주간업무보고 자동화를 Codex 스킬로 제공합니다.
 
-현재 버전: **v0.2.1**
+현재 버전: **v0.2.2**
 
 ## 개요
 
@@ -36,7 +36,7 @@ $weekly
 | `$auto-submit` | `$auto-dev` 결과물의 멀티 레포 제출·증빙·검증 오케스트레이션 |
 | `$ship` | 커밋, push, PR/MR 생성, 코드 검증/리뷰 루프, 수동 머지 대기 |
 | `$code-review` | GitHub PR/GitLab MR 단독 코드 리뷰 및 검증 코멘트 작성 |
-| `$finish` | 증빙 수집, AC 검증, Task/Feature 상태 정리 |
+| `$finish` | 머지 후 브랜치 정리, 증빙 수집, AC 검증, Task/Feature 상태 정리 |
 | `$weekly` | Linear/Git/Calendar 기반 주간업무보고 작성 및 Google Sheet 기록 |
 
 Feature 이슈는 작업 컨테이너입니다. 직접 브랜치/PR/MR의 단위가 아니며, 모든 하위 Task가 `Done` 또는 `In Review`일 때만 `$finish`가 Feature를 `In Review`로 roll-up합니다. Feature를 자동으로 `Done` 처리하지 않습니다.
@@ -366,14 +366,20 @@ $code-review https://cims2.nkia.net:8443/gitlab/project/-/merge_requests/7
 
 ### `$finish`
 
-PR/MR 머지 후 Linear 마무리 작업을 진행합니다. Task AC 증빙을 수집하고 검증한 뒤 Task를 review 단계로 넘기며, parent Feature 상태를 roll-up합니다.
+PR/MR 머지 후 wrap-up 작업을 진행합니다. merge target 브랜치로 전환해 최신화하고 merged 로컬 브랜치를 정리한 뒤, Task AC 증빙을 수집·검증하고 Task를 review 단계로 넘기며 parent Feature 상태를 roll-up합니다.
 
 주요 기능:
 
+- 실제 merge target 브랜치 또는 레포 컨벤션에 따른 target 브랜치 전환
+- `git pull --ff-only`, remote prune, merged local branch 삭제
 - Task와 parent Feature 조회
+- 현재 레포 범위의 AC만 필터링
 - PR/MR 링크, merge 상태, 테스트 로그, 스크린샷, API output, 문서 링크 수집
+- 증빙 자가 점검 및 부족 증빙 자동 보강
+- 수동 업로드된 스크린샷/동영상 AC 자동 매핑
 - AC 체크박스 및 결과물 업데이트
-- AC별 증빙 검증
+- MR/PR scope와 AC별 증빙 검증
+- 검증 실패 시 최대 3회 보강/재검증
 - Task를 `In Review`로 전환
 - sibling Task가 모두 `Done` 또는 `In Review`인지 확인
 - parent Feature의 추상 AC를 child evidence로 검증
@@ -390,6 +396,7 @@ $finish 이 MR 머지됐어. Linear 마무리해줘.
 
 - 기본적으로 Task를 자동 `Done` 처리하지 않습니다.
 - Feature를 자동 `Done` 처리하지 않습니다.
+- 여러 레포가 섞인 이슈에서는 현재 레포에 해당하는 AC만 수정합니다.
 - 증빙이 부족하면 상태 전환하지 않고 부족한 항목을 보고합니다.
 
 ### `$weekly`

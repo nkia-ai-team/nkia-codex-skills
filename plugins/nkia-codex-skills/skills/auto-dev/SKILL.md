@@ -33,12 +33,12 @@ Claude subagents often ignored skills when prompts included fallback shell steps
 ```text
 ## REQUIRED SKILL CONTRACT
 
-Required workflow skill: $ralph, or direct repo-local implementation only if $ralph is unavailable in this Codex surface.
+Required workflow skill: $ralph. Direct repo-local implementation is allowed only when the leader explicitly writes `fallback-approved` because $ralph is unavailable in this Codex surface.
 
 Before implementation:
 1. State whether $ralph is available in this child context.
 2. If available, load and follow $ralph. Do not hand-roll a parallel workflow.
-3. If unavailable, report "required skill unavailable" unless the leader explicitly allowed fallback.
+3. If unavailable, report "required skill unavailable" unless this prompt explicitly contains `fallback-approved`.
 
 Forbidden:
 - calling $start, $commit, $ship, $finish
@@ -158,4 +158,3 @@ End with:
 - next step: user may run `$auto-submit {issue-id}` after review.
 
 Do not invoke `$auto-submit` automatically.
-

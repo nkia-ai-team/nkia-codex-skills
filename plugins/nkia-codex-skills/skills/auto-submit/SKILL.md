@@ -20,19 +20,19 @@ Use this skill after `$auto-dev` has completed and the user explicitly asks to s
 - If a required skill is unavailable or returns a non-standard result, stop and report. Do not patch around the skill with ad hoc commands.
 - Merge/approve remains manual. This skill and its children never run merge/approve commands.
 
-## Skill-Use Contract For Child Agents
+## Skill-Use Contracts For Child Agents
 
-Put this block at the top of every submit/wrap-up child prompt:
+Put the submit contract at the top of every submit child prompt:
 
 ```text
-## REQUIRED SKILL CONTRACT
+## REQUIRED SKILL CONTRACT — SUBMIT
 
-Required workflow skill: $ship for submit phase. Cleanup/evidence children must collect local evidence only; the leader runs $finish or validator workflows centrally.
+Required workflow skill: $ship.
 
 Before doing work:
-1. State whether the required skill is available in this child context.
-2. If available, load and follow that skill. Do not reimplement it with gh/glab/curl/git push.
-3. If unavailable, stop with "required skill unavailable"; do not fallback unless the leader explicitly wrote fallback-approved in this prompt.
+1. State whether $ship is available in this child context.
+2. If available, load and follow $ship. Do not reimplement it with gh/glab/curl/git push.
+3. If unavailable, stop with "required skill unavailable"; do not fallback unless this prompt explicitly contains fallback-approved.
 
 Forbidden:
 - direct Linear writes
@@ -40,6 +40,26 @@ Forbidden:
 - git push outside the required skill
 - calling $code-review separately after $ship unless $ship itself instructs it
 - manual review comment repair after a skill result
+```
+
+Put the cleanup contract at the top of every post-merge cleanup/evidence child prompt:
+
+```text
+## REQUIRED SKILL CONTRACT — CLEANUP/EVIDENCE
+
+Required behavior: local cleanup and evidence collection only. Do not call $ship, $finish, or any Linear-writing workflow.
+
+Before doing work:
+1. Confirm the PR/MR is already merged.
+2. Collect local evidence and cleanup results only.
+3. If cleanup requires a workflow that writes Linear, stop with "unsafe centralized evidence boundary".
+
+Forbidden:
+- direct Linear writes
+- $ship, $finish, or standalone validator/evidence skills
+- gh/glab/curl API calls that create, update, merge, approve, or comment
+- git push
+- manual evidence registration
 ```
 
 This is the main fix for Claude-era failures where subagents ignored skills after receiving too many fallback shell instructions.

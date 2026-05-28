@@ -10,6 +10,7 @@
 |------|---|
 | 스프레드시트 ID | config의 `spreadsheetId` |
 | 탭 이름 형식 | `YYYYMMDD` (예: `20260409`) |
+| 템플릿 탭 | config의 `templateTabName`, 없으면 `템플릿` → `Template` → `template` 순서 |
 | 헤더 행 | 3행 (보고자, 업무구분, 업무, 업무 내용, 투입시간, 업무 구분, 업무) |
 | 데이터 시작 행 | 4행~ |
 
@@ -45,18 +46,49 @@
 
 ### 2.2 탭 존재 확인
 
-스프레드시트의 시트 목록을 조회하여 해당 탭이 존재하는지 확인합니다:
+스프레드시트의 시트 목록을 조회하여 해당 탭이 존재하는지 확인합니다. 탭이 없을 때 템플릿 복사를 해야 하므로 `sheetId`, `title`, `index`를 함께 조회합니다:
 
     gws sheets spreadsheets get \
-      --params '{"spreadsheetId": "{spreadsheetId}", "fields": "sheets.properties.title"}'
+      --params '{"spreadsheetId": "{spreadsheetId}", "fields": "sheets.properties(sheetId,title,index)"}'
 
 응답에서 `sheets[].properties.title`을 순회하여 `tabName`과 일치하는 탭을 찾습니다.
 
 **탭이 없는 경우:**
 
-    ERROR: 탭 "{tabName}"을(를) 찾을 수 없습니다.
-    시트에 해당 날짜 탭이 존재하는지 확인해주세요.
+템플릿 탭을 복사해 새 주간 탭을 만듭니다. 빈 탭을 만드는 `addSheet`는 사용하지 않습니다. 빈 탭은 서식, 수식, 병합 셀, 드롭다운, 컬럼 폭을 보존하지 못합니다.
+
+1. 템플릿 탭 후보를 정합니다.
+   - config에 `templateTabName`이 있으면 그 값을 우선 사용합니다.
+   - 없으면 `템플릿`, `Template`, `template` 순서로 찾습니다.
+2. 시트 목록 응답에서 템플릿 탭의 `sheetId`를 찾습니다.
+3. 템플릿 탭을 `duplicateSheet`로 복사하고 새 이름을 `tabName`으로 지정합니다:
+
+       gws sheets spreadsheets batchUpdate \
+         --params '{"spreadsheetId": "{spreadsheetId}"}' \
+         --json '{
+           "requests": [
+             {
+               "duplicateSheet": {
+                 "sourceSheetId": {templateSheetId},
+                 "newSheetName": "{tabName}"
+               }
+             }
+           ]
+         }'
+
+4. 복사 후 시트 목록을 다시 조회해 `tabName`이 생성되었는지 확인합니다.
+5. 생성된 탭에서 보고자 행 탐색을 계속합니다.
+
+**템플릿 탭도 없는 경우:**
+
+    ERROR: 탭 "{tabName}"을(를) 찾을 수 없고, 복사할 템플릿 탭도 없습니다.
+    템플릿 후보: {templateTabName 또는 템플릿, Template, template}
     사용 가능한 최근 탭: {최근 5개 탭 이름 나열}
+    해결: 시트에 템플릿 탭을 만들거나 weekly-report.json의 templateTabName을 실제 템플릿 탭 이름으로 설정해주세요.
+
+**복사 중 이미 같은 이름의 탭이 생성된 경우:**
+
+다른 사용자가 같은 시점에 탭을 만들었을 수 있습니다. 시트 목록을 다시 조회해 `tabName`이 존재하면 오류로 중단하지 말고 해당 탭을 사용합니다. 다시 조회해도 없으면 복사 실패로 보고하고 쓰기를 중단합니다.
 
 ---
 
@@ -163,6 +195,10 @@ JSON 전달 시:
     # 탭 이름 목록 추출
     gws sheets spreadsheets get \
       --params '...' | jq -r '.sheets[].properties.title'
+
+    # 탭 이름과 sheetId 추출
+    gws sheets spreadsheets get \
+      --params '...' | jq -r '.sheets[].properties | "\(.title)\t\(.sheetId)"'
 
     # A열 값 추출
     gws sheets spreadsheets values get \

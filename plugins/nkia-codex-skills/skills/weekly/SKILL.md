@@ -39,13 +39,15 @@ Do:
 - Use Git commits to enrich work details when connected to Linear issues.
 - Read Google Calendar vacation/half-day events.
 - Preview the generated report before writing.
+- If the target Thursday tab is missing, copy the configured template tab and use the copy as the target tab.
 - Write to the configured Google Sheet only after user confirmation.
 
 Do not:
 
 - Calculate input hours / 투입시간.
 - Write another teammate's row unless explicitly requested.
-- Change sheet structure, formulas, formatting, or tab names.
+- Change sheet structure, formulas, formatting, or tab names, except copying the template tab when the target weekly tab is missing.
+- Create a blank weekly tab with `addSheet`; weekly tabs must come from the template so formatting, formulas, dropdowns, and widths are preserved.
 - Invent work that is not backed by Linear, Git, Calendar, or explicit user-provided next-week text.
 
 ## Configuration
@@ -63,11 +65,14 @@ Expected shape:
   "reporterName": "방성준",
   "googleEmail": "user@example.com",
   "calendarName": "AI연구소",
-  "spreadsheetId": "spreadsheet-id"
+  "spreadsheetId": "spreadsheet-id",
+  "templateTabName": "템플릿"
 }
 ```
 
-If config is missing or `--reconfigure` is present, ask for the four fields in one grouped prompt and save them.
+`templateTabName` is optional. If it is missing, use `템플릿` first, then `Template`, then `template`.
+
+If config is missing or `--reconfigure` is present, ask for the required four fields in one grouped prompt and optionally ask for the template tab name only when the default candidates are wrong.
 
 ## Google Auth
 
@@ -124,8 +129,12 @@ Required scopes:
 5. Preview the full report.
 6. If `--dry-run`, stop after preview.
 7. Ask for confirmation before writing.
-8. Write only the configured user's row in the target Thursday tab.
-9. Show the sheet, tab, row, and cells updated.
+8. Resolve the target Thursday tab:
+   - If it exists, use it.
+   - If it is missing, copy the template tab to create `YYYYMMDD`.
+   - If no template tab exists, stop before writing and report available tabs.
+9. Write only the configured user's row in the target Thursday tab.
+10. Show the sheet, tab, row, and cells updated.
 
 ## Target Sheet Form
 
@@ -157,6 +166,13 @@ Write only:
 - `F{row}:G{row}`
 
 Never write column E or any columns after G.
+
+Weekly tab creation:
+
+- Target tab name: Thursday date in `YYYYMMDD`.
+- Template tab: config `templateTabName`, otherwise `템플릿`, `Template`, `template` in that order.
+- If the target tab is missing, duplicate the template tab and name the copy `YYYYMMDD`.
+- Never create an empty weekly tab manually.
 
 ## Output Style
 
@@ -221,5 +237,7 @@ Example shape:
 
 - If Linear is unavailable, continue with Git/Calendar only after telling the user what will be missing.
 - If Google auth is missing, stop before write and show exact auth commands.
-- If the target tab or reporter row is missing, do not create or modify sheet structure; report the missing tab/row.
+- If the target tab is missing, copy it from the template tab before row lookup.
+- If the template tab is missing or cannot be copied, stop before write and report the missing template and available tabs.
+- If the reporter row is missing, do not create a new row; report the missing row.
 - If confidence is low for issue-to-repo mapping, show it in preview and ask before writing.

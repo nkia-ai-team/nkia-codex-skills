@@ -103,9 +103,10 @@ Before writing any approval verdict:
 1. Confirm all commits were fetched.
 2. Confirm all changed files were fetched.
 3. Confirm large/truncated files were either fetched in full or listed as blocked.
-4. Infer the Linear task ID from branch/title/commit, if present.
+4. Infer the Linear task ID from branch/title/commit, if present. Linear task IDs are optional for standalone work.
 5. If Linear MCP is available and a task ID is present, read the task AC/scope and validate that changed files and behavior map to it.
-6. If Linear cannot be accessed, continue the code review but mark Linear scope validation as "not verified" rather than Pass.
+6. If no task ID is present in branch/title/commit, skip Linear scope validation and mark it as "N/A - standalone work"; do not count the missing task ID as a warning or failure.
+7. If Linear cannot be accessed, continue the code review but mark Linear scope validation as "not verified" rather than Pass.
 
 If complete PR/MR data cannot be fetched, verdict must be `blocked`; do not approve.
 
@@ -117,9 +118,9 @@ If complete PR/MR data cannot be fetched, verdict must be `blocked`; do not appr
 
 브랜치명을 ruleset 기준으로 검증합니다.
 
-**Pattern:** `^(feature|bugfix|hotfix|refactor|docs|test|config)/[a-z]+-[0-9]+-[a-z0-9-]+$`
+**Pattern:** `^(?:(feature|bugfix|fix|hotfix|refactor|docs|test|config|chore|ci|build|perf)/(?:[A-Za-z]+-[0-9]+-)?[a-z0-9]+(?:-[a-z0-9]+)*|develop-[0-9]+(?:\.[0-9]+)*_[0-9]+-chat-[a-z0-9]+(?:-[a-z0-9]+)*)$`
 
-**Check:** Type prefix, Linear 이슈 번호 형식, kebab-case, 브랜치-작업 타입 일치
+**Check:** Type prefix, optional Linear 이슈 번호 형식 when present, kebab-case, 브랜치-작업 타입 일치
 
 **5) Validate Commit Messages**
 
@@ -127,9 +128,9 @@ If complete PR/MR data cannot be fetched, verdict must be `blocked`; do not appr
 - Step 3에서 페이지네이션으로 조회한 전체 커밋 목록 사용
 - 총 커밋 수가 예상과 일치하는지 확인
 
-**Pattern:** `^[a-z]+-[0-9]+ (Feat|Fix|Refactor|Cleanup|Wip|Revert|Style|Merge|Docs|Config|Dependency|Test) : .+$`
+**Pattern:** `^(?:[A-Za-z]+-[0-9]+ )?(Feat|Fix|Refactor|Cleanup|Chore|Wip|Revert|Style|Merge|Docs|Config|Dependency|Test|Build|Ci|Perf) : .+$`
 
-**Check:** Linear 이슈 번호, Type 키워드, 구분자 (` : `), 브랜치 이슈 번호 일치
+**Check:** optional Linear 이슈 번호 형식 when present, Type 키워드, 구분자 (` : `), 브랜치 이슈 번호 일치 when both branch and commit include an issue ID
 
 **6) Perform Code Review**
 

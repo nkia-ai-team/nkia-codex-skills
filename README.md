@@ -2,7 +2,7 @@
 
 NKIA-AI 팀의 Codex 플러그인 마켓플레이스입니다. Linear 기반 기능/태스크 관리, 개발 착수, PR/MR 제출, 머지 후 마무리, 주간업무보고 자동화를 Codex 스킬로 제공합니다.
 
-현재 버전: **v0.1.1**
+현재 버전: **v0.2.0**
 
 ## 개요
 
@@ -14,12 +14,14 @@ plugins/nkia-codex-skills/.codex-plugin/plugin.json
 plugins/nkia-codex-skills/skills/
 ```
 
-Codex에서 사용하는 스킬은 아래 7개입니다.
+Codex에서 사용하는 스킬은 아래 10개입니다.
 
 ```text
-$feature → $task → $start → (개발) → $ship → (수동 머지) → $finish
-                                  │
-                                  └─ $code-review
+$feature → $task → $start → (개발) → $commit → $ship → (수동 머지) → $finish
+                                            │
+                                            └─ $code-review
+
+$auto-dev → (사용자 확인) → $auto-submit
 
 $weekly
 ```
@@ -29,6 +31,9 @@ $weekly
 | `$feature` | 고객/제품 관점의 상위 Linear Feature 이슈 생성·정리 |
 | `$task` | Feature 하위의 실제 개발 Task 이슈 생성·분해 |
 | `$start` | Task 착수, 브랜치 생성, In Progress 전환 |
+| `$commit` | staged 변경사항을 NKIA 커밋 메시지 규칙으로 커밋 |
+| `$auto-dev` | Linear/spec 기반 멀티 레포 개발 오케스트레이션 |
+| `$auto-submit` | `$auto-dev` 결과물의 멀티 레포 제출·증빙·검증 오케스트레이션 |
 | `$ship` | 커밋, push, PR/MR 생성, 코드 검증/리뷰 루프, 수동 머지 대기 |
 | `$code-review` | GitHub PR/GitLab MR 단독 코드 리뷰 및 검증 코멘트 작성 |
 | `$finish` | 증빙 수집, AC 검증, Task/Feature 상태 정리 |
@@ -216,6 +221,89 @@ refactor/nkiaai-536-build-pipeline
 ```
 
 UI repo는 기존 팀 규칙에 따라 `develop-10.x.y_z-chat-{function}` 형식을 사용할 수 있습니다.
+
+### `$commit`
+
+staged 변경사항을 분석해 NKIA 커밋 메시지 규칙으로 커밋합니다. `$ship` 내부 commit workflow를 단독으로 사용할 때 호출합니다.
+
+주요 기능:
+
+- staged 변경사항 확인
+- 브랜치명, 사용자 입력, 세션 컨텍스트에서 Linear task ID 추론
+- UI repo 형식에서는 PIMS 번호와 Linear task ID를 함께 사용
+- 변경 패턴 기반 Type 결정
+- 제목과 선택적 본문 생성
+- staged 변경사항만 커밋
+
+사용 예시:
+
+```text
+$commit
+$commit --type Chore bootRun 포트 정리 자동화
+$commit --format ui
+```
+
+주의:
+
+- 파일을 자동 stage하지 않습니다.
+- amend, squash, force-push는 하지 않습니다.
+- standalone 작업은 Linear 이슈 번호 없이 `{Type} : {description}` 형식을 사용할 수 있습니다.
+
+### `$auto-dev`
+
+Linear 이슈 또는 design spec을 읽고 여러 레포에 걸친 개발 작업을 오케스트레이션합니다. 브랜치 생성과 Linear `In Progress` 전환은 메인 세션이 한 번만 수행하고, repo-local 구현은 Codex subagent에 분리합니다.
+
+주요 기능:
+
+- Linear 이슈와 design spec 종합
+- `affected_repos` 또는 본문 기반 영향 레포 식별
+- spec 항목을 현재 레포 상태와 대조해 `[add]`, `[modify]`, `[do-not-recreate]`로 분류
+- 레포별 브랜치 생성/전환
+- repo-local 구현 subagent 병렬 실행
+- child prompt에 필수 스킬 계약을 넣어 `$ralph` 또는 승인된 fallback만 허용
+- backend/AP/AI는 테스트, UI는 ai-portal 범위 빌드/타입체크/lint 중심 검증
+- 필요 시 독립 E2E 검증
+- 커밋/PR/MR 생성 없이 사용자 확인 지점에서 정지
+
+사용 예시:
+
+```text
+$auto-dev NKIAAI-567
+$auto-dev /home/jwchoi/workspace/2026/docs/ai_portal/feature-design/567-example-design.md
+```
+
+주의:
+
+- `$auto-dev`는 `$auto-submit`을 자동 호출하지 않습니다.
+- subagent는 `$start`, `$commit`, `$ship`, `$finish`, 직접 Linear 쓰기를 하지 않습니다.
+- spec은 최종 청사진이므로 현재 레포 상태와 대조한 뒤 구현합니다.
+
+### `$auto-submit`
+
+`$auto-dev`로 만든 멀티 레포 작업을 제출 단계로 넘깁니다. repo-local `$ship`은 subagent에 맡기고, evidence/AC 검증은 메인 세션에서 중앙집중식으로 처리합니다.
+
+주요 기능:
+
+- `$auto-dev` 결과 또는 이슈/spec에서 영향 레포 복원
+- 레포별 브랜치와 변경사항 사전 검증
+- child prompt에 필수 스킬 계약을 넣어 `$ship` 우선 사용 강제
+- 커밋, push, PR/MR 생성, `$code-review` 루프는 `$ship`에 위임
+- 수동 머지 대기
+- 머지 후 증빙 수집
+- `$finish` 또는 사용 가능한 evidence/validator 스킬로 Linear AC 검증
+- 직접 Linear write 우회 금지
+
+사용 예시:
+
+```text
+$auto-submit NKIAAI-567
+```
+
+주의:
+
+- merge/approve 명령은 실행하지 않습니다.
+- `$ship` 결과가 기대 형식이 아니어도 임의 re-review subagent를 추가로 띄우지 않습니다.
+- evidence 등록과 AC validator는 한 번의 중앙 흐름으로 처리합니다.
 
 ### `$ship`
 

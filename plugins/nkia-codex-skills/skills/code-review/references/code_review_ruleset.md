@@ -25,24 +25,28 @@ AI 코드 리뷰는 다음 순서로 진행합니다:
 
 ### 2.1 검증 규칙
 
-**Linear 자동 생성 브랜치 형식을 사용합니다.**
+Linear 자동 생성 브랜치 형식을 권장하지만, Linear 이슈 없이 진행되는 standalone 작업도 허용합니다.
 
 **정규식 패턴:**
 ```regex
-^(feature|bugfix|hotfix|refactor|docs|test|config)/[a-z]+-[0-9]+-[a-z0-9-]+$
+^(?:(feature|bugfix|fix|hotfix|refactor|docs|test|config|chore|ci|build|perf)/(?:[A-Za-z]+-[0-9]+-)?[a-z0-9]+(?:-[a-z0-9]+)*|develop-[0-9]+(?:\.[0-9]+)*_[0-9]+-chat-[a-z0-9]+(?:-[a-z0-9]+)*)$
 ```
 
 **검증 항목:**
 
 | 항목 | 규칙 | 예시 |
 |------|------|------|
-| Type Prefix | feature, bugfix, hotfix, refactor, docs, test, config 중 하나 | `feature/` |
-| Linear 이슈 번호 | `{팀키}-{이슈번호}` 형식 (소문자) | `nkiaai-129` |
+| Type Prefix | feature, bugfix, fix, hotfix, refactor, docs, test, config, chore, ci, build, perf 중 하나 | `feature/` |
+| Linear 이슈 번호 | 선택 항목. 있으면 `{팀키}-{이슈번호}` 형식 (대소문자 허용) | `nkiaai-129`, `NKIAAI-129` |
 | 설명 | kebab-case, 소문자 | `improve-rca-logging-system` |
+| UI repo standalone | `develop-10.x.y_z-chat-{function}` 형식 허용 | `develop-10.2.1_3-chat-filter` |
 
 **예시:**
 - `feature/nkiaai-129-improve-rca-logging-system-for-operator-readability`
 - `bugfix/nkiaai-130-fix-login-error`
+- `chore/cleanup-local-dev-scripts`
+- `fix/login-error`
+- `develop-10.2.1_3-chat-filter`
 
 ### 2.2 브랜치-작업 타입 일치 검증
 
@@ -50,11 +54,16 @@ AI 코드 리뷰는 다음 순서로 진행합니다:
 |-------------|--------------|
 | feature | 새로운 기능 추가 |
 | bugfix | 버그 수정 |
+| fix | 버그 수정 (`bugfix` alias) |
 | hotfix | 긴급 운영 이슈 수정 |
 | refactor | 리팩토링, 성능 개선 |
 | docs | 문서 작업만 |
 | test | 테스트 코드만 |
 | config | 설정 파일만 |
+| chore | 빌드/개발 편의/운영성 보조 작업 |
+| ci | CI/CD 파이프라인 작업 |
+| build | 빌드/패키징 작업 |
+| perf | 성능 개선 |
 
 ### 2.3 리뷰 코멘트 예시
 
@@ -71,6 +80,8 @@ AI 코드 리뷰는 다음 순서로 진행합니다:
 | 타입-작업 일치 | ✅ | 새 기능 추가 작업 |
 ```
 
+Linear 이슈 없이 진행되는 standalone 작업은 Linear 이슈 번호를 `➖ N/A`로 표시하고 경고/실패로 계산하지 않습니다.
+
 ---
 
 ## 3. 커밋 메시지 검증
@@ -79,14 +90,14 @@ AI 코드 리뷰는 다음 순서로 진행합니다:
 
 **정규식 패턴:**
 ```regex
-^[a-z]+-[0-9]+ (Feat|Fix|Refactor|Cleanup|Wip|Revert|Style|Merge|Docs|Config|Dependency|Test) : .+$
+^(?:[A-Za-z]+-[0-9]+ )?(Feat|Fix|Refactor|Cleanup|Chore|Wip|Revert|Style|Merge|Docs|Config|Dependency|Test|Build|Ci|Perf) : .+$
 ```
 
 **검증 항목:**
 
 | 항목 | 규칙 | 예시 |
 |------|------|------|
-| Linear 이슈 번호 | `{팀키}-{이슈번호}` 형식 (소문자) | `nkiaai-129` |
+| Linear 이슈 번호 | 선택 항목. 있으면 `{팀키}-{이슈번호}` 형식 (대소문자 허용) | `nkiaai-129`, `NKIAAI-129` |
 | Type | 허용된 타입 키워드 | `Feat` |
 | 구분자 | ` : ` (공백 포함 콜론) | ` : ` |
 | 내용 | 한글/영문, 명확한 설명 | `API 변경 감지 시스템 구축` |
@@ -99,35 +110,49 @@ AI 코드 리뷰는 다음 순서로 진행합니다:
 | Fix | 오류 수정 | 버그 수정 코드 |
 | Refactor | 리팩토링/성능 개선 | 기존 코드 구조 변경 |
 | Cleanup | 불필요한 코드 정리 | 파일/코드 삭제 |
+| Chore | 개발 편의/운영성 보조 작업 | 로컬 스크립트, 자동 정리, 비기능성 유지보수 |
 | Wip | 진행 중 작업 | 임시 커밋 (MR 시 지양) |
+| Revert | 이전 변경 되돌리기 | revert 커밋 |
 | Style | 코드 스타일 수정 | 포맷팅, 공백 등 |
+| Merge | 병합 커밋 | merge commit |
 | Docs | 문서 변경 | .md 파일 등 |
 | Config | 설정 파일 변경 | 빌드/배포 설정 |
+| Dependency | 의존성 변경 | 라이브러리 추가/업데이트 |
 | Test | 테스트 코드 | *Test.java, *Spec.java |
+| Build | 빌드/패키징 변경 | Gradle/Maven/npm build 설정 |
+| Ci | CI/CD 변경 | pipeline, workflow, runner 설정 |
+| Perf | 성능 개선 | 캐싱, 쿼리 최적화, 병목 개선 |
 
-### 3.3 브랜치-커밋 Linear 이슈 번호 일치 검증
+### 3.3 Linear 이슈 번호 검증
 
 ```
 브랜치: feature/nkiaai-129-api-diff-notification
 커밋: nkiaai-129 Feat : API 변경 감지 시스템 구축
       ^^^^^^^^^^
-      동일한 Linear 이슈 번호 사용 필수
+      브랜치와 커밋 양쪽에 있으면 동일해야 함
 ```
+
+검증 규칙:
+- 브랜치와 커밋 양쪽에 Linear 이슈 번호가 있으면 동일해야 합니다.
+- 브랜치에 Linear 이슈 번호가 있는데 커밋에 없으면 경고로 표시합니다.
+- 커밋에 Linear 이슈 번호가 있는데 브랜치에 없으면 경고로 표시합니다.
+- 브랜치/제목/커밋 어디에도 Linear 이슈 번호가 없으면 standalone 작업으로 간주하고, Linear 이슈 번호 누락을 경고/실패로 계산하지 않습니다.
 
 ### 3.4 리뷰 코멘트 예시
 
 ```markdown
 ## 커밋 메시지 검증
 
-**총 커밋 수:** 3개
+**총 커밋 수:** 4개
 
 | 커밋 | Linear 이슈 | Type | 상태 | 비고 |
 |------|-------------|------|------|------|
 | `nkiaai-129 Feat : API 변경 감지 시스템 구축` | ✅ | ✅ Feat | ✅ | - |
 | `nkiaai-129 Fix : Slack 웹훅 URL 수정` | ✅ | ✅ Fix | ✅ | - |
-| `update readme` | ❌ | ❌ | ❌ | Linear 이슈 번호, Type 누락 |
+| `nkiaai-129 Chore : bootRun 종료 시 포트 자동 정리` | ✅ | ✅ Chore | ✅ | - |
+| `Docs : README 업데이트` | ➖ N/A | ✅ Docs | ✅ | standalone 작업 |
 
-⚠️ **수정 필요:** 3번째 커밋 메시지가 규칙을 준수하지 않습니다.
+⚠️ **수정 필요:** Type/구분자/내용 형식이 깨졌거나, 존재하는 Linear 이슈 번호가 서로 불일치할 때만 표시합니다.
 ```
 
 ---
@@ -138,7 +163,7 @@ AI 코드 리뷰는 다음 순서로 진행합니다:
 
 | 항목 | 필수 | 검증 내용 |
 |------|------|----------|
-| Title | ✅ | Linear 이슈 번호 포함, 명확한 설명 |
+| Title | ✅ | 명확한 설명. Linear 이슈 번호는 있으면 검증하고, standalone 작업이면 없어도 실패 처리하지 않음 |
 | Description | ✅ | 기능 상세 설명 작성 |
 | Part (FE/BE) | ✅ | 해당 파트 선택 |
 | Target Branch | ✅ | develop (master 아님) |
@@ -328,7 +353,7 @@ MANUAL_MERGE_REQUIRED: yes
 | 브랜치명 | ✅ Pass |
 | 커밋 메시지 | ⚠️ 1건 수정 필요 |
 | Diff 완전성 | ✅ Pass |
-| Linear Scope | ✅ Pass |
+| Linear Scope | ✅ Pass 또는 ➖ N/A |
 | 코드 품질 | ✅ Pass |
 | 보안 | ✅ Pass |
 | 성능 | ⚠️ 개선 권장 |
@@ -357,9 +382,9 @@ MANUAL_MERGE_REQUIRED: yes
 
 | VERDICT | 조건 |
 |---------|------|
-| approved | Critical 0, Warning 0, Diff 완전성 Pass, blocking scope/security/test issue 없음 |
+| approved | Critical 0, Warning 0, Diff 완전성 Pass, blocking scope/security/test issue 없음. Linear 이슈가 없는 standalone 작업은 Linear Scope `N/A`여도 승인 가능 |
 | needs-fix | Critical 또는 Warning이 있거나, 수정 후 재리뷰가 필요한 품질/보안/성능/테스트 이슈가 있음 |
-| blocked | PR/MR 데이터 불완전, 인증 실패, diff 누락, 대용량 파일 조회 실패, Linear scope 검증 불가가 치명적일 때 |
+| blocked | PR/MR 데이터 불완전, 인증 실패, diff 누락, 대용량 파일 조회 실패, Linear task ID가 있는데 scope 검증 불가가 치명적일 때 |
 
 `approved`여도 merge/approve는 사람이 직접 수행합니다.
 

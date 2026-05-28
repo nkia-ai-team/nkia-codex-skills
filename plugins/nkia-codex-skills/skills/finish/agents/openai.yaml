@@ -1,4 +1,4 @@
 interface:
   display_name: "Finish"
-  short_description: "Validate evidence and roll up status"
-  default_prompt: "Use $finish NKIAAI-305 to validate evidence and update Linear."
+  short_description: "Post-merge wrap-up, evidence validation, and status roll-up"
+  default_prompt: "Use $finish NKIAAI-305 after PR/MR merge to clean branches, register evidence, validate AC, and update Linear."

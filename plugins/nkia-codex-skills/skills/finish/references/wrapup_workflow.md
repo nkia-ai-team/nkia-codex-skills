@@ -4,7 +4,19 @@
 
 머지 후 어느 브랜치로 전환할지 결정합니다.
 
-### 판별 규칙
+### 판별 우선순위
+
+1. **명시된 PR/MR URL의 target branch**
+   - GitHub: `gh pr view {url} --json baseRefName,state,mergedAt`
+   - GitLab: MR metadata의 `target_branch`
+2. **현재 브랜치에 연결된 merged PR/MR의 target branch**
+   - GitHub: `gh pr list --head "$(git branch --show-current)" --state merged --json baseRefName,url,mergedAt`
+   - GitLab: `glab mr list --source-branch "$(git branch --show-current)" --state merged`
+3. **판별 불가 시 레포별 기본 컨벤션**
+
+`$finish`는 merge 후 정리 스킬이므로, 가능한 경우 실제 merge target을 사용합니다. 레포 이름만으로 target을 강제하지 않습니다.
+
+### 기본 컨벤션
 
 git remote URL에서 레포 이름을 추출하여 판별:
 
@@ -15,7 +27,16 @@ git remote URL에서 레포 이름을 추출하여 판별:
 | lucida-ui | 최신 `develop-10.x.y_z-chat` |
 | lucida-chat-ap | 최신 `develop-10.x.y_z` |
 | lucida-chat-ai | 최신 `develop-10.x.y_z` |
-| 기타 | 최신 `develop-10.x.y_z` |
+| 기타 | `main`이 있으면 `main`, 없으면 최신 `develop-10.x.y_z`, 없으면 `develop` |
+
+최신 versioned branch는 원격 브랜치 목록에서 버전 번호를 정렬해 가장 큰 값을 선택합니다.
+
+    git fetch origin --quiet --prune
+    git for-each-ref --format='%(refname:short)' refs/remotes/origin/ \
+      | sed 's|^origin/||' \
+      | grep -E '^develop-10\.[0-9]+\.[0-9]+_[0-9]+(-chat)?$' \
+      | sort -V \
+      | tail -1
 
 ### 브랜치 정리 명령
 
@@ -23,7 +44,7 @@ git remote URL에서 레포 이름을 추출하여 판별:
     git checkout {target-branch}
 
     # 최신화
-    git pull origin {target-branch}
+    git pull --ff-only origin {target-branch}
 
     # 원격 정리
     git remote prune origin

@@ -1,0 +1,4 @@
+interface:
+  display_name: "SonarQube Pass"
+  short_description: "Fix SonarQube gates with Linear evidence"
+  default_prompt: "Use $sonarqube-pass with $ralph orchestration to derive the SonarQube project from the repo, read the report, create or reuse a Linear task, fix the gate, and verify with tests/build/Sonar."

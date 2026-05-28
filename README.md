@@ -14,12 +14,14 @@ plugins/nkia-codex-skills/.codex-plugin/plugin.json
 plugins/nkia-codex-skills/skills/
 ```
 
-Codex에서 사용하는 스킬은 아래 11개입니다.
+Codex에서 사용하는 스킬은 아래 12개입니다.
 
 ```text
 $feature → $task → $start → (개발) → $commit → $ship → (수동 머지) → $finish
                                             │
                                             └─ $code-review
+
+$sonarqube-pass → $ship → (수동 머지) → $finish
 
 $wrap-up
 
@@ -34,6 +36,7 @@ $weekly
 | `$task` | Feature 하위의 실제 개발 Task 이슈 생성·분해 |
 | `$start` | Task 착수, 브랜치 생성, In Progress 전환 |
 | `$commit` | staged 변경사항을 NKIA 커밋 메시지 규칙으로 커밋 |
+| `$sonarqube-pass` | SonarQube 리포트 기반 Linear Task/브랜치 생성, 품질 게이트 수정·검증·증빙 |
 | `$auto-dev` | Linear/spec 기반 멀티 레포 개발 오케스트레이션 |
 | `$auto-submit` | `$auto-dev` 결과물의 멀티 레포 제출·증빙·검증 오케스트레이션 |
 | `$ship` | 커밋, push, PR/MR 생성, 코드 검증/리뷰 루프, 수동 머지 대기 |

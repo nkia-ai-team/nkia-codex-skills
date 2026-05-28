@@ -1,0 +1,4 @@
+interface:
+  display_name: "Wrap Up"
+  short_description: "Post-merge cleanup and evidence validation"
+  default_prompt: "Use $wrap-up NKIAAI-305 after PR/MR merge to clean branches, collect evidence, validate AC, and move the task to In Review."

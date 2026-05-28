@@ -2,7 +2,7 @@
 
 NKIA-AI 팀의 Codex 플러그인 마켓플레이스입니다. Linear 기반 기능/태스크 관리, 개발 착수, PR/MR 제출, 머지 후 마무리, 주간업무보고 자동화를 Codex 스킬로 제공합니다.
 
-현재 버전: **v0.2.3**
+현재 버전: **v0.2.4**
 
 ## 개요
 
@@ -14,12 +14,14 @@ plugins/nkia-codex-skills/.codex-plugin/plugin.json
 plugins/nkia-codex-skills/skills/
 ```
 
-Codex에서 사용하는 스킬은 아래 10개입니다.
+Codex에서 사용하는 스킬은 아래 11개입니다.
 
 ```text
 $feature → $task → $start → (개발) → $commit → $ship → (수동 머지) → $finish
                                             │
                                             └─ $code-review
+
+$wrap-up
 
 $auto-dev → (사용자 확인) → $auto-submit
 
@@ -37,6 +39,7 @@ $weekly
 | `$ship` | 커밋, push, PR/MR 생성, 코드 검증/리뷰 루프, 수동 머지 대기 |
 | `$code-review` | GitHub PR/GitLab MR 단독 코드 리뷰 및 검증 코멘트 작성 |
 | `$finish` | 머지 후 브랜치 정리, 증빙 수집, AC 검증, Task/Feature 상태 정리 |
+| `$wrap-up` | Claude Code에서 쓰던 post-merge cleanup, 증빙 수집, AC 검증 workflow |
 | `$weekly` | Linear/Git/Calendar 기반 주간업무보고 작성 및 Google Sheet 기록 |
 
 Feature 이슈는 작업 컨테이너입니다. 직접 브랜치/PR/MR의 단위가 아니며, 모든 하위 Task가 `Done` 또는 `In Review`일 때만 `$finish`가 Feature를 `In Review`로 roll-up합니다. Feature를 자동으로 `Done` 처리하지 않습니다.
@@ -398,6 +401,33 @@ $finish 이 MR 머지됐어. Linear 마무리해줘.
 - Feature를 자동 `Done` 처리하지 않습니다.
 - 여러 레포가 섞인 이슈에서는 현재 레포에 해당하는 AC만 수정합니다.
 - 증빙이 부족하면 상태 전환하지 않고 부족한 항목을 보고합니다.
+
+### `$wrap-up`
+
+Claude Code의 `wrap-up` workflow를 Codex 스킬로 이식한 별도 스킬입니다. PR/MR 머지 후 실제 merge target 브랜치로 전환해 최신화하고, merged 로컬 브랜치를 정리한 뒤 현재 레포 범위의 증빙 수집·자가 점검·AC 검증을 진행합니다.
+
+주요 기능:
+
+- merged PR/MR의 실제 target branch 우선 사용
+- target branch 최신화, remote prune, merged local branch 삭제
+- 현재 레포 범위의 AC만 필터링
+- `linear-issue-evidence`가 있으면 증빙 등록 workflow 사용
+- `linear-issue-validator`가 있으면 AC 검증 및 `In Review` 전환 workflow 사용
+- 스크린샷/동영상 수동 업로드 필요 시 AC 매핑 안내
+- 검증 실패 시 최대 3회 증빙 보강/재검증
+
+사용 예시:
+
+```text
+$wrap-up NKIAAI-557
+$wrap-up 이 MR 머지됐어. Linear 마무리해줘.
+```
+
+주의:
+
+- `$wrap-up`은 `$finish` alias가 아닙니다.
+- Task나 Feature를 자동 `Done` 처리하지 않습니다.
+- 하위 evidence/validator workflow가 없으면 Linear 쓰기 전에 중단하고 누락된 workflow를 보고합니다.
 
 ### `$weekly`
 

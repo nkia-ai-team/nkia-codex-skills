@@ -145,7 +145,9 @@ Section 1에서 캐싱한 `$BASE`(예: `develop-10.2.4_3-chat`)를 base로 featu
 
 ## 4. 타겟 브랜치 판별 (참고)
 
-`$start`에서는 직접 사용하지 않지만, `$ship`에서 사용하는 타겟 브랜치 기본값은 **task 브랜치를 뽑은 base 버전 브랜치와 동일**합니다.
+`$start`에서는 직접 사용하지 않지만, `$ship`에서 사용하는 타겟 브랜치는 **task 브랜치가 실제로 뽑힌 base branch**입니다.
+
+기본 target branch 형태는 `$start`의 base branch 컨벤션과 같습니다.
 
 | 레포 | 기본 타겟 |
 |------|----------|
@@ -154,7 +156,15 @@ Section 1에서 캐싱한 `$BASE`(예: `develop-10.2.4_3-chat`)를 base로 featu
 | lucida-chat-ai | 최신 `develop-10.x.y_z` |
 | 기타 | 최신 `develop-10.x.y_z` |
 
-> 이전에 사용하던 `develop`, `develop-sandbox`, `develop-ui-chat` 같은 고정 base는 더 이상 사용하지 않습니다.
+`$ship`은 레포 이름이나 최신 versioned branch만으로 target을 고르지 않습니다. 원격 후보 branch와 현재 HEAD의 커밋 거리(`<candidate>..HEAD`)를 비교해 가장 가까운 base를 선택합니다.
+
+이 방식은 다음 상황을 안전하게 처리합니다.
+
+- 최신 `develop-10.x.y_z`가 새로 생겼지만 현재 작업 branch는 이전 cycle base에서 나온 경우
+- UI branch가 `develop-10.x.y_z-chat-{function}` 형식이라 parent가 `develop-10.x.y_z-chat`인 경우
+- 사용자가 `develop`이나 `main`에서 직접 branch를 뽑은 경우
+
+> 이전에 사용하던 `develop`, `develop-sandbox`, `develop-ui-chat` 같은 고정 base와 레포 이름 기반 target mapping은 더 이상 사용하지 않습니다.
 
 ---
 

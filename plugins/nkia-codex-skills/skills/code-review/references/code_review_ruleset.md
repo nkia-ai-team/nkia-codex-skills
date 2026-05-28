@@ -331,6 +331,14 @@ catch (ResourceNotFoundException e) {
 
 ## 6. 리뷰 결과 작성 형식
 
+리뷰 코멘트는 아래 구조를 그대로 사용합니다. 승인 가능한 PR/MR도 최소 구조를 생략하지 않습니다.
+
+**금지 사항:**
+- `review-verdict` block의 key를 소문자나 다른 이름으로 바꾸지 않습니다.
+- `status: approved` 같은 축약 verdict를 쓰지 않습니다.
+- 이슈가 0건이라는 이유로 요약 표, 검증 섹션, 리뷰 히스토리를 생략하지 않습니다.
+- 검색/업데이트 기준인 `# MR 코드 리뷰 결과` 제목을 변경하지 않습니다.
+
 ### 6.1 전체 요약
 
 ````markdown
@@ -362,7 +370,89 @@ MANUAL_MERGE_REQUIRED: yes
 **전체 판정:** ⚠️ 수정 후 승인 권장
 ````
 
-### 6.1.1 Structured Verdict Block
+### 6.1.1 승인 가능 PR/MR 최소 템플릿
+
+이슈가 0건인 경우에도 아래 수준의 구조를 유지합니다.
+
+````markdown
+# MR 코드 리뷰 결과
+
+```review-verdict
+VERDICT: approved
+CRITICAL: 0
+WARNING: 0
+INFO: 0
+AUTOFIX_SAFE: yes
+BLOCKED_REASON: none
+MANUAL_MERGE_REQUIRED: yes
+```
+
+## 요약
+
+| 항목 | 결과 |
+|------|------|
+| 브랜치명 | ✅ Pass |
+| 커밋 메시지 | ✅ Pass |
+| Diff 완전성 | ✅ Pass |
+| Linear Scope | ✅ Pass 또는 ➖ N/A - standalone 작업 |
+| 코드 품질 | ✅ Pass |
+| 보안 | ✅ Pass |
+| 성능 | ✅ Pass |
+| 테스트 | ✅ Pass |
+
+**전체 판정:** ✅ 승인 가능
+
+## 브랜치명 검증
+
+**브랜치:** `{branch}`
+
+| 항목 | 상태 | 비고 |
+|------|------|------|
+| Type Prefix | ✅ | `{type}` |
+| Linear 이슈 번호 | ✅ 또는 ➖ N/A | `{issue_or_standalone}` |
+| 네이밍 규칙 | ✅ | kebab-case 준수 |
+| 타입-작업 일치 | ✅ | `{work_type}` |
+
+## 커밋 메시지 검증
+
+**총 커밋 수:** {commit_count}개
+
+| 커밋 | Linear 이슈 | Type | 상태 | 비고 |
+|------|-------------|------|------|------|
+| `{commit_subject}` | ✅ 또는 ➖ N/A | ✅ `{type}` | ✅ | `{note}` |
+
+## Diff 완전성
+
+| 항목 | 상태 | 비고 |
+|------|------|------|
+| PR/MR 메타데이터 | ✅ | 조회 완료 |
+| 전체 커밋 | ✅ | `{commit_count}`개 커밋 확인 |
+| 변경 파일 | ✅ | `{file_count}`개 파일 확인 |
+| base-to-head diff | ✅ | 전체 diff 검토 |
+| 대용량/누락 diff | ✅ | 해당 없음 또는 별도 조회 완료 |
+
+## 상세 리뷰
+
+### 📁 파일: `{file_path}`
+
+#### 전체 리뷰 결과: 🟢 양호
+
+- `{evidence_based_review_summary}`
+
+## 검증
+
+- `{verification_command_or_check}` 통과
+
+---
+
+## 📜 리뷰 히스토리
+
+| # | 일시 | 판정 | 이슈 (🔴/🟡/🔵) | 변화 |
+|---|------|------|-----------------|------|
+| 1 | `{YYYY-MM-DD HH:mm KST}` | ✅ 승인 가능 | 0/0/0 | 최초 리뷰 |
+````
+
+### 6.1.2 Structured Verdict Block
 
 리뷰 코멘트 최상단에는 `$ship`이 파싱할 수 있는 fenced block을 반드시 포함합니다.
 

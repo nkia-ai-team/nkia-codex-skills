@@ -40,8 +40,9 @@ Before running the review stage, read [code-review SKILL.md](../code-review/SKIL
    - general: `{linear-task-id} {Type} : {description}`
    - UI repo: `#{PIMS} {Type} : {description} {linear-task-id}`
 5. Push the branch.
-6. Create a PR/MR targeting the base branch used by `$start`.
-   - If base cannot be inferred, use the latest versioned base branch from the same branch convention as `$start`.
+6. Create a PR/MR targeting the branch that the current HEAD actually branched from.
+   - If the user specified a target branch, use it.
+   - Otherwise, use git history distance against remote base candidates; do not infer target branch from repo name or latest version alone.
 7. Write PR/MR title and body around the task scope:
    - task ID and task title are primary
    - parent feature is context

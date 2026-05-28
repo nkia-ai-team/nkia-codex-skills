@@ -2,7 +2,7 @@
 
 NKIA-AI 팀의 Codex 플러그인 마켓플레이스입니다. Linear 기반 기능/태스크 관리, 개발 착수, PR/MR 제출, 머지 후 마무리, 주간업무보고 자동화를 Codex 스킬로 제공합니다.
 
-현재 버전: **v0.2.0**
+현재 버전: **v0.2.1**
 
 ## 개요
 
@@ -316,6 +316,7 @@ $auto-submit NKIAAI-567
 - 변경사항이 있으면 NKIA 형식 커밋 메시지 생성
 - 원격 branch push
 - GitHub PR 또는 GitLab MR 생성
+- git 히스토리 기반 target branch 자동 판별
 - PR/MR 제목과 본문에 Task ID를 primary로, parent Feature를 context로 작성
 - `$code-review` workflow 실행
 - `$code-review` 결과 코멘트를 파싱하여 안전한 지적사항 자동 수정

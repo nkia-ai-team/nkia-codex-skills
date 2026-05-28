@@ -1,7 +1,7 @@
 {
   "name": "nkia-codex-skills",
-  "version": "0.1.1",
-  "description": "Codex skills for NKIA feature/task workflows, PR/MR validation, and weekly reporting.",
+  "version": "0.2.0",
+  "description": "Codex skills for NKIA feature/task workflows, multi-repo auto-dev, PR/MR validation, and weekly reporting.",
   "author": {
     "name": "NKIA-AI Team"
   },
@@ -12,6 +12,9 @@
     "linear",
     "github",
     "gitlab",
+    "auto-dev",
+    "auto-submit",
+    "commit",
     "code-review",
     "feature",
     "task",
@@ -22,8 +25,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "NKIA Codex Skills",
-    "shortDescription": "NKIA Linear, code review, and weekly report skills",
-    "longDescription": "Codex skills for NKIA-AI feature/task planning, task start, standalone PR/MR code review, PR/MR shipping with Korean validation, evidence validation, parent feature roll-up, and weekly work reporting.",
+    "shortDescription": "NKIA Linear, multi-repo dev, code review, and weekly report skills",
+    "longDescription": "Codex skills for NKIA-AI feature/task planning, task start, multi-repo auto-dev and auto-submit orchestration, standalone commit generation, standalone PR/MR code review, PR/MR shipping with Korean validation, evidence validation, parent feature roll-up, and weekly work reporting.",
     "developerName": "NKIA-AI Team",
     "category": "Productivity",
     "capabilities": [
@@ -33,6 +36,8 @@
     "defaultPrompt": [
       "Use $feature to define a parent Linear feature.",
       "Use $task to create child implementation tasks.",
+      "Use $auto-dev to coordinate multi-repo implementation.",
+      "Use $auto-submit to submit multi-repo auto-dev work.",
       "Use $code-review to validate a GitHub PR or GitLab MR.",
       "Use $weekly to prepare the weekly report."
     ]

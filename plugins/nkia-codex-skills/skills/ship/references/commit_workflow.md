@@ -28,7 +28,7 @@ git branch --show-current
 
 **브랜치 패턴 (Linear 자동 생성):**
 ```regex
-^(feature|bugfix|hotfix|refactor|docs|test|config)/([a-z]+-[0-9]+)-.*$
+^(feature|bugfix|fix|hotfix|refactor|docs|test|config|chore|ci|build|perf)/([A-Za-z]+-[0-9]+)-.*$
 ```
 
 **예시:**
@@ -40,7 +40,8 @@ Linear 이슈 번호: nkiaai-129
 **Linear 이슈 번호를 찾을 수 없는 경우:**
 ```
 브랜치명에서 Linear 이슈 번호를 찾을 수 없습니다.
-Linear 이슈 번호를 입력해주세요 (예: nkiaai-129):
+이슈 없는 standalone 작업이면 이슈 번호 없이 진행합니다.
+이슈가 있는 작업이면 Linear 이슈 번호를 입력해주세요 (예: nkiaai-129):
 ```
 
 **UI 레포 형식 (`--format ui`):**
@@ -78,9 +79,13 @@ git diff --cached --name-only
 | 버그 수정, 오류 해결 | Fix |
 | 기존 코드 구조 변경 (기능 동일) | Refactor |
 | 파일/코드 삭제, 정리 | Cleanup |
+| 개발 편의/운영성 보조 작업 | Chore |
 | 문서 파일만 변경 (.md, .txt 등) | Docs |
 | 설정 파일만 변경 (.yml, .json 등) | Config |
 | 테스트 파일만 변경 | Test |
+| 빌드/패키징 변경 | Build |
+| CI/CD 파이프라인 변경 | Ci |
+| 성능 개선 | Perf |
 | 포맷팅, 공백, 세미콜론 등 | Style |
 
 **Type 결정 우선순위:**
@@ -88,17 +93,22 @@ git diff --cached --name-only
 2. 버그 수정 코드가 있으면 → `Fix`
 3. 기존 코드 리팩토링이면 → `Refactor`
 4. 삭제만 있으면 → `Cleanup`
-5. 문서만 변경되면 → `Docs`
-6. 설정만 변경되면 → `Config`
-7. 테스트만 변경되면 → `Test`
+5. 개발 편의/운영성 보조 작업이면 → `Chore`
+6. 문서만 변경되면 → `Docs`
+7. 설정만 변경되면 → `Config`
+8. 테스트만 변경되면 → `Test`
+9. 빌드/패키징 변경이면 → `Build`
+10. CI/CD 변경이면 → `Ci`
+11. 성능 개선이면 → `Perf`
 
 ## Step 5: Generate Commit Message
 
 ### 제목 생성 규칙
-1. 한글 사용 (또는 영문 - 프로젝트 컨벤션에 따름)
+1. 한글 사용을 기본으로 함. 제품명, 파일명, 명령어, API 이름 같은 고유 표기는 원문 유지
 2. 50자 이내 권장
 3. 무엇을 했는지 명확하게 설명
 4. 동사로 시작 (추가, 수정, 개선, 삭제 등)
+5. 사용자가 명시적으로 요청한 경우에만 영어 문장으로 작성
 
 ### 본문 생성 규칙
 1. 제목과 본문 사이에 빈 줄 하나

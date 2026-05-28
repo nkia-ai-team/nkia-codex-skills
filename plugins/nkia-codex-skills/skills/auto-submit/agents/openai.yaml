@@ -1,0 +1,4 @@
+interface:
+  display_name: "Auto Submit"
+  short_description: "Submit multi-repo auto-dev work"
+  default_prompt: "Use $auto-submit NKIAAI-567 after $auto-dev work is reviewed."

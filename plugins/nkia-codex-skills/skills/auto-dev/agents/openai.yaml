@@ -1,0 +1,4 @@
+interface:
+  display_name: "Auto Dev"
+  short_description: "Coordinate multi-repo development"
+  default_prompt: "Use $auto-dev NKIAAI-567 to implement a multi-repo issue and stop before submit."

@@ -1,7 +1,7 @@
 {
   "name": "nkia-codex-skills",
-  "version": "0.2.5",
-  "description": "Codex skills for NKIA feature/task workflows, multi-repo auto-dev, PR/MR validation, and weekly reporting.",
+  "version": "0.2.6",
+  "description": "Codex skills for NKIA feature/task workflows, multi-repo auto-dev, PR/MR validation, weekly reporting, and functional TC automation.",
   "author": {
     "name": "NKIA-AI Team"
   },
@@ -20,6 +20,9 @@
     "task",
     "wrap-up",
     "weekly-report",
+    "functional-test",
+    "test-case",
+    "tc-runner",
     "sonarqube",
     "quality-gate",
     "google-sheets",
@@ -28,8 +31,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "NKIA Codex Skills",
-    "shortDescription": "NKIA Linear, SonarQube, multi-repo dev, code review, and weekly report skills",
-    "longDescription": "Codex skills for NKIA-AI feature/task planning, task start, SonarQube quality-gate remediation, multi-repo auto-dev and auto-submit orchestration, standalone commit generation, standalone PR/MR code review, PR/MR shipping with Korean validation, post-merge finish and wrap-up workflows, evidence validation, parent feature roll-up, and weekly work reporting with template-based Sheet tab creation.",
+    "shortDescription": "NKIA Linear, SonarQube, multi-repo dev, review, weekly report, and functional TC skills",
+    "longDescription": "Codex skills for NKIA-AI feature/task planning, task start, SonarQube quality-gate remediation, multi-repo auto-dev and auto-submit orchestration, standalone commit generation, standalone PR/MR code review, PR/MR shipping with Korean validation, post-merge finish and wrap-up workflows, evidence validation, parent feature roll-up, weekly work reporting with template-based Sheet tab creation, and generic functional TC generation/execution automation.",
     "developerName": "NKIA-AI Team",
     "category": "Productivity",
     "capabilities": [
@@ -45,7 +48,9 @@
       "Use $code-review to validate a GitHub PR or GitLab MR.",
       "Use $finish after PR/MR merge to clean branches, register evidence, validate AC, and roll up Linear status.",
       "Use $wrap-up for the Claude-compatible post-merge cleanup and evidence validation workflow.",
-      "Use $weekly to prepare the weekly report."
+      "Use $weekly to prepare the weekly report.",
+      "Use $func-tc-creator to generate functional TC markdown from Sheet/Linear/source evidence.",
+      "Use $func-tc-runner to create run config, prepare subagent prompts, and finalize live functional TC evidence."
     ]
   }
 }

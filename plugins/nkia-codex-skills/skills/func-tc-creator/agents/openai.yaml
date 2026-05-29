@@ -1,0 +1,4 @@
+interface:
+  display_name: "Functional TC Creator"
+  short_description: "Create balanced live-E2E functional TC"
+  default_prompt: "Use $func-tc-creator to create balanced live-E2E functional TC from feature sheet, issue, design, and source evidence, with coverage/readiness gates, exact UI/API/DB/log/timing assertions, cleanup, and deterministic exclusions."

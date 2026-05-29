@@ -1,0 +1,4 @@
+interface:
+  display_name: "Functional TC Runner"
+  short_description: "Prepare, dispatch, finalize live functional TC with evidence"
+  default_prompt: "Use $func-tc-runner to create tc-test.config.json, prepare one prompt per TC document, dispatch live UI/API/UI-API/DB/log checks, then finalize PASS/FAIL/BLOCKED/SKIPPED/INFRA evidence and scoring."

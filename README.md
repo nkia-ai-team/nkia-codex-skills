@@ -2,7 +2,7 @@
 
 NKIA-AI 팀의 Codex 플러그인 마켓플레이스입니다. Linear 기반 기능/태스크 관리, 개발 착수, PR/MR 제출, 머지 후 마무리, 주간업무보고 자동화를 Codex 스킬로 제공합니다.
 
-현재 버전: **v0.2.5**
+현재 버전: **v0.2.6**
 
 ## 개요
 
@@ -14,7 +14,7 @@ plugins/nkia-codex-skills/.codex-plugin/plugin.json
 plugins/nkia-codex-skills/skills/
 ```
 
-Codex에서 사용하는 스킬은 아래 12개입니다.
+Codex에서 사용하는 스킬은 아래 14개입니다.
 
 ```text
 $feature → $task → $start → (개발) → $commit → $ship → (수동 머지) → $finish
@@ -28,6 +28,8 @@ $wrap-up
 $auto-dev → (사용자 확인) → $auto-submit
 
 $weekly
+
+$func-tc-creator → $func-tc-runner
 ```
 
 | 스킬 | 목적 |
@@ -44,6 +46,8 @@ $weekly
 | `$finish` | 머지 후 브랜치 정리, 증빙 수집, AC 검증, Task/Feature 상태 정리 |
 | `$wrap-up` | Claude Code에서 쓰던 post-merge cleanup, 증빙 수집, AC 검증 workflow |
 | `$weekly` | Linear/Git/Calendar 기반 주간업무보고 작성 및 Google Sheet 기록 |
+| `$func-tc-creator` | Sheet/이슈/소스 근거 기반 범용 기능 TC 문서 생성 |
+| `$func-tc-runner` | 생성된 TC 문서 기반 live UI/API/DB/log 기능 테스트 수행 및 결과 보고 |
 
 Feature 이슈는 작업 컨테이너입니다. 직접 브랜치/PR/MR의 단위가 아니며, 모든 하위 Task가 `Done` 또는 `In Review`일 때만 `$finish`가 Feature를 `In Review`로 roll-up합니다. Feature를 자동으로 `Done` 처리하지 않습니다.
 
@@ -500,6 +504,67 @@ $weekly --reconfigure
 
 [G] 차주 업무:
 1. ...
+```
+
+### `$func-tc-creator`
+
+Google Sheet/CSV 담당 기능 목록, Linear 이슈, 설계 문서, 로컬 소스 근거를 모아 범용 기능 TC markdown을 생성합니다. UI 상태, live API, UI-API network, DB 상태, 로그, cleanup, timing처럼 결정적으로 Pass/Fail을 판단할 수 있는 기능 테스트만 다룹니다.
+
+주요 기능:
+
+- Google Sheet 또는 CSV/TSV export에서 담당자 기준 기능 행 필터링
+- Linear AC와 로컬 소스 근거 기반 TC 범위 산정
+- 기능별 TC markdown, coverage matrix, traceability, 자동화 준비도 작성
+- 주관적 품질 평가나 mock/unit-only 실행 범위 제외
+- `scripts/validate_tc_markdown.py --strict`로 TC 형식과 자동화 준비도 점검
+
+사용 예시:
+
+```text
+$func-tc-creator ISSUE-123 담당 기능 TC 생성해줘
+$func-tc-creator Google Sheet export.csv 기준으로 담당자별 기능 TC 만들어줘
+```
+
+보조 스크립트:
+
+```bash
+python3 ${CODEX_HOME:-$HOME/.codex}/skills/func-tc-creator/scripts/filter_features.py sheet.csv --owner 담당자 --pretty
+python3 ${CODEX_HOME:-$HOME/.codex}/skills/func-tc-creator/scripts/validate_tc_markdown.py --strict test/testcase/release-1.0/document-upload.md
+```
+
+### `$func-tc-runner`
+
+`$func-tc-creator`가 만든 TC markdown을 읽어 run-specific `tc-test.config.json`, `plan.json`, `manifest.json`, `results.json`, `report.md`, 문서별 결과 markdown을 생성하고 live UI/API/DB/log 테스트 결과를 기록합니다. 기본 `ultraqa` 흐름은 `--init-config` → `--prepare-only` → 문서별 subagent 실행 → `--finalize` 단계로 나뉩니다.
+
+주요 기능:
+
+- 실행마다 `test/test-results/{cycle}-{version}/{run-id}/tc-test.config.json` 생성
+- `CONFIG_GATE=1`로 URL/auth/DB/log 누락을 실행 전 차단
+- 기본 `ultraqa` 엔진으로 TC 문서별 live discovery + one-shot 실행
+- `--prepare-only` / `--finalize`로 문서별 subagent fan-out 결과 수집
+- 메인 세션 preflight 후 API/DB/log는 subagent 병렬, UI/INT/TIMING은 메인 순차/소병렬 실행
+- worker/backend 문제를 제품 실패와 분리하는 `INFRA` 상태 지원
+- `static` 엔진으로 명시된 curl/Playwright manifest 실행 지원
+- PASS/FAIL/BLOCKED/SKIPPED/INFRA, 총점, 실행 통과율, 실행 커버리지 산출
+- screenshot/API response/network/log/DB 증빙 경로를 결과 문서에 연결
+
+사용 예시:
+
+```bash
+${CODEX_HOME:-$HOME/.codex}/skills/func-tc-runner/scripts/func-tc-runner test/testcase/release-1.0 --dry-run
+${CODEX_HOME:-$HOME/.codex}/skills/func-tc-runner/scripts/func-tc-runner test/testcase/release-1.0 --init-config --environment local --app-url http://localhost:3000 --api-base-url http://localhost:8080
+${CODEX_HOME:-$HOME/.codex}/skills/func-tc-runner/scripts/func-tc-runner test/testcase/release-1.0 --config test/test-results/release-1.0/<run-id>/tc-test.config.json --prepare-only
+${CODEX_HOME:-$HOME/.codex}/skills/func-tc-runner/scripts/func-tc-runner test/testcase/release-1.0 --config test/test-results/release-1.0/<run-id>/tc-test.config.json --finalize
+```
+
+환경 오버라이드:
+
+```bash
+export FUNC_TC_WORKSPACE=/path/to/workspace
+export FUNC_TC_DOCS_ROOT=$FUNC_TC_WORKSPACE/docs
+export FUNC_TC_TOKEN=<token>
+export MONGO_URI=<mongo-uri>
+export FUNC_TC_LOG_PATH=$FUNC_TC_WORKSPACE/app.log
 ```
 
 ## 공유 및 업데이트 절차

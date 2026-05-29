@@ -536,9 +536,6 @@ def load_config(config_path: Path) -> dict[str, Any]:
     env_type = config.get("environment", {}).get("type")
     if env_type not in {"local", "docker"}:
         raise SystemExit(f"Invalid environment.type in {config_path}: {env_type!r}")
-    env_cfg = config.get("environment", {})
-    if not env_cfg.get("appUrl") and not env_cfg.get("apiBaseUrl"):
-        raise SystemExit(f"Missing environment.appUrl or environment.apiBaseUrl in {config_path}")
     return config
 
 
@@ -668,6 +665,28 @@ def run_ultraqa_suite(
             try:
                 doc_results = future.result()
             except Exception as exc:
+                doc_tests = docs[document]
+                doc_dir = ultraqa_dir / safe_path_segment(document)
+                doc_dir.mkdir(parents=True, exist_ok=True)
+                stdout_path = doc_dir / "worker-exception.out"
+                stderr_path = doc_dir / "worker-exception.err"
+                failure = f"ultraqa document worker crashed before returning results: {exc!r}"
+                stdout_path.write_text("", encoding="utf-8")
+                stderr_path.write_text(failure + "\n", encoding="utf-8")
+                results.extend(
+                    TestResult(
+                        id=test["id"],
+                        title=test.get("title", ""),
+                        lane="ultraqa",
+                        status="INFRA",
+                        duration_s=0.0,
+                        exit_code=None,
+                        stdout_path=str(stdout_path),
+                        stderr_path=str(stderr_path),
+                        failures=[failure],
+                    )
+                    for test in doc_tests
+                )
                 completed_docs += 1
                 print(
                     f"[{completed_docs}/{total_docs}] WORKER-ERROR {document}: {exc!r}",
@@ -1126,7 +1145,8 @@ Required progress/final JSON schema:
 }}
 ```
 
-Status values must be exactly PASS, FAIL, BLOCKED, or SKIPPED.
+Status values must be exactly PASS, FAIL, BLOCKED, SKIPPED, or INFRA.
+Use INFRA only for runner/backend/tooling failures that prevent a product verdict.
 Every case id in "Cases to execute now" must appear exactly once in progress/final JSON once attempted.
 Do not remove previous completed cases from progress JSON; append/update the cases array.
 """
@@ -1273,7 +1293,7 @@ def best_ultraqa_progress(result_json: Path, progress_json: Path) -> dict[str, A
 
 
 def terminal_case_ids(parsed: dict[str, Any]) -> set[str]:
-    statuses = {"PASS", "FAIL", "BLOCKED", "SKIPPED"}
+    statuses = {"PASS", "FAIL", "BLOCKED", "SKIPPED", "INFRA"}
     return {
         str(case.get("id"))
         for case in parsed.get("cases", [])

@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Submit a task for review by optionally creating an NKIA-format commit, pushing the current branch, opening a GitHub PR or GitLab MR, calling $code-review, auto-fixing safe findings, rerunning review up to 3 times, and stopping before manual merge.
+description: Submit a task for review by optionally creating a repo-specific commit, pushing the current branch, opening a GitHub PR or GitLab MR, calling $code-review, auto-fixing safe findings, rerunning review up to 3 times, and stopping before manual merge.
 ---
 
 # Ship
@@ -36,13 +36,15 @@ Before running the review stage, read [code-review SKILL.md](../code-review/SKIL
 3. Inspect git state:
    - if changes are staged or unstaged, offer to create a commit
    - if commits already exist, skip commit generation
-4. If committing, generate an NKIA-format commit message:
-   - general: `{linear-task-id} {Type} : {description}`
-   - UI repo: `#{PIMS} {Type} : {description} {linear-task-id}`
+4. If committing, generate the commit message from [commit_workflow.md](references/commit_workflow.md):
+   - default NKIA format for general repos
+   - UI repo format for `lucida-ui`
+   - lucida-next Conventional Commit format: `<type>(<scope>): <description>`
 5. Push the branch.
 6. Create a PR/MR targeting the branch that the current HEAD actually branched from.
    - If the user specified a target branch, use it.
    - Otherwise, use git history distance against remote base candidates; do not infer target branch from repo name or latest version alone.
+   - Assign the PR/MR to the authenticated CLI account that creates it (`gh`/`glab` current user).
 7. Write PR/MR title and body around the task scope:
    - task ID and task title are primary
    - parent feature is context
@@ -66,6 +68,7 @@ Before running the review stage, read [code-review SKILL.md](../code-review/SKIL
 
 - `$ship` may create, push, call `$code-review`, safe-fix, and re-review.
 - `$ship` must not run `gh pr merge`, `glab mr merge`, `gh pr review --approve`, or equivalent merge/approval commands.
+- `$ship` must not combine commits. Do not squash, amend earlier commits, rebase for cleanup, or rewrite history during ship. If review fixes are needed, add a new fix commit.
 - `전체 판정: 승인` means code validation passed and manual merge may proceed.
 - The final response must include the PR/MR URL, verdict, issue counts, and "manual merge required".
 - If the PR/MR is merged later, use `$finish` to validate evidence and update Linear. `$ship` does not finish Linear work.

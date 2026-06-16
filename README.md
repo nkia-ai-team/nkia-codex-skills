@@ -2,7 +2,7 @@
 
 NKIA-AI 팀의 Codex 플러그인 마켓플레이스입니다. Linear 기반 기능/태스크 관리, 개발 착수, PR/MR 제출, 머지 후 마무리, 주간업무보고 자동화를 Codex 스킬로 제공합니다.
 
-현재 버전: **v0.2.6**
+현재 버전: **v0.2.7**
 
 ## 개요
 
@@ -37,7 +37,7 @@ $func-tc-creator → $func-tc-runner
 | `$feature` | 고객/제품 관점의 상위 Linear Feature 이슈 생성·정리 |
 | `$task` | Feature 하위의 실제 개발 Task 이슈 생성·분해 |
 | `$start` | Task 착수, 브랜치 생성, In Progress 전환 |
-| `$commit` | staged 변경사항을 NKIA 커밋 메시지 규칙으로 커밋 |
+| `$commit` | staged 변경사항을 레포별 커밋 메시지 규칙으로 커밋 |
 | `$sonarqube-pass` | SonarQube 리포트 기반 Linear Task/브랜치 생성, 품질 게이트 수정·검증·증빙 |
 | `$auto-dev` | Linear/spec 기반 멀티 레포 개발 오케스트레이션 |
 | `$auto-submit` | `$auto-dev` 결과물의 멀티 레포 제출·증빙·검증 오케스트레이션 |
@@ -234,13 +234,14 @@ UI repo는 기존 팀 규칙에 따라 `develop-10.x.y_z-chat-{function}` 형식
 
 ### `$commit`
 
-staged 변경사항을 분석해 NKIA 커밋 메시지 규칙으로 커밋합니다. `$ship` 내부 commit workflow를 단독으로 사용할 때 호출합니다.
+staged 변경사항을 분석해 레포별 커밋 메시지 규칙으로 커밋합니다. `$ship` 내부 commit workflow를 단독으로 사용할 때 호출합니다.
 
 주요 기능:
 
 - staged 변경사항 확인
 - 브랜치명, 사용자 입력, 세션 컨텍스트에서 Linear task ID 추론
 - UI repo 형식에서는 PIMS 번호와 Linear task ID를 함께 사용
+- lucida-next에서는 `type(scope): description` Conventional Commit 규칙 사용
 - 변경 패턴 기반 Type 결정
 - 제목과 선택적 본문 생성
 - staged 변경사항만 커밋
@@ -323,14 +324,15 @@ $auto-submit NKIAAI-567
 
 - 현재 브랜치 또는 입력값에서 Task 식별
 - Task/parent Feature 관계 확인
-- 변경사항이 있으면 NKIA 형식 커밋 메시지 생성
+- 변경사항이 있으면 레포별 커밋 메시지 생성
 - 원격 branch push
-- GitHub PR 또는 GitLab MR 생성
+- GitHub PR 또는 GitLab MR 생성 시 CLI 인증 계정 본인에게 assign
 - git 히스토리 기반 target branch 자동 판별
 - PR/MR 제목과 본문에 Task ID를 primary로, parent Feature를 context로 작성
 - `$code-review` workflow 실행
 - `$code-review` 결과 코멘트를 파싱하여 안전한 지적사항 자동 수정
 - 안전한 리뷰 지적사항은 자동 수정 후 재커밋/재리뷰
+- ship 중 커밋 통합, squash, 이전 커밋 amend, cleanup rebase 금지
 - 재리뷰는 최대 3회 수행
 - 검증 통과 시에도 merge/approve는 수행하지 않음
 - `전체 판정: 승인` 이후 사람이 PR/MR 화면에서 수동 merge
@@ -347,6 +349,7 @@ $ship target branch는 develop-10.2.1_3으로 해줘
 
 ```text
 NKIAAI-557 Feat : API 호출 파이프라인 품질 검증 루프 추가
+fix(ai-chat): Chat SSE 라우팅 오류 수정
 ```
 
 ### `$code-review`

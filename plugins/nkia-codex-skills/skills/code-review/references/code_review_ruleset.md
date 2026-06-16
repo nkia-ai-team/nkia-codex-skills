@@ -88,6 +88,45 @@ Linear 이슈 없이 진행되는 standalone 작업은 Linear 이슈 번호를 `
 
 ### 3.1 검증 규칙
 
+리포지토리별 커밋 규칙이 있으면 해당 규칙을 우선 적용합니다. `lucida-next`는 아래 Conventional Commit 규칙을 사용하고, 그 외 리포지토리는 기본 NKIA 형식을 사용합니다.
+
+### 3.1.1 lucida-next 커밋 메시지 규칙
+
+`lucida-next`에서는 기존 Conventional Commit history를 따릅니다.
+
+**정규식 패턴:**
+```regex
+^(feat|fix|refactor|docs|test|chore|config|build|ci|perf|style|revert)\((ai-chat|ai-dashboard|ai|ai-fe)\): .+$
+```
+
+**검증 항목:**
+
+| 항목 | 규칙 | 예시 |
+|------|------|------|
+| Type | 소문자만 허용: feat, fix, refactor, docs, test, chore, config, build, ci, perf, style, revert | `fix` |
+| Scope | Chat=`ai-chat`, Dashboard assistant=`ai-dashboard`, 공유 AI backend/runtime/docs=`ai`, 공유 AI frontend shell/proxy/route/UI infra=`ai-fe` | `ai-chat` |
+| 구분자 | `: ` | `fix(ai-chat): ` |
+| 내용 | 한글 설명 우선. 제품명, 명령어, API, 경로, issue ID는 원문 유지 | `Chat SSE 라우팅 오류 수정` |
+| Linear ID | subject 시작 금지. 필요 시 body/trailer `Linear: NKIAAI-000` 또는 MR/Linear linking 사용 | `Linear: NKIAAI-000` |
+
+**허용 예시:**
+
+- `feat(ai-chat): Chat 세션 목록 drawer 연결`
+- `fix(ai-dashboard): Dashboard assistant 요청 취소 처리 수정`
+- `docs(ai): AI runtime 운영 문서 정리`
+- `config(ai-fe): Next.js proxy 경로 설정 정리`
+
+**거부 예시:**
+
+- `NKIAAI-000 fix(ai-chat): Chat SSE 라우팅 오류 수정`
+- `Fix(ai-chat): Chat SSE 라우팅 오류 수정`
+- `fix(chat): Chat SSE 라우팅 오류 수정`
+- `fix(ai-chat) : Chat SSE 라우팅 오류 수정`
+
+`lucida-next`에서는 브랜치명에 Linear ID가 있어도 커밋 subject에 Linear ID가 없는 것을 경고/실패로 계산하지 않습니다.
+
+### 3.1.2 기본 NKIA 커밋 메시지 규칙
+
 **정규식 패턴:**
 ```regex
 ^(?:[A-Za-z]+-[0-9]+ )?(Feat|Fix|Refactor|Cleanup|Chore|Wip|Revert|Style|Merge|Docs|Config|Dependency|Test|Build|Ci|Perf) : .+$
@@ -137,6 +176,7 @@ Linear 이슈 없이 진행되는 standalone 작업은 Linear 이슈 번호를 `
 - 브랜치에 Linear 이슈 번호가 있는데 커밋에 없으면 경고로 표시합니다.
 - 커밋에 Linear 이슈 번호가 있는데 브랜치에 없으면 경고로 표시합니다.
 - 브랜치/제목/커밋 어디에도 Linear 이슈 번호가 없으면 standalone 작업으로 간주하고, Linear 이슈 번호 누락을 경고/실패로 계산하지 않습니다.
+- `lucida-next`는 예외입니다. 브랜치에 Linear 이슈 번호가 있어도 commit subject에 없으면 정상이며, Linear ID가 body/trailer 또는 MR/Linear linking에만 있어도 됩니다.
 
 ### 3.4 리뷰 코멘트 예시
 

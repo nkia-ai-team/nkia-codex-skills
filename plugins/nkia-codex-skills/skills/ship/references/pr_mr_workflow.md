@@ -134,6 +134,12 @@ remote URL에서 플랫폼을 감지합니다.
 
 ## 4. PR/MR 생성 명령어
 
+PR/MR 생성 시 assignee는 반드시 PR/MR을 생성하는 CLI 인증 계정 본인으로 지정합니다.
+
+- GitHub: `gh` 현재 로그인 계정을 `--assignee @me`로 지정합니다.
+- GitLab: `glab api "/user"`로 현재 사용자 ID를 조회하고 `assignee_id={user_id}`로 지정합니다.
+- CLI 계정 조회가 실패하면 assignee 없이 생성하지 말고 blocked reason으로 보고합니다.
+
 ### GitHub
 
     gh pr create \
@@ -156,11 +162,11 @@ remote URL에서 플랫폼을 감지합니다.
     GITLAB_HOST={hostname} glab api "/projects/{group}%2F{project}"
     # → project_id 추출
 
-    # 현재 사용자 ID 조회 (assignee용)
+    # 현재 CLI 인증 사용자 ID 조회 (assignee용)
     GITLAB_HOST={hostname} glab api "/user"
     # → user_id 추출 (id 필드)
 
-    # MR 생성 (assignee를 본인으로 설정)
+    # MR 생성 (assignee를 CLI 인증 계정 본인으로 설정)
     GITLAB_HOST={hostname} glab api --method POST \
       "/projects/{project_id}/merge_requests" \
       -f "source_branch={current-branch}" \

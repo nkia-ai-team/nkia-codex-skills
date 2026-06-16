@@ -326,7 +326,7 @@ $auto-submit NKIAAI-567
 - Task/parent Feature 관계 확인
 - 변경사항이 있으면 레포별 커밋 메시지 생성
 - 원격 branch push
-- GitHub PR 또는 GitLab MR 생성
+- GitHub PR 또는 GitLab MR 생성 시 CLI 인증 계정 본인에게 assign
 - git 히스토리 기반 target branch 자동 판별
 - PR/MR 제목과 본문에 Task ID를 primary로, parent Feature를 context로 작성
 - `$code-review` workflow 실행

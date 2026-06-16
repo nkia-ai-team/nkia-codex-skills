@@ -44,6 +44,7 @@ Before running the review stage, read [code-review SKILL.md](../code-review/SKIL
 6. Create a PR/MR targeting the branch that the current HEAD actually branched from.
    - If the user specified a target branch, use it.
    - Otherwise, use git history distance against remote base candidates; do not infer target branch from repo name or latest version alone.
+   - Assign the PR/MR to the authenticated CLI account that creates it (`gh`/`glab` current user).
 7. Write PR/MR title and body around the task scope:
    - task ID and task title are primary
    - parent feature is context

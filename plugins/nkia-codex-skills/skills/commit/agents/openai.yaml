@@ -1,4 +1,4 @@
 interface:
   display_name: "Commit"
-  short_description: "Create NKIA-format commits"
-  default_prompt: "Use $commit to create an NKIA-format commit from staged changes."
+  short_description: "Create repo-specific commits"
+  default_prompt: "Use $commit to create a repo-specific commit from staged changes."

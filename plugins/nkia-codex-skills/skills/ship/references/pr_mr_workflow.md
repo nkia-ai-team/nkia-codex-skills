@@ -199,6 +199,8 @@ Summary와 Changes 섹션만 작성합니다. Test plan 섹션은 불필요.
 
 Claude `/submit`은 PR/MR 생성 후 `/code-review` 하위 스킬을 실행합니다. Codex `$ship`도 같은 orchestrator 구조를 사용합니다. PR/MR 생성 이후 `$code-review` workflow를 PR/MR URL로 실행하고, 검증 결과 코멘트를 파싱하여 자동 수정/재리뷰 루프를 관리한 뒤 수동 머지 지점에서 멈춥니다.
 
+커밋 통합은 금지합니다. `$ship`은 squash, 이전 커밋 amend, cleanup rebase, history rewrite를 하지 않습니다. 리뷰 수정이 필요하면 기존 커밋을 유지하고 새 fix commit을 추가합니다.
+
 ### 6.1 리뷰 입력 수집
 
 `$code-review`가 리뷰 전에 다음 데이터를 빠짐없이 수집합니다.
@@ -221,7 +223,9 @@ GitHub/GitLab별 조회, pagination, large file 처리는 [code-review platform_
    - type prefix와 작업 내용 일치
 2. 커밋 메시지 검증
    - 모든 커밋 대상
-   - 브랜치의 Linear task ID와 커밋의 Linear task ID 일치
+   - 리포지토리별 커밋 규칙 적용
+   - 기본 NKIA 형식은 브랜치의 Linear task ID와 커밋의 Linear task ID 일치 확인
+   - `lucida-next`는 Conventional Commit 규칙을 적용하며 Linear ID subject prefix 누락을 경고로 계산하지 않음
 3. PR/MR metadata 검토
    - 제목/본문/task 링크/target branch/test evidence
 4. 코드 변경 분석
@@ -301,6 +305,7 @@ Structured verdict가 없을 때만 기존 prose 판정을 fallback으로 파싱
 4. 수정 가능한 항목 자동 수정
 5. 수정 불가 항목은 사용자에게 보고
 6. 자동 수정 후 재커밋, push, 재리뷰를 수행
+   - 기존 커밋을 통합하거나 amend하지 않고 새 fix commit을 추가합니다.
 7. 반복은 최대 3회 review attempt로 제한하고, 같은 유형의 지적이 반복되면 사용자 판단으로 넘김
 
 ### 코드 리뷰 자동 수정 한도 초과 시 출력

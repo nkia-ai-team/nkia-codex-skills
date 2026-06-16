@@ -1,11 +1,11 @@
 ---
 name: commit
-description: Generate and optionally create NKIA-format git commits from staged changes. Use when the user asks to commit, make a commit message, or prepare a commit following NKIA Linear/PIMS conventions.
+description: Generate and optionally create repo-specific git commits from staged changes, including NKIA Linear/PIMS conventions and lucida-next Conventional Commit rules. Use when the user asks to commit, make a commit message, or prepare a commit.
 ---
 
 # Commit
 
-Use this skill to create a focused NKIA-format commit from staged changes.
+Use this skill to create a focused repo-specific commit from staged changes.
 
 ## First Step
 
@@ -30,6 +30,24 @@ Do not:
 - Directly update Linear.
 
 ## Message Format
+
+lucida-next:
+
+```text
+{type}({scope}): {description}
+```
+
+Use this format when the git repository is `lucida-next` or the worktree path ends in `/lucida-next`.
+
+- Follow this repository's existing Conventional Commit history.
+- Prefer Korean descriptions, while keeping product names, commands, APIs, paths, and issue IDs in their original spelling.
+- Use lowercase type: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `config`, `build`, `ci`, `perf`, `style`, `revert`.
+- Use `ai-chat` for Chat work.
+- Use `ai-dashboard` for Dashboard assistant work.
+- Use `ai` for shared AI backend/runtime/docs changes.
+- Use `ai-fe` for shared AI frontend shell, proxy, route, or UI infrastructure changes.
+- Do not put Linear IDs at the start of the subject.
+- Put Linear IDs only in commit body/trailers, for example `Linear: NKIAAI-000`, or rely on MR/Linear linking.
 
 General:
 
@@ -64,9 +82,11 @@ Feat, Fix, Refactor, Cleanup, Chore, Wip, Revert, Style, Merge, Docs, Config, De
 3. Infer issue metadata:
    - branch pattern `{prefix}/{team-key}-{number}-{slug}` -> Linear task ID.
    - UI branch `develop-10.x.y_z-chat-{function}` -> ask for or reuse PIMS + Linear task ID.
+   - lucida-next branch issue IDs are metadata only; never prefix the subject with them.
    - if no issue ID exists and the work is intentionally standalone, use the standalone format.
 4. Determine `Type` from the staged diff using the shared workflow.
 5. Generate title and optional body:
+   - in lucida-next, use `type(scope): description` with the allowed lowercase type and `ai-chat`/`ai-dashboard`/`ai`/`ai-fe` scope.
    - title says what changed in Korean, usually <= 50 Korean characters when practical.
    - keep product names, file names, commands, and API names in their original spelling.
    - use an English sentence only when the user explicitly asks for it.

@@ -128,9 +128,13 @@ If complete PR/MR data cannot be fetched, verdict must be `blocked`; do not appr
 - Step 3에서 페이지네이션으로 조회한 전체 커밋 목록 사용
 - 총 커밋 수가 예상과 일치하는지 확인
 
-**Pattern:** `^(?:[A-Za-z]+-[0-9]+ )?(Feat|Fix|Refactor|Cleanup|Chore|Wip|Revert|Style|Merge|Docs|Config|Dependency|Test|Build|Ci|Perf) : .+$`
+**Default Pattern:** `^(?:[A-Za-z]+-[0-9]+ )?(Feat|Fix|Refactor|Cleanup|Chore|Wip|Revert|Style|Merge|Docs|Config|Dependency|Test|Build|Ci|Perf) : .+$`
 
-**Check:** optional Linear 이슈 번호 형식 when present, Type 키워드, 구분자 (` : `), 브랜치 이슈 번호 일치 when both branch and commit include an issue ID
+**lucida-next Pattern:** `^(feat|fix|refactor|docs|test|chore|config|build|ci|perf|style|revert)\((ai-chat|ai-dashboard|ai|ai-fe)\): .+$`
+
+For `lucida-next`, reject commit subjects that start with a Linear ID. Linear IDs are allowed only in the commit body/trailers, for example `Linear: NKIAAI-000`, or through MR/Linear linking.
+
+**Check:** optional Linear 이슈 번호 형식 when present, Type 키워드, 구분자 (` : `) or lucida-next Conventional Commit delimiter (`: `), 브랜치 이슈 번호 일치 when both branch and commit include an issue ID. In `lucida-next`, do not warn when the branch contains a Linear ID but the commit subject omits it.
 
 **6) Perform Code Review**
 

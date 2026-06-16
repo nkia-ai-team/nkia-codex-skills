@@ -1,6 +1,6 @@
 {
   "name": "nkia-codex-skills",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Codex skills for NKIA feature/task workflows, multi-repo auto-dev, PR/MR validation, weekly reporting, and functional TC automation.",
   "author": {
     "name": "NKIA-AI Team"

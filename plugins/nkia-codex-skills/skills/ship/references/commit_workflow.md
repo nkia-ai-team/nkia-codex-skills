@@ -44,6 +44,8 @@ Linear 이슈 번호: nkiaai-129
 이슈가 있는 작업이면 Linear 이슈 번호를 입력해주세요 (예: nkiaai-129):
 ```
 
+Do not ask this question for `lucida-next` before applying the repo-specific parser below.
+
 **UI 레포 형식 (`--format ui`):**
 
 UI 레포 브랜치(`develop-10.x.y_z-chat-*`)에는 Linear 이슈 번호가 없으므로, 사용자에게 PIMS 번호와 Linear task issue 번호를 확인합니다:
@@ -54,6 +56,13 @@ Linear 이슈 번호를 입력해주세요 (예: nkiaai-306):
 ```
 
 같은 세션에서 이미 확인한 경우 재사용합니다.
+
+**lucida-next repo-specific parser:**
+
+`pwd`, `git rev-parse --show-toplevel`, or the repository name identifies `lucida-next`.
+For `lucida-next`, branch Linear IDs are metadata only and must not be copied into the commit subject prefix.
+If a Linear ID is useful, put it in the commit body/trailer as `Linear: NKIAAI-000`, or rely on MR/Linear linking.
+If no Linear ID is found, continue without asking for one unless the user explicitly requests Linear evidence.
 
 ## Step 3: Analyze Changes
 
@@ -72,6 +81,26 @@ git diff --cached --name-only
 ## Step 4: Determine Type Keyword
 
 변경사항을 기반으로 적절한 Type 결정:
+
+### lucida-next type/scope rules
+
+When the repository is `lucida-next`, use Conventional Commit format:
+
+```text
+<type>(<scope>): <description>
+```
+
+Rules:
+
+- Follow `lucida-next` existing Conventional Commit history.
+- Prefer Korean descriptions, while keeping product names, commands, APIs, paths, and issue IDs in their original spelling.
+- Use lowercase type: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `config`, `build`, `ci`, `perf`, `style`, `revert`.
+- Use `ai-chat` for Chat work.
+- Use `ai-dashboard` for Dashboard assistant work.
+- Use `ai` for shared AI backend/runtime/docs changes.
+- Use `ai-fe` for shared AI frontend shell, proxy, route, or UI infrastructure changes.
+- Do not put Linear IDs at the start of the subject.
+- Put Linear IDs only in commit body/trailers, for example `Linear: NKIAAI-000`, or rely on MR/Linear linking.
 
 | 변경 패턴 | Type |
 |----------|------|
@@ -102,6 +131,31 @@ git diff --cached --name-only
 11. 성능 개선이면 → `Perf`
 
 ## Step 5: Generate Commit Message
+
+### lucida-next 제목 생성 규칙
+
+For `lucida-next`, generate:
+
+```text
+fix(ai-chat): Chat SSE 라우팅 오류 수정
+```
+
+Allowed scope selection:
+
+| Scope | Use when |
+|-------|----------|
+| `ai-chat` | Chat work |
+| `ai-dashboard` | Dashboard assistant work |
+| `ai` | Shared AI backend/runtime/docs changes |
+| `ai-fe` | Shared AI frontend shell, proxy, route, or UI infrastructure changes |
+
+If the branch or user context contains a Linear ID, add it only to the body/trailer:
+
+```text
+Linear: NKIAAI-000
+```
+
+Never generate `NKIAAI-000 fix(ai-chat): ...`.
 
 ### 제목 생성 규칙
 1. 한글 사용을 기본으로 함. 제품명, 파일명, 명령어, API 이름 같은 고유 표기는 원문 유지

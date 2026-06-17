@@ -1,7 +1,7 @@
 {
   "name": "nkia-codex-skills",
   "version": "0.2.7",
-  "description": "Codex skills for NKIA feature/task workflows, multi-repo auto-dev, PR/MR validation, weekly reporting, and functional TC automation.",
+  "description": "Codex skills for NKIA feature/task workflows, multi-repo auto-dev, PR/MR validation, weekly reporting, functional TC automation, and Confluence report publishing.",
   "author": {
     "name": "NKIA-AI Team"
   },
@@ -26,13 +26,16 @@
     "sonarqube",
     "quality-gate",
     "google-sheets",
-    "workflow"
+    "workflow",
+    "confluence",
+    "markdown",
+    "report-publishing"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "NKIA Codex Skills",
-    "shortDescription": "NKIA Linear, SonarQube, multi-repo dev, review, weekly report, and functional TC skills",
-    "longDescription": "Codex skills for NKIA-AI feature/task planning, task start, SonarQube quality-gate remediation, multi-repo auto-dev and auto-submit orchestration, standalone commit generation, standalone PR/MR code review, PR/MR shipping with Korean validation, post-merge finish and wrap-up workflows, evidence validation, parent feature roll-up, weekly work reporting with template-based Sheet tab creation, and generic functional TC generation/execution automation.",
+    "shortDescription": "NKIA Linear, dev, review, weekly, TC, SonarQube, and Confluence report skills",
+    "longDescription": "Codex skills for NKIA-AI feature/task planning, task start, SonarQube quality-gate remediation, multi-repo auto-dev and auto-submit orchestration, standalone commit generation, standalone PR/MR code review, PR/MR shipping with Korean validation, post-merge finish and wrap-up workflows, evidence validation, parent feature roll-up, weekly work reporting, generic functional TC generation/execution automation, and Markdown-to-Confluence report publishing with diagram preservation.",
     "developerName": "NKIA-AI Team",
     "category": "Productivity",
     "capabilities": [
@@ -50,7 +53,8 @@
       "Use $wrap-up for the Claude-compatible post-merge cleanup and evidence validation workflow.",
       "Use $weekly to prepare the weekly report.",
       "Use $func-tc-creator to generate functional TC markdown from Sheet/Linear/source evidence.",
-      "Use $func-tc-runner to create run config, prepare subagent prompts, and finalize live functional TC evidence."
+      "Use $func-tc-runner to create run config, prepare subagent prompts, and finalize live functional TC evidence.",
+      "Use $confluence-md-upload to publish Markdown reports to Confluence with diagrams preserved."
     ]
   }
 }

@@ -14,7 +14,7 @@ plugins/nkia-codex-skills/.codex-plugin/plugin.json
 plugins/nkia-codex-skills/skills/
 ```
 
-Codex에서 사용하는 스킬은 아래 14개입니다.
+Codex에서 사용하는 스킬은 아래 15개입니다.
 
 ```text
 $feature → $task → $start → (개발) → $commit → $ship → (수동 머지) → $finish
@@ -30,6 +30,8 @@ $auto-dev → (사용자 확인) → $auto-submit
 $weekly
 
 $func-tc-creator → $func-tc-runner
+
+$confluence-md-upload
 ```
 
 | 스킬 | 목적 |
@@ -48,6 +50,7 @@ $func-tc-creator → $func-tc-runner
 | `$weekly` | Linear/Git/Calendar 기반 주간업무보고 작성 및 Google Sheet 기록 |
 | `$func-tc-creator` | Sheet/이슈/소스 근거 기반 범용 기능 TC 문서 생성 |
 | `$func-tc-runner` | 생성된 TC 문서 기반 live UI/API/DB/log 기능 테스트 수행 및 결과 보고 |
+| `$confluence-md-upload` | Markdown 보고서를 Mermaid/SVG 보존 상태로 Confluence 페이지에 업로드 |
 
 Feature 이슈는 작업 컨테이너입니다. 직접 브랜치/PR/MR의 단위가 아니며, 모든 하위 Task가 `Done` 또는 `In Review`일 때만 `$finish`가 Feature를 `In Review`로 roll-up합니다. Feature를 자동으로 `Done` 처리하지 않습니다.
 
@@ -151,6 +154,23 @@ gws auth login
 - `https://www.googleapis.com/auth/calendar.readonly`
 
 ## 스킬 상세
+
+### `$confluence-md-upload`
+
+Markdown 보고서를 Confluence 페이지로 업로드합니다. 로컬 Markdown preview처럼 보이도록 Mermaid fence를 SVG로 렌더링하고, 상대 이미지/SVG를 data URI로 내장하며, Confluence ADF의 `mediaSingle.width`까지 보정합니다.
+
+사용 예시:
+
+```text
+$confluence-md-upload /path/to/report.md 를 NKIAAI Confluence parent page 아래 새 페이지로 올려줘
+$confluence-md-upload 기존 Confluence page에 이 최종보고서 md를 갱신해줘
+```
+
+주의:
+
+- Atlassian MCP OAuth가 필요합니다. 안 되면 `codex mcp login atlassian` 후 재시도합니다.
+- 다이어그램 크기는 기본 Mermaid 800px, 일반 이미지 900px입니다. 사용자가 크기를 지적하면 같은 스크립트의 width 옵션만 조정합니다.
+- 화면이 즉시 안 바뀌면 Confluence ADF의 `mediaSingle.width`를 먼저 검증하고, 사용자에게 hard refresh를 안내합니다.
 
 ### `$feature`
 

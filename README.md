@@ -308,7 +308,7 @@ $commit --format ui
 ```text
 $ship
 $ship NKIAAI-557
-$ship target branch는 develop-10.2.1_3으로 해줘
+$ship target branch는 develop-ai-uiux로 해줘
 ```
 
 커밋 메시지 예시:

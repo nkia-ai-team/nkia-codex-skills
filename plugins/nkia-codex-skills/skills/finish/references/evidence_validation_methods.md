@@ -10,15 +10,14 @@
 
 **인증 실패 시 처리 순서:**
 1. **1차 시도**: 공개 접근 또는 기존 인증 정보로 접근
-2. **2차 시도**: CLI 도구 인증 확보 (gh: `gh auth status` / GitLab self-hosted: config에서 토큰 사전 확보)
-3. **3차 시도**: 사용자에게 인증 정보 입력 요청
-4. **최후 수단**: 모든 방법 실패 시에만 수동 확인 요청
+2. **2차 시도**: 사전 구성된 CLI 인증 상태 확인 (`gh auth status`, `glab auth status`)
+3. **최후 수단**: 인증이 없으면 CLI 로그인 또는 수동 증빙 중 하나를 사용자에게 확인
 
 **사용자 인증 정보 요청:**
 
-`AskUserQuestion`으로 확인:
+사용자에게 짧게 확인:
 - 질문: "🔐 인증이 필요한 리소스가 발견되었습니다. ({url}) 어떻게 하시겠습니까?"
-- 선택지: "CLI 인증 진행 (권장)", "API 토큰/인증 정보 직접 입력", "쿠키/세션 정보 제공", "스크린샷/텍스트로 대체"
+- 선택지: "CLI 인증 진행 (권장)", "스크린샷/텍스트로 대체"
 - 사용자는 "Other"로 다른 지시사항을 입력할 수 있음
 
 ---
@@ -40,7 +39,7 @@
 # 1차: gh CLI로 접근
 gh pr view {url} --json state,merged,reviews,mergeable,statusCheckRollup
 
-# 인증 실패 시 `AskUserQuestion`으로 확인:
+# 인증 실패 시 사용자에게 짧게 확인:
 # - 질문: "GitHub CLI 인증이 필요합니다. 어떻게 하시겠습니까?"
 # - 선택지: "gh auth login 실행", "스크린샷으로 대체"
 # - 사용자는 "Other"로 다른 지시사항을 입력할 수 있음
@@ -54,17 +53,13 @@ glab mr view {number} --repo {owner/repo}
 
 **GitLab MR/파일 (self-hosted):**
 ```bash
-# 1차: ~/.config/glab-cli/config.yml에서 해당 호스트 토큰 사전 추출
-# ⚠️ URL 파싱 hostname은 포트 포함 (예: cims2.nkia.net:8443)
-#    config 키는 포트 미포함일 수 있음 (예: cims2.nkia.net)
-#    → 정확 매칭 안 되면 포트 제외 호스트명으로 매칭
-# 2차: config에 없으면 환경변수 확인 (GITLAB_TOKEN, GITLAB_PRIVATE_TOKEN)
-# 3차: 모든 방법 실패 → AskUserQuestion으로 확인:
+# 1차: glab auth status --hostname {hostname}
+# 2차: 인증이 없으면 사용자에게 짧게 확인:
 #    - 질문: "GitLab {hostname} 인증이 필요합니다. 어떻게 하시겠습니까?"
-#    - 선택지: "glab auth login 실행", "Personal Access Token 직접 입력", "스크린샷으로 대체"
+#    - 선택지: "glab auth login 실행", "스크린샷으로 대체"
 #    - 사용자는 "Other"로 다른 지시사항을 입력할 수 있음
 
-# 토큰 확보 후 API 호출 (GITLAB_TOKEN={token} 전달)
+# 인증 확인 후 hostname을 명시하여 API 호출
 # URL 파싱 예시:
 # https://cims2.nkia.net:8443/gitlab/lucida-ai-develop/-/merge_requests/4
 # → hostname: cims2.nkia.net:8443
@@ -72,7 +67,7 @@ glab mr view {number} --repo {owner/repo}
 # → mr_number: 4
 
 # Project ID 조회
-GITLAB_HOST={hostname} glab api "/projects/{group}%2F{project}"
+glab api --hostname {hostname} "/projects/{group}%2F{project}"
 
 # MR 정보 조회
 GITLAB_HOST={hostname} glab api "/projects/{project_id}/merge_requests/{mr_number}"
@@ -100,13 +95,12 @@ GITLAB_HOST={hostname} glab api "/projects/{project_id}/repository/files/{file_p
 # 1차: 공개 접근 시도
 curl -s "{jenkins_url}/api/json"
 
-# 인증 필요 시 `AskUserQuestion`으로 확인:
+# 인증 필요 시 사용자에게 짧게 확인:
 # - 질문: "Jenkins 인증이 필요합니다. 어떻게 하시겠습니까?"
-# - 선택지: "API Token 입력 (username:token)", "빌드 결과 스크린샷으로 대체"
+# - 선택지: "사전 구성된 Jenkins 인증 사용", "빌드 결과 스크린샷으로 대체"
 # - 사용자는 "Other"로 다른 지시사항을 입력할 수 있음
 
-# 토큰 입력 시:
-curl -s -u "{username}:{api_token}" "{jenkins_url}/api/json" | jq '.result'
+# 프로젝트에 사전 구성된 Jenkins 검증 명령이 있으면 해당 명령을 사용
 ```
 
 **GitHub Actions:**
@@ -131,13 +125,11 @@ GITLAB_HOST={hostname} glab api "/projects/{project_id}/pipelines/{pipeline_id}/
 ```
 1차: WebFetch로 접근 시도
 
-인증 필요 시 (401/403 응답) `AskUserQuestion`으로 확인:
+인증 필요 시 (401/403 응답) 사용자에게 짧게 확인:
 - 질문: "이 URL은 로그인이 필요합니다. 어떻게 하시겠습니까?"
-- 선택지: "세션 쿠키 입력", "접근 가능한 공개 URL로 교체", "스크린샷으로 대체"
+- 선택지: "접근 가능한 공개 URL로 교체", "스크린샷으로 대체"
 - 사용자는 "Other"로 다른 지시사항을 입력할 수 있음
 
-쿠키 입력 시:
-curl -H "Cookie: {session_cookie}" "{url}"
 ```
 
 **검증 기준:**
@@ -183,7 +175,7 @@ WebFetch로 접근
 **Confluence (인증 필요 시):**
 ```bash
 # Confluence MCP가 있으면 사용
-# 없으면 `AskUserQuestion`으로 확인:
+# 없으면 사용자에게 짧게 확인:
 # - 질문: "Confluence 인증이 필요합니다. 어떻게 하시겠습니까?"
 # - 선택지: "API Token 입력 (email:token)", "문서 내용 복사/붙여넣기", "스크린샷으로 대체"
 # - 사용자는 "Other"로 다른 지시사항을 입력할 수 있음
@@ -293,16 +285,12 @@ AC: "Confluence 문서 업데이트 (스킬 섹션 구버전 정보 갱신)"
 # 1차: 공개 API 접근
 curl -s -o /dev/null -w "%{http_code}" "{api_url}"
 
-# 인증 필요 시 `AskUserQuestion`으로 확인:
+# 인증 필요 시 사용자에게 짧게 확인:
 # - 질문: "API 인증이 필요합니다. 어떻게 하시겠습니까?"
-# - 선택지: "Bearer Token 입력", "API Key 입력", "Basic Auth (username:password) 입력"
+# - 선택지: "사전 구성된 CLI 인증 사용", "접근 가능한 검증 로그/스크린샷으로 대체"
 # - 사용자는 "Other"로 다른 지시사항을 입력할 수 있음
 
-# 토큰 입력 시:
-curl -H "Authorization: Bearer {token}" -s -o /dev/null -w "%{http_code}" "{api_url}"
-
-# 응답 시간 측정
-curl -H "Authorization: Bearer {token}" -s -o /dev/null -w "%{time_total}" "{api_url}"
+# 사전 구성된 인증을 사용하는 프로젝트 전용 검증 명령이 있으면 해당 명령으로 응답 코드와 시간을 확인
 ```
 
 **검증 기준:**
@@ -317,13 +305,12 @@ curl -H "Authorization: Bearer {token}" -s -o /dev/null -w "%{time_total}" "{api
 ```
 1차: WebFetch로 공개 대시보드 접근
 
-인증 필요 시 `AskUserQuestion`으로 확인:
+인증 필요 시 사용자에게 짧게 확인:
 - 질문: "모니터링 대시보드 인증이 필요합니다. 어떻게 하시겠습니까?"
-- 선택지: "API Key 입력", "대시보드 스크린샷으로 대체 (메트릭 값 포함)"
+- 선택지: "사전 구성된 CLI 인증 사용", "대시보드 스크린샷으로 대체 (메트릭 값 포함)"
 - 사용자는 "Other"로 다른 지시사항을 입력할 수 있음
 
-Grafana API (토큰 입력 시):
-curl -H "Authorization: Bearer {api_key}" "{grafana_url}/api/dashboards/uid/{dashboard_uid}"
+프로젝트에 사전 구성된 대시보드 검증 명령이 있으면 해당 명령을 사용합니다.
 ```
 
 **검증 기준:**
@@ -341,15 +328,15 @@ curl -H "Authorization: Bearer {api_key}" "{grafana_url}/api/dashboards/uid/{das
 ### Step A: 미디어 접근 가능 여부 확인
 
 1. **Linear 업로드 파일** (`uploads.linear.app/*`):
-   - **⚠️ CRITICAL: `mcp__plugin_linear_linear__extract_images` MCP 도구를 우선 사용할 것!**
+   - **⚠️ CRITICAL: `mcp__linear__extract_images` MCP 도구를 우선 사용할 것!**
    - Linear 업로드 URL은 서명이 만료되면 직접 접근이 불가능합니다
-   - `extract_images`에 이슈 ID를 전달하면 description/comment 내 이미지를 추출하여 확인 가능
-   - `extract_images` 사용 불가 시에만 Read tool로 직접 열기를 시도
+   - `extract_images`에 이미지 참조가 포함된 description/comment Markdown을 전달하여 확인
+   - `extract_images` 사용 불가 시에만 사용 가능한 이미지 열람 도구로 직접 확인
 
 2. **외부 이미지 URL** (`*.png`, `*.jpg`, `*.gif`, `*.webp` 등):
    - WebFetch 또는 curl로 실제 파일 접근 가능 여부 확인
    - HTTP 200 응답 + Content-Type이 image/*인지 확인
-   - 가능하면 다운로드 후 Read tool로 내용 확인
+   - 가능하면 다운로드 후 사용 가능한 이미지 열람 도구로 내용 확인
 
 3. **마크다운 인라인 이미지** (`![alt](url)`):
    - URL을 추출하여 위 1 또는 2의 방법으로 검증
@@ -477,5 +464,5 @@ gsutil ls {gs_path}
    → 필요 조치: Playwright MCP 서버 연결 후 재검증
 
 위 항목을 해결한 후 재검증을 요청해주세요:
-/linear-issue-validator NKIAAI-226
+$linear-issue-validator NKIAAI-226
 ```

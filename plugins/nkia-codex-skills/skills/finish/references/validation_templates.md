@@ -105,7 +105,7 @@
 >
 > 위 항목들을 수정한 후 재검증을 요청해주세요.
 > ```
-> /linear-issue-validator {{issue_identifier}}
+> $linear-issue-validator {{issue_identifier}}
 > ```
 
 ---
@@ -293,7 +293,7 @@
 
 **필요 조치:**
 1. 위 증빙 유형 중 하나로 실제 실행 결과를 수집하여 첨부해주세요
-2. `/linear-issue-evidence` 스킬로 증빙을 재수집할 수 있습니다
+2. `$linear-issue-evidence` 스킬로 증빙을 재수집할 수 있습니다
 ```
 
 ### 2.8 pr_not_merged (PR 미머지)
@@ -355,7 +355,7 @@
 
 **필요 조치:**
 1. {{required_action}}
-2. 해결 후 `/linear-issue-validator {{issue_identifier}}` 로 재검증
+2. 해결 후 `$linear-issue-validator {{issue_identifier}}` 로 재검증
 ```
 
 ### 2.12 mr_missing (스코프 시스템 MR 미첨부)
@@ -601,7 +601,7 @@ PR #{{pr_number}} ✅ merged
 > - AC + AI 검증을 충족하여 리뷰 대기 중인 상태
 > - 사람의 최종 확인 후 Done으로 전환
 
-`AskUserQuestion`으로 확인:
+사용자에게 짧게 확인:
 - 질문: "이슈를 'In Review' 상태로 이동하시겠습니까?"
 - 선택지: "예, In Review로 이동", "아니오, 현재 상태 유지"
 - 사용자는 "Other"로 다른 지시사항을 입력할 수 있음
@@ -784,6 +784,6 @@ text:
 ### 해결 방법
 
 1. 이슈 설명에 AC 섹션이 있는지 확인해주세요
-2. `/linear-issue-creator`로 생성된 이슈 형식을 사용해주세요
+2. `$linear-issue-creator`로 생성된 이슈 형식을 사용해주세요
 3. 수동으로 AC 섹션을 추가해주세요
 ```

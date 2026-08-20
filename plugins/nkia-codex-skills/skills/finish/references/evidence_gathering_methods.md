@@ -113,14 +113,12 @@ AC 항목에서 증빙 유형을 자동 판별합니다.
 
 ### GitLab MR
 
-    # GitLab self-hosted: ~/.config/glab-cli/config.yml에서 토큰 사전 추출
-    # ⚠️ config 키에 포트가 없을 수 있음 (예: cims2.nkia.net vs cims2.nkia.net:8443)
-    #    → 포트 제외 호스트명으로도 매칭
-    # config에 없으면 환경변수 확인 (GITLAB_TOKEN, GITLAB_PRIVATE_TOKEN)
-    # 토큰 확보 후:
-    GITLAB_TOKEN={token} GITLAB_HOST={hostname} glab mr list --source-branch $(git branch --show-current)
+    # GitLab self-hosted: 저장된 glab 인증 상태 확인
+    glab auth status --hostname {hostname}
+    # 인증 확인 후 hostname을 명시하여 조회
+    glab mr list --source-branch $(git branch --show-current)
 
-    # 토큰 확보 실패 또는 glab 미설치 시 → 수집 실패, 사용자에게 URL 직접 입력 안내
+    # 인증 실패 또는 glab 미설치 시 → 수집 실패, 사용자에게 URL 직접 입력 안내
 
 ### 수집 결과 형식
 
@@ -389,8 +387,8 @@ browser_resize를 호출하지 않으면 Playwright MCP 기본 viewport(약 780�
 
 ### GitLab CI
 
-    # GitLab self-hosted: 위 "GitLab MR" 섹션과 동일하게 config에서 토큰 사전 확보
-    GITLAB_TOKEN={token} GITLAB_HOST={hostname} glab ci list --branch $(git branch --show-current)
+    # GitLab self-hosted: 위 "GitLab MR" 섹션과 동일하게 저장된 glab 인증 상태 확인
+    glab ci list --branch $(git branch --show-current)
 
 ### Jenkins
 
@@ -416,7 +414,7 @@ browser_resize를 호출하지 않으면 Playwright MCP 기본 viewport(약 780�
 
     GitLab CI "test" passed (1m 12s) https://cims2.nkia.net:8443/gitlab/project/-/jobs/456
 
-    $ GITLAB_TOKEN={token} glab ci view 456
+    $ glab ci view 456
     Name:    test
     Status:  passed
     Duration: 1m 12s
@@ -797,7 +795,7 @@ DB 접속 불가 시 수집 실패.
 | PR/MR 미생성 | `WARNING: 현재 브랜치에 PR/MR이 없습니다` |
 | 파일 미존재 | `WARNING: {{path}} 경로에 파일이 없습니다` |
 | 테스트 실행 실패 | `WARNING: 테스트 실행에 실패했습니다 — {{error}}` |
-| glab 인증 실패 (fallback 성공) | fallback으로 토큰 확보 후 정상 진행 (WARNING 없음) |
+| glab 기본 context 실패 (hostname 명시 성공) | hostname을 명시하여 정상 진행 (WARNING 없음) |
 | 인증 필요 (fallback 포함 전부 실패) | `WARNING: 인증이 필요합니다 — 수동으로 증빙을 첨부해주세요` |
 
 ### 실패 시 동작

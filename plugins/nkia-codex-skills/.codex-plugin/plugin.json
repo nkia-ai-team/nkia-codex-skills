@@ -1,7 +1,7 @@
 {
   "name": "nkia-codex-skills",
-  "version": "0.2.7",
-  "description": "Codex skills for NKIA feature/task workflows, multi-repo auto-dev, PR/MR validation, weekly reporting, functional TC automation, and Confluence report publishing.",
+  "version": "0.2.7+codex.20260820072055",
+  "description": "Codex skills for NKIA development, Linear, Confluence publishing, review, and reporting workflows.",
   "author": {
     "name": "NKIA-AI Team"
   },
@@ -12,30 +12,26 @@
     "linear",
     "github",
     "gitlab",
-    "auto-dev",
-    "auto-submit",
     "commit",
     "code-review",
     "feature",
     "task",
-    "wrap-up",
     "weekly-report",
-    "functional-test",
-    "test-case",
-    "tc-runner",
     "sonarqube",
     "quality-gate",
     "google-sheets",
     "workflow",
     "confluence",
     "markdown",
-    "report-publishing"
+    "report-publishing",
+    "design-implementation",
+    "evidence-validation"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "NKIA Codex Skills",
-    "shortDescription": "NKIA Linear, dev, review, weekly, TC, SonarQube, and Confluence report skills",
-    "longDescription": "Codex skills for NKIA-AI feature/task planning, task start, SonarQube quality-gate remediation, multi-repo auto-dev and auto-submit orchestration, standalone commit generation, standalone PR/MR code review, PR/MR shipping with Korean validation, post-merge finish and wrap-up workflows, evidence validation, parent feature roll-up, weekly work reporting, generic functional TC generation/execution automation, and Markdown-to-Confluence report publishing with diagram preservation.",
+    "shortDescription": "NKIA development, Linear, review, and reporting skills",
+    "longDescription": "Codex skills for NKIA-AI Linear planning and updates, task start, design-driven implementation, SonarQube remediation, commits, PR/MR review and shipping, evidence validation, weekly reporting, and Markdown-to-Confluence publishing.",
     "developerName": "NKIA-AI Team",
     "category": "Productivity",
     "capabilities": [
@@ -46,15 +42,13 @@
       "Use $feature to define a parent Linear feature.",
       "Use $task to create child implementation tasks.",
       "Use $sonarqube-pass to restore a repo SonarQube quality gate with Linear evidence.",
-      "Use $auto-dev to coordinate multi-repo implementation.",
-      "Use $auto-submit to submit multi-repo auto-dev work.",
       "Use $code-review to validate a GitHub PR or GitLab MR.",
       "Use $finish after PR/MR merge to clean branches, register evidence, validate AC, and roll up Linear status.",
-      "Use $wrap-up for the Claude-compatible post-merge cleanup and evidence validation workflow.",
       "Use $weekly to prepare the weekly report.",
-      "Use $func-tc-creator to generate functional TC markdown from Sheet/Linear/source evidence.",
-      "Use $func-tc-runner to create run config, prepare subagent prompts, and finalize live functional TC evidence.",
-      "Use $confluence-md-upload to publish Markdown reports to Confluence with diagrams preserved."
+      "Use $confluence-md-upload to publish Markdown reports to Confluence with diagrams preserved.",
+      "Use $develop-from-design with a design document to implement and verify its scope.",
+      "Use $linear-issue-evidence and $linear-issue-validator to register and verify AC evidence.",
+      "Use $linear-project-updater and $linear-initiative-updater for status reporting."
     ]
   }
 }

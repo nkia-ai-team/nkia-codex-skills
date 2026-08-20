@@ -12,31 +12,16 @@
 2. **현재 브랜치에 연결된 merged PR/MR의 target branch**
    - GitHub: `gh pr list --head "$(git branch --show-current)" --state merged --json baseRefName,url,mergedAt`
    - GitLab: `glab mr list --source-branch "$(git branch --show-current)" --state merged`
-3. **판별 불가 시 레포별 기본 컨벤션**
+3. **판별 불가 시 원격 default branch 또는 공유 integration branch**
 
 `$finish`는 merge 후 정리 스킬이므로, 가능한 경우 실제 merge target을 사용합니다. 레포 이름만으로 target을 강제하지 않습니다.
 
 ### 기본 컨벤션
 
-git remote URL에서 레포 이름을 추출하여 판별:
-
-    git remote get-url origin
-
-| 레포 | 전환 브랜치 |
-|------|-----------|
-| lucida-ui | 최신 `develop-10.x.y_z-chat` |
-| lucida-chat-ap | 최신 `develop-10.x.y_z` |
-| lucida-chat-ai | 최신 `develop-10.x.y_z` |
-| 기타 | `main`이 있으면 `main`, 없으면 최신 `develop-10.x.y_z`, 없으면 `develop` |
-
-최신 versioned branch는 원격 브랜치 목록에서 버전 번호를 정렬해 가장 큰 값을 선택합니다.
+Nova 저장소는 versioned branch를 추측하지 않습니다. `origin/HEAD`가 가리키는 default branch를 우선하고, 없으면 실제 원격에 존재하는 `develop`, `main`, `master` 순서로 fallback합니다. 그래도 판별되지 않으면 사용자에게 merge target을 확인합니다.
 
     git fetch origin --quiet --prune
-    git for-each-ref --format='%(refname:short)' refs/remotes/origin/ \
-      | sed 's|^origin/||' \
-      | grep -E '^develop-10\.[0-9]+\.[0-9]+_[0-9]+(-chat)?$' \
-      | sort -V \
-      | tail -1
+    git symbolic-ref --quiet --short refs/remotes/origin/HEAD | sed 's|^origin/||'
 
 ### 브랜치 정리 명령
 
@@ -50,7 +35,7 @@ git remote URL에서 레포 이름을 추출하여 판별:
     git remote prune origin
 
     # 머지된 로컬 브랜치 삭제 (현재 브랜치 + 보호 브랜치 제외, 정확한 이름 매칭)
-    git branch --merged | grep -v '^\*' | grep -v -x -E '  (main|master|develop|develop-10\..*|release.*)' | xargs -r git branch -d
+    git branch --merged | grep -v '^\*' | grep -v -x -E '  (main|master|develop|develop[-/].*|integration/.*|release.*)' | xargs -r git branch -d
 
 ---
 
@@ -99,7 +84,7 @@ evidence 스킬로 증빙 등록 후, 이슈를 다시 읽어서 미흡한 증�
 
 ### 점검 프로세스
 
-1. `mcp__plugin_linear_linear__get_issue`로 이슈 재조회
+1. `mcp__linear__get_issue`로 이슈 재조회
 2. AC 항목별 증빙 텍스트 파싱
 3. 아래 기준으로 미흡 판정
 4. 미흡 항목 재수집 → description 업데이트
@@ -147,14 +132,14 @@ validator 스킬 실행 후 결과에 따른 분기입니다.
 
 1. 실패 항목에서 미흡 유형 파악
 2. Section 3의 보강 방법에 따라 증빙 재수집
-3. `mcp__plugin_linear_linear__save_issue`로 description 업데이트
+3. `mcp__linear__save_issue`로 description 업데이트
 4. validator 스킬 워크플로우 재실행
 
 ### 수동 업로드 후 매핑 프로세스
 
 1. 사용자가 Linear 이슈에 스크린샷/동영상 업로드 후 알림
-2. `mcp__plugin_linear_linear__get_issue`로 이슈 재조회
-3. `mcp__plugin_linear_linear__extract_images`로 업로드된 이미지 확인
+2. `mcp__linear__get_issue`로 이슈 재조회
+3. `mcp__linear__extract_images`로 업로드된 이미지 확인
 4. 각 이미지 내용을 열람하여 AC 항목과 매칭:
    - 이미지 내용 (UI 화면, 로그, 터미널 등) 분석
    - AC 항목의 요구사항과 비교

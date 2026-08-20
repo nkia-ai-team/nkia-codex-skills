@@ -1,4 +1,4 @@
 interface:
   display_name: "Commit"
-  short_description: "Create repo-specific commits"
-  default_prompt: "Use $commit to create a repo-specific commit from staged changes."
+  short_description: "Split, stage, and create repo-specific commits"
+  default_prompt: "Use $commit to split local changes into logical groups, stage them, validate them, and create focused commits."

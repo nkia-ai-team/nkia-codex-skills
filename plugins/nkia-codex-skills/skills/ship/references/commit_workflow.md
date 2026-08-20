@@ -1,24 +1,48 @@
 # Commit Workflow
 
-## Step 1: Check Git Status
+## Step 1: Inspect the Complete Worktree
 
-현재 staged 변경사항 확인:
+staged, unstaged, untracked 변경사항을 모두 확인:
 
 ```bash
-git status
+git status --short --branch
+git diff --stat
+git diff
 git diff --cached --stat
+git diff --cached
 ```
 
-**staged 변경사항이 없는 경우:**
+**전체 worktree에 변경사항이 없는 경우:**
 ```
-커밋할 staged 변경사항이 없습니다.
-
-다음 명령어로 파일을 staging 하세요:
-$ git add <파일명>
-$ git add .  # 모든 변경사항
+커밋할 변경사항이 없습니다.
 ```
 
-## Step 2: Extract Linear Issue Number from Branch
+변경사항이 있으면 staged 여부와 무관하게 다음 단계로 진행합니다. ignored 파일, credential/secret,
+임시 파일, runtime 생성물, 실수로 생긴 대용량 binary는 staging하지 않습니다.
+
+## Step 2: Split and Stage Logical Commit Groups
+
+1. 기존 staged set이 있으면 사용자가 만든 명시적 경계로 취급해 첫 commit group으로 보존합니다.
+   단, secret/생성물 포함 또는 서로 무관한 변경 혼합이 명확하면 안전하게 재분리합니다.
+2. unstaged/untracked 변경은 concern, dependency, repository convention 기준으로 나눕니다.
+3. 구현과 직접 결합된 test/docs는 같은 group에 둡니다.
+4. 선행 refactor/config를 dependent feature/fix보다 먼저 커밋합니다.
+5. 각 group은 exact pathspec으로 staging합니다:
+
+```bash
+git add -- <path-1> <path-2>
+git diff --cached --stat
+git diff --cached
+git diff --cached --check
+```
+
+한 파일 안에 독립적인 여러 변경이 섞인 경우에만 partial-file staging을 사용합니다.
+한 commit에 무관한 변경을 섞지 않습니다.
+
+사용자가 `커밋해줘`, `commit`, `변경사항 커밋`처럼 실행을 요청했으면 staging과 commit을
+자동 진행합니다. staged 변경이 없다는 이유로 중단하거나 사용자에게 `git add`를 요청하지 않습니다.
+
+## Step 3: Extract Linear Issue Number from Branch
 
 현재 브랜치에서 Linear 이슈 번호 추출:
 
@@ -64,7 +88,7 @@ For `lucida-next`, branch Linear IDs are metadata only and must not be copied in
 If a Linear ID is useful, put it in the commit body/trailer as `Linear: NKIAAI-000`, or rely on MR/Linear linking.
 If no Linear ID is found, continue without asking for one unless the user explicitly requests Linear evidence.
 
-## Step 3: Analyze Changes
+## Step 4: Analyze the Current Group
 
 변경사항 상세 분석:
 
@@ -78,7 +102,7 @@ git diff --cached --name-only
 2. 추가/수정/삭제된 코드 내용
 3. 주요 변경 패턴 식별
 
-## Step 4: Determine Type Keyword
+## Step 5: Determine Type Keyword
 
 변경사항을 기반으로 적절한 Type 결정:
 
@@ -130,7 +154,7 @@ Rules:
 10. CI/CD 변경이면 → `Ci`
 11. 성능 개선이면 → `Perf`
 
-## Step 5: Generate Commit Message
+## Step 6: Generate Commit Message
 
 ### lucida-next 제목 생성 규칙
 
@@ -171,7 +195,7 @@ Never generate `NKIAAI-000 fix(ai-chat): ...`.
 4. 간결하게 — **"무엇을"** 했는지만 기술
 5. 단순 변경(typo, config 값 변경 등)이고 제목만으로 충분하면 본문 생략
 
-## Step 6: Show Preview and Confirm
+## Step 7: Preview and Execution Intent
 
 ```
 === 커밋 메시지 미리보기 ===
@@ -184,13 +208,14 @@ nkiaai-129 Feat : 사용자 인증 API 엔드포인트 추가
 
 ============================
 
-`AskUserQuestion`으로 확인:
-- 질문: "이 메시지로 커밋하시겠습니까?"
-- 선택지: "커밋 실행", "메시지 수정", "취소"
-- 사용자는 "Other"로 다른 지시사항을 입력할 수 있음
+사용자가 commit 실행을 명시했으면 확인 질문 없이 검증 후 실행합니다.
+사용자가 message 생성이나 preview만 요청했으면 commit하지 않습니다.
 ```
 
-## Step 7: Execute Commit
+## Step 8: Validate and Execute Commit
+
+현재 group에 맞는 최소 검증(test, lint, typecheck, build, static check)을 먼저 실행합니다.
+검증 불가 또는 실패 시 결과를 숨기지 않습니다.
 
 본문이 있는 경우 `git commit -m "제목" -m "본문"` 형식으로 실행:
 
@@ -215,15 +240,17 @@ git commit -m "nkiaai-129 Config : ESLint 규칙 업데이트"
 변경: 3 files changed, 275 insertions(+)
 ```
 
+커밋 후 `git status --short --branch`를 다시 읽습니다. 남은 safe/meaningful 변경이나 실행 중
+새로 생긴 변경은 새 group으로 분석·staging·검증·commit합니다. 모든 in-scope 변경이 처리될
+때까지 반복하고, 의도적으로 제외한 파일은 최종 보고에 명시합니다.
+
 ---
 
 ## Error Handling
 
-### No Staged Changes
+### No Worktree Changes
 ```
-커밋할 staged 변경사항이 없습니다.
-변경사항을 staging 하세요:
-$ git add <파일명>
+커밋할 변경사항이 없습니다.
 ```
 
 ### Not a Git Repository

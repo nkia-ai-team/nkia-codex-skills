@@ -9,7 +9,7 @@ Use this skill when the user asks to make a repository pass SonarQube, fix a Son
 
 ## First Step
 
-Read [linear-convention.md](../_shared/linear-convention.md). This workflow produces or uses a task issue. A standalone task is allowed for repository quality-gate remediation when no parent feature exists.
+Read [linear-convention.md](../../references/linear-convention.md). This workflow produces or uses a task issue. A standalone task is allowed for repository quality-gate remediation when no parent feature exists.
 
 Default orchestration is `$ralph`. Invoke the actual `$ralph` workflow first when the current runtime supports it, with this skill as the execution contract. `$ralph` should inspect the live gate, plan the smallest remediation batch, fix, verify, and repeat until the gate is `OK` or a real blocker is proven. Only if `$ralph` is unavailable in the current surface, run the same completion loop directly and report that runtime limitation.
 

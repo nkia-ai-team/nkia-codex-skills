@@ -14,7 +14,7 @@ plugins/nkia-codex-skills/.codex-plugin/plugin.json
 plugins/nkia-codex-skills/skills/
 ```
 
-Codex에서 사용하는 스킬은 아래 15개입니다.
+Codex에서 사용하는 스킬은 아래 17개입니다.
 
 ```text
 $feature → $task → $start → (개발) → $commit → $ship → (수동 머지) → $finish
@@ -23,15 +23,15 @@ $feature → $task → $start → (개발) → $commit → $ship → (수동 머
 
 $sonarqube-pass → $ship → (수동 머지) → $finish
 
-$wrap-up
-
-$auto-dev → (사용자 확인) → $auto-submit
-
 $weekly
 
-$func-tc-creator → $func-tc-runner
-
 $confluence-md-upload
+
+$develop-from-design
+
+$linear-issue-creator → $linear-issue-evidence → $linear-issue-validator
+$linear-project-creator → $linear-project-updater → $linear-initiative-updater
+
 ```
 
 | 스킬 | 목적 |
@@ -39,20 +39,22 @@ $confluence-md-upload
 | `$feature` | 고객/제품 관점의 상위 Linear Feature 이슈 생성·정리 |
 | `$task` | Feature 하위의 실제 개발 Task 이슈 생성·분해 |
 | `$start` | Task 착수, 브랜치 생성, In Progress 전환 |
-| `$commit` | staged 변경사항을 레포별 커밋 메시지 규칙으로 커밋 |
+| `$commit` | 전체 변경사항을 논리 단위로 분리·staging하고 레포별 규칙으로 커밋 |
 | `$sonarqube-pass` | SonarQube 리포트 기반 Linear Task/브랜치 생성, 품질 게이트 수정·검증·증빙 |
-| `$auto-dev` | Linear/spec 기반 멀티 레포 개발 오케스트레이션 |
-| `$auto-submit` | `$auto-dev` 결과물의 멀티 레포 제출·증빙·검증 오케스트레이션 |
 | `$ship` | 커밋, push, PR/MR 생성, 코드 검증/리뷰 루프, 수동 머지 대기 |
 | `$code-review` | GitHub PR/GitLab MR 단독 코드 리뷰 및 검증 코멘트 작성 |
 | `$finish` | 머지 후 브랜치 정리, 증빙 수집, AC 검증, Task/Feature 상태 정리 |
-| `$wrap-up` | Claude Code에서 쓰던 post-merge cleanup, 증빙 수집, AC 검증 workflow |
 | `$weekly` | Linear/Git/Calendar 기반 주간업무보고 작성 및 Google Sheet 기록 |
-| `$func-tc-creator` | Sheet/이슈/소스 근거 기반 범용 기능 TC 문서 생성 |
-| `$func-tc-runner` | 생성된 TC 문서 기반 live UI/API/DB/log 기능 테스트 수행 및 결과 보고 |
 | `$confluence-md-upload` | Markdown 보고서를 Mermaid/SVG 보존 상태로 Confluence 페이지에 업로드 |
+| `$develop-from-design` | 설계 문서를 구현 계획·코드·검증까지 연결하는 end-to-end 실행 |
+| `$linear-issue-creator` | 작업 유형별 템플릿으로 Linear 이슈 생성 |
+| `$linear-issue-evidence` | Linear AC 항목에 증빙 수집·등록 |
+| `$linear-issue-validator` | Linear AC·DoD 및 첨부 증빙 검증 |
+| `$linear-project-creator` | Linear 프로젝트 구조와 문서 생성 |
+| `$linear-project-updater` | 주간 이슈 활동 기반 프로젝트 상태 업데이트 |
+| `$linear-initiative-updater` | 하위 프로젝트 상태 기반 이니셔티브 업데이트 |
 
-Feature 이슈는 작업 컨테이너입니다. 직접 브랜치/PR/MR의 단위가 아니며, 모든 하위 Task가 `Done` 또는 `In Review`일 때만 `$finish`가 Feature를 `In Review`로 roll-up합니다. Feature를 자동으로 `Done` 처리하지 않습니다.
+Feature 이슈는 기본적으로 작업 컨테이너입니다. 단, 사용자가 `$start <feature-id>`로 정확한 이슈의 직접 시작을 명시하고 구체 구현 범위와 검증 가능한 AC가 한 브랜치에 맞으면 standalone 실행 단위로 시작할 수 있습니다. 그 외에는 모든 하위 Task가 `Done` 또는 `In Review`일 때만 `$finish`가 Feature를 `In Review`로 roll-up합니다. Feature를 자동으로 `Done` 처리하지 않습니다.
 
 ## 설치 방법
 
@@ -224,17 +226,17 @@ Task 작성 기준:
 
 ### `$start`
 
-실행 가능한 Task 이슈로 개발을 시작합니다. Linear 이슈를 읽고, git 상태를 확인한 뒤, 최신 develop 계열 브랜치에서 작업 브랜치를 생성합니다.
+실행 가능한 Linear 이슈로 개발을 시작합니다. Linear 이슈를 읽고 git 상태를 확인한 뒤, Nova 저장소에서 현재 사용 중인 공유 integration branch를 base로 작업 브랜치를 생성합니다.
 
 주요 기능:
 
-- Linear Task 조회 및 parent Feature 확인
-- Feature 이슈가 입력되면 직접 착수하지 않고 child Task 선택/생성을 안내
+- Linear 이슈 조회 및 실행 가능 범위 확인
+- 명시적 `$start <feature-id>`이고 한 branch에 맞는 구체 AC면 standalone 착수 허용
 - uncommitted 변경사항 점검
-- 최신 versioned base branch 탐색
+- 현재 공유 integration branch 또는 가장 가까운 non-task ancestor를 base로 선택
 - 브랜치 생성
-- Task를 `In Progress`로 전환
-- parent Feature가 `Todo`/`Backlog`이면 `In Progress`로 전환
+- 이슈를 `In Progress`로 전환
+- child Task의 parent Feature가 `Todo`/`Backlog`이면 `In Progress`로 전환
 
 사용 예시:
 
@@ -250,7 +252,7 @@ fix/nkiaai-522-final-answer-copy
 refactor/nkiaai-536-build-pipeline
 ```
 
-UI repo는 기존 팀 규칙에 따라 `develop-10.x.y_z-chat-{function}` 형식을 사용할 수 있습니다.
+모든 Nova 저장소에서 Linear 이슈 ID를 소문자로 포함한 동일 branch 형식을 사용합니다. 별도 버전 branch 형식은 사용하지 않습니다.
 
 ### `$commit`
 
@@ -280,62 +282,6 @@ $commit --format ui
 - amend, squash, force-push는 하지 않습니다.
 - standalone 작업은 Linear 이슈 번호 없이 `{Type} : {description}` 형식을 사용할 수 있습니다.
 
-### `$auto-dev`
-
-Linear 이슈 또는 design spec을 읽고 여러 레포에 걸친 개발 작업을 오케스트레이션합니다. 브랜치 생성과 Linear `In Progress` 전환은 메인 세션이 한 번만 수행하고, repo-local 구현은 Codex subagent에 분리합니다.
-
-주요 기능:
-
-- Linear 이슈와 design spec 종합
-- `affected_repos` 또는 본문 기반 영향 레포 식별
-- spec 항목을 현재 레포 상태와 대조해 `[add]`, `[modify]`, `[do-not-recreate]`로 분류
-- 레포별 브랜치 생성/전환
-- repo-local 구현 subagent 병렬 실행
-- child prompt에 필수 스킬 계약을 넣어 `$ralph` 또는 승인된 fallback만 허용
-- backend/AP/AI는 테스트, UI는 ai-portal 범위 빌드/타입체크/lint 중심 검증
-- 필요 시 독립 E2E 검증
-- 커밋/PR/MR 생성 없이 사용자 확인 지점에서 정지
-
-사용 예시:
-
-```text
-$auto-dev NKIAAI-567
-$auto-dev /home/jwchoi/workspace/2026/docs/ai_portal/feature-design/567-example-design.md
-```
-
-주의:
-
-- `$auto-dev`는 `$auto-submit`을 자동 호출하지 않습니다.
-- subagent는 `$start`, `$commit`, `$ship`, `$finish`, 직접 Linear 쓰기를 하지 않습니다.
-- spec은 최종 청사진이므로 현재 레포 상태와 대조한 뒤 구현합니다.
-
-### `$auto-submit`
-
-`$auto-dev`로 만든 멀티 레포 작업을 제출 단계로 넘깁니다. repo-local `$ship`은 subagent에 맡기고, evidence/AC 검증은 메인 세션에서 중앙집중식으로 처리합니다.
-
-주요 기능:
-
-- `$auto-dev` 결과 또는 이슈/spec에서 영향 레포 복원
-- 레포별 브랜치와 변경사항 사전 검증
-- child prompt에 필수 스킬 계약을 넣어 `$ship` 우선 사용 강제
-- 커밋, push, PR/MR 생성, `$code-review` 루프는 `$ship`에 위임
-- 수동 머지 대기
-- 머지 후 증빙 수집
-- `$finish` 또는 사용 가능한 evidence/validator 스킬로 Linear AC 검증
-- 직접 Linear write 우회 금지
-
-사용 예시:
-
-```text
-$auto-submit NKIAAI-567
-```
-
-주의:
-
-- merge/approve 명령은 실행하지 않습니다.
-- `$ship` 결과가 기대 형식이 아니어도 임의 re-review subagent를 추가로 띄우지 않습니다.
-- evidence 등록과 AC validator는 한 번의 중앙 흐름으로 처리합니다.
-
 ### `$ship`
 
 개발 완료 후 PR/MR 리뷰 단계까지 진행합니다. 커밋 생성, push, PR/MR 생성, 코드 리뷰 루프를 하나의 흐름으로 처리합니다.
@@ -362,7 +308,7 @@ $auto-submit NKIAAI-567
 ```text
 $ship
 $ship NKIAAI-557
-$ship target branch는 develop-10.2.1_3으로 해줘
+$ship target branch는 develop-ai-uiux로 해줘
 ```
 
 커밋 메시지 예시:
@@ -432,33 +378,6 @@ $finish 이 MR 머지됐어. Linear 마무리해줘.
 - 여러 레포가 섞인 이슈에서는 현재 레포에 해당하는 AC만 수정합니다.
 - 증빙이 부족하면 상태 전환하지 않고 부족한 항목을 보고합니다.
 
-### `$wrap-up`
-
-Claude Code의 `wrap-up` workflow를 Codex 스킬로 이식한 별도 스킬입니다. PR/MR 머지 후 실제 merge target 브랜치로 전환해 최신화하고, merged 로컬 브랜치를 정리한 뒤 현재 레포 범위의 증빙 수집·자가 점검·AC 검증을 진행합니다.
-
-주요 기능:
-
-- merged PR/MR의 실제 target branch 우선 사용
-- target branch 최신화, remote prune, merged local branch 삭제
-- 현재 레포 범위의 AC만 필터링
-- `linear-issue-evidence`가 있으면 증빙 등록 workflow 사용
-- `linear-issue-validator`가 있으면 AC 검증 및 `In Review` 전환 workflow 사용
-- 스크린샷/동영상 수동 업로드 필요 시 AC 매핑 안내
-- 검증 실패 시 최대 3회 증빙 보강/재검증
-
-사용 예시:
-
-```text
-$wrap-up NKIAAI-557
-$wrap-up 이 MR 머지됐어. Linear 마무리해줘.
-```
-
-주의:
-
-- `$wrap-up`은 `$finish` alias가 아닙니다.
-- Task나 Feature를 자동 `Done` 처리하지 않습니다.
-- 하위 evidence/validator workflow가 없으면 Linear 쓰기 전에 중단하고 누락된 workflow를 보고합니다.
-
 ### `$weekly`
 
 NKIA-AI 팀 주간업무보고를 생성합니다. Linear, Git commit, Google Calendar 휴가/반차 정보를 모아 Google Sheet의 B/C/D/F/G 컬럼 형식으로 렌더링합니다.
@@ -527,67 +446,6 @@ $weekly --reconfigure
 
 [G] 차주 업무:
 1. ...
-```
-
-### `$func-tc-creator`
-
-Google Sheet/CSV 담당 기능 목록, Linear 이슈, 설계 문서, 로컬 소스 근거를 모아 범용 기능 TC markdown을 생성합니다. UI 상태, live API, UI-API network, DB 상태, 로그, cleanup, timing처럼 결정적으로 Pass/Fail을 판단할 수 있는 기능 테스트만 다룹니다.
-
-주요 기능:
-
-- Google Sheet 또는 CSV/TSV export에서 담당자 기준 기능 행 필터링
-- Linear AC와 로컬 소스 근거 기반 TC 범위 산정
-- 기능별 TC markdown, coverage matrix, traceability, 자동화 준비도 작성
-- 주관적 품질 평가나 mock/unit-only 실행 범위 제외
-- `scripts/validate_tc_markdown.py --strict`로 TC 형식과 자동화 준비도 점검
-
-사용 예시:
-
-```text
-$func-tc-creator ISSUE-123 담당 기능 TC 생성해줘
-$func-tc-creator Google Sheet export.csv 기준으로 담당자별 기능 TC 만들어줘
-```
-
-보조 스크립트:
-
-```bash
-python3 ${CODEX_HOME:-$HOME/.codex}/skills/func-tc-creator/scripts/filter_features.py sheet.csv --owner 담당자 --pretty
-python3 ${CODEX_HOME:-$HOME/.codex}/skills/func-tc-creator/scripts/validate_tc_markdown.py --strict test/testcase/release-1.0/document-upload.md
-```
-
-### `$func-tc-runner`
-
-`$func-tc-creator`가 만든 TC markdown을 읽어 run-specific `tc-test.config.json`, `plan.json`, `manifest.json`, `results.json`, `report.md`, 문서별 결과 markdown을 생성하고 live UI/API/DB/log 테스트 결과를 기록합니다. 기본 `ultraqa` 흐름은 `--init-config` → `--prepare-only` → 문서별 subagent 실행 → `--finalize` 단계로 나뉩니다.
-
-주요 기능:
-
-- 실행마다 `test/test-results/{cycle}-{version}/{run-id}/tc-test.config.json` 생성
-- `CONFIG_GATE=1`로 URL/auth/DB/log 누락을 실행 전 차단
-- 기본 `ultraqa` 엔진으로 TC 문서별 live discovery + one-shot 실행
-- `--prepare-only` / `--finalize`로 문서별 subagent fan-out 결과 수집
-- 메인 세션 preflight 후 API/DB/log는 subagent 병렬, UI/INT/TIMING은 메인 순차/소병렬 실행
-- worker/backend 문제를 제품 실패와 분리하는 `INFRA` 상태 지원
-- `static` 엔진으로 명시된 curl/Playwright manifest 실행 지원
-- PASS/FAIL/BLOCKED/SKIPPED/INFRA, 총점, 실행 통과율, 실행 커버리지 산출
-- screenshot/API response/network/log/DB 증빙 경로를 결과 문서에 연결
-
-사용 예시:
-
-```bash
-${CODEX_HOME:-$HOME/.codex}/skills/func-tc-runner/scripts/func-tc-runner test/testcase/release-1.0 --dry-run
-${CODEX_HOME:-$HOME/.codex}/skills/func-tc-runner/scripts/func-tc-runner test/testcase/release-1.0 --init-config --environment local --app-url http://localhost:3000 --api-base-url http://localhost:8080
-${CODEX_HOME:-$HOME/.codex}/skills/func-tc-runner/scripts/func-tc-runner test/testcase/release-1.0 --config test/test-results/release-1.0/<run-id>/tc-test.config.json --prepare-only
-${CODEX_HOME:-$HOME/.codex}/skills/func-tc-runner/scripts/func-tc-runner test/testcase/release-1.0 --config test/test-results/release-1.0/<run-id>/tc-test.config.json --finalize
-```
-
-환경 오버라이드:
-
-```bash
-export FUNC_TC_WORKSPACE=/path/to/workspace
-export FUNC_TC_DOCS_ROOT=$FUNC_TC_WORKSPACE/docs
-export FUNC_TC_TOKEN=<token>
-export MONGO_URI=<mongo-uri>
-export FUNC_TC_LOG_PATH=$FUNC_TC_WORKSPACE/app.log
 ```
 
 ## 공유 및 업데이트 절차

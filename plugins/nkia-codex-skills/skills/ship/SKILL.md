@@ -25,7 +25,7 @@ Claude `/submit` delegates to `/code-review`. Codex `$ship` follows the same orc
 
 ## First Step
 
-Read [linear-convention.md](../_shared/linear-convention.md). `$ship` operates on task issues. It should not ship a parent feature directly.
+Read [linear-convention.md](../../references/linear-convention.md). `$ship` operates on task issues. It should not ship a parent feature directly.
 
 Before running the review stage, read [code-review SKILL.md](../code-review/SKILL.md). `$ship` orchestrates it; `$code-review` owns the review checklist and platform fetch/comment details.
 

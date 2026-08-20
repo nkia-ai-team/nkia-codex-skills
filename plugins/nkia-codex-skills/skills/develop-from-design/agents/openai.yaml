@@ -1,0 +1,6 @@
+interface:
+  display_name: "Develop from Design"
+  short_description: "Implement a design doc end to end"
+  default_prompt: "Use $develop-from-design @docs/design.md to implement the design completely."
+policy:
+  allow_implicit_invocation: false

@@ -1,195 +1,106 @@
-# Kickoff Workflow — 브랜치 생성 규칙
+# Start Workflow — Nova 브랜치 생성 규칙
 
-## 0. 기본 개념 — 버전별 develop 브랜치
+## 1. Base branch 결정
 
-사이클마다 버전이 찍힌 개발 브랜치가 새로 뽑힙니다. 사이클이 끝나면 그 브랜치는 `develop`으로 머지되고, 다시 `develop`에서 다음 버전 브랜치가 나옵니다. Kickoff에서는 **최신 버전 브랜치**를 base로 feature 브랜치를 뽑습니다.
+Nova 저장소는 버전 branch 패턴을 강제하지 않는다. 작업 시점에 실제로 사용 중인 **공유 integration branch**에서 task branch를 만든다.
 
-**네이밍:**
+우선순위:
 
-| 레포 유형 | 버전 브랜치 패턴 | 예시 |
-|-----------|------------------|------|
-| 일반 레포 (chat-ai, chat-ap 등) | `develop-10.x.y_z` | `develop-10.2.4_3` |
-| UI 레포 (lucida-ui 등) | `develop-10.x.y_z-chat` | `develop-10.2.4_3-chat` |
+1. 사용자가 base를 명시하면 그 branch를 사용한다.
+2. 현재 branch가 upstream을 가진 공유 integration branch면 해당 remote branch를 사용한다.
+   - 일반 예: `main`, `develop`, `develop-ai`, `develop-ai-uiux`, `integration/*`
+3. 현재 branch가 `feature/*`, `fix/*`, `refactor/*`, `config/*`, `docs/*` 같은 task branch면 remote branch들과의 merge-base/commit distance를 확인해 가장 가까운 non-task ancestor를 사용한다.
+4. 후보가 없거나 둘 이상이 같은 근거로 남으면 임의 선택하지 않고 사용자에게 base를 묻는다.
 
-**가정:**
-- `_z`(언더스코어 + 정수)는 **항상 존재**합니다. `develop-10.2.4-chat`처럼 `_z`가 없는 형태는 사용하지 않습니다.
-- `_z` 값은 레포마다 다를 수 있습니다.
-- 사이클 전환(이전 버전 → develop 머지, 새 버전 브랜치 생성)은 사람이 직접 수행하므로, Kickoff는 **현재 시점 최신 버전 브랜치**만 찾아서 쓰면 됩니다.
+선택 전 확인:
 
----
+```bash
+git fetch origin --quiet
+git branch --show-current
+git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}'
+git branch -r
+```
 
-## 1. 레포 유형 판별 + 최신 base 브랜치 찾기
+현재 공유 branch를 base로 쓰는 기본 확인:
 
-**레포 유형은 레포 이름 접미사로 판별**합니다. 네트워크 왕복 없이 즉시 결정되며, 새 사이클 직후 버전 브랜치가 아직 뽑히지 않은 상태에서도 안전합니다. 이후 최신 base 브랜치만 `git ls-remote`로 조회합니다.
+```bash
+BASE=$(git branch --show-current)
+git show-ref --verify --quiet "refs/remotes/origin/$BASE"
+```
 
-    # 1) 레포 이름으로 UI/일반 판별 (팀 컨벤션: UI 레포는 '-ui' 접미사)
-    REPO=$(basename "$(git rev-parse --show-toplevel)")
-    if [[ "$REPO" == *-ui ]]; then
-      REPO_TYPE=ui
-      BASE_PATTERN='^develop-10\.[0-9]+\.[0-9]+_[0-9]+-chat$'
-    else
-      REPO_TYPE=general
-      BASE_PATTERN='^develop-10\.[0-9]+\.[0-9]+_[0-9]+$'
-    fi
+- branch 이름의 버전·사전순으로 "최신"을 추측하지 않는다.
+- 개인/task branch를 다른 task의 base로 재사용하지 않는다.
+- local integration branch가 remote와 diverge했으면 `origin/$BASE`와 차이를 먼저 확인한다.
 
-    # 2) 원격 정보 갱신 후 패턴에 맞는 최신 버전 브랜치 선택
-    git fetch origin --quiet
-    BASE=$(git ls-remote --heads origin 'develop-10.*' \
-      | awk '{print $2}' \
-      | sed 's|refs/heads/||' \
-      | grep -E "$BASE_PATTERN" \
-      | sort -V | tail -1)
+## 2. Task branch — `{prefix}/{team-key}-{no}-{slug}`
 
-    # 3) BASE가 비어있으면 에러
-    if [ -z "$BASE" ]; then
-      echo "최신 develop-10.x.y_z 브랜치를 찾을 수 없습니다."
-      exit 1
-    fi
-
-**판별 규칙:**
-
-| 조건 | REPO_TYPE | BASE 패턴 |
-|------|-----------|-----------|
-| 레포 이름이 `-ui`로 끝남 (예: `lucida-ui`) | `ui` | 최신 `develop-10.x.y_z-chat` |
-| 그 외 (예: `lucida-chat-ap`, `lucida-chat-ai`) | `general` | 최신 `develop-10.x.y_z` |
-
-**`sort -V`의 동작:** `develop-10.2.4_3` < `develop-10.2.4_10`을 올바르게 처리하므로 `_z` 값이 두 자리 이상이어도 안전합니다.
-
----
-
-## 2. 일반 레포 브랜치 생성 — `{prefix}/{team-key}-{no}-{slug}`
-
-### Label → Prefix 매핑
+### Label → Prefix
 
 | Label | Prefix |
 |-------|--------|
-| `feature` | `feature/` |
-| `improve` | `feature/` |
+| `feature`, `improve`, `research`, `data` | `feature/` |
 | `bug` | `fix/` |
 | `refactor` | `refactor/` |
-| `research` | `feature/` |
 | `build` | `config/` |
-| `data` | `feature/` |
 | `document` | `docs/` |
 | 기타/없음 | `feature/` |
 
-### Slug 생성
+### Slug
 
-이슈 제목에서 핵심 키워드를 추출하여 kebab-case로 변환합니다.
+1. 이슈 제목의 프로젝트 접두사와 `[AC 요청]`·`[AC 확인]`을 제거한다.
+2. 핵심 키워드를 영문 kebab-case로 바꾼다.
+3. 5단어 이내로 줄인다.
+4. Linear team key와 번호는 소문자로 쓴다.
 
-**변환 규칙:**
-1. 이슈 제목에서 프로젝트명 접두사 제거 (예: "Chat AI: " → "")
-2. 한글 키워드는 영문 번역
-3. kebab-case 변환 (소문자, 단어 사이 `-`)
-4. 5단어 이내로 축약
+예:
 
-**예시:**
-- "Chat AI: streaming 구조 리팩토링 (WriterEmitterAdapter 전환)" → `streaming-writer-emitter-adapter`
-- "프롬프트 입력 시 감사 이력 기록 (Audit Trail API 연동)" → `audit-trail-api`
-- "모델 선택 드롭다운 UI 개선" → `model-dropdown-ui-improvement`
+- `AI Now 한 화면형 통합 운영 허브 제품 구현` → `ai-now-one-page`
+- `프롬프트 입력 시 감사 이력 기록` → `audit-trail`
+- `스트리밍 구조 리팩토링` → `streaming-refactor`
 
-### 브랜치 생성
+### 생성
 
-Section 1에서 캐싱한 `$BASE`를 base로 feature 브랜치를 뽑습니다.
+선택한 remote integration branch에서 task branch를 만든다.
 
-    git fetch origin "$BASE"
-    git checkout -b {prefix}/{team-key}-{no}-{slug} "origin/$BASE"
+```bash
+git fetch origin "$BASE"
+git checkout -b {prefix}/{team-key}-{no}-{slug} "origin/$BASE"
+```
 
-    # 예: BASE=develop-10.2.4_3
-    # git checkout -b refactor/nkiaai-305-streaming-writer-emitter-adapter origin/develop-10.2.4_3
+예:
 
----
+```bash
+BASE=develop-ai-uiux
+git checkout -b feature/nkiaai-805-ai-now-one-page origin/develop-ai-uiux
+```
 
-## 3. UI 레포 브랜치 생성 — `develop-10.x.y_z-chat-{function}`
+## 3. 후속 `$ship` target
 
-> **UI 레포는 별도 브랜치 컨벤션을 사용합니다.** 일반 레포처럼 `feature/{이슈번호}-{slug}` 형태가 아니라, 부모 버전 브랜치를 그대로 확장한 `{version}-chat-{function}` 계층 구조를 씁니다. 따라서 Linear 이슈 번호는 **브랜치명이 아닌 커밋 메시지에만** 포함됩니다.
+`$ship` target은 `$start`가 실제로 사용한 base다. repo 이름, version pattern, 현재 가장 최신처럼 보이는 branch로 다시 추측하지 않는다.
 
-### 계층 구조
+## 4. 에러 처리
 
-    master → develop → develop-10.x.y_z-chat → develop-10.x.y_z-chat-{function}
+### 이슈 없음
 
-module은 `chat` 고정이므로 사용자에게 확인하지 않습니다.
+```text
+이슈 {issue-id}를 찾을 수 없습니다.
+이슈 ID를 확인해주세요 (예: NKIAAI-305).
+```
 
-### Function 추론
+### Base 불명확
 
-이슈 제목에서 핵심 기능을 추출하여 camelCase로 변환합니다.
+```text
+Nova 작업 base branch를 확정할 수 없습니다.
+현재 공유 개발 branch 또는 사용할 base를 알려주세요.
+```
 
-**변환 규칙:**
-1. 이슈 제목에서 프로젝트명 접두사 제거
-2. 핵심 기능 키워드 1~3개 추출
-3. camelCase 변환
+### Branch 이미 존재
 
-**예시:**
-- "프롬프트 입력 시 감사 이력 기록" → `auditTrail`
-- "스트리밍 구조 리팩토링" → `streamingRefactor`
-- "모델명 표시 기능 추가" → `modelNameDisplay`
-- "reasoning/answer 스트리밍 및 tool_call UI 구현" → `reasoningStreaming`
+기존 branch가 같은 이슈 작업인지 확인한다. 맞으면 전환하고, 다른 작업이면 이름 충돌로 중단한다.
 
-### 브랜치 생성
+### Git 저장소 아님
 
-Section 1에서 캐싱한 `$BASE`(예: `develop-10.2.4_3-chat`)를 base로 feature 브랜치를 뽑습니다.
-
-    git fetch origin "$BASE"
-    git checkout -b "${BASE}-{function}" "origin/$BASE"
-
-    # 예: BASE=develop-10.2.4_3-chat
-    # git checkout -b develop-10.2.4_3-chat-auditTrail origin/develop-10.2.4_3-chat
-
-### 주의사항
-
-- UI 레포에서는 Linear 이슈 번호가 브랜치명에 포함되지 않음 (UI 컨벤션)
-- Linear 이슈 번호는 **커밋 메시지**에 포함됨
-- 브랜치에 버전이 박혀있으므로, 다음 사이클로 넘어갈 때는 새 버전 branch에서 다시 `$start` 필요
-
----
-
-## 4. 타겟 브랜치 판별 (참고)
-
-`$start`에서는 직접 사용하지 않지만, `$ship`에서 사용하는 타겟 브랜치는 **task 브랜치가 실제로 뽑힌 base branch**입니다.
-
-기본 target branch 형태는 `$start`의 base branch 컨벤션과 같습니다.
-
-| 레포 | 기본 타겟 |
-|------|----------|
-| lucida-ui | 최신 `develop-10.x.y_z-chat` |
-| lucida-chat-ap | 최신 `develop-10.x.y_z` |
-| lucida-chat-ai | 최신 `develop-10.x.y_z` |
-| 기타 | 최신 `develop-10.x.y_z` |
-
-`$ship`은 레포 이름이나 최신 versioned branch만으로 target을 고르지 않습니다. 원격 후보 branch와 현재 HEAD의 커밋 거리(`<candidate>..HEAD`)를 비교해 가장 가까운 base를 선택합니다.
-
-이 방식은 다음 상황을 안전하게 처리합니다.
-
-- 최신 `develop-10.x.y_z`가 새로 생겼지만 현재 작업 branch는 이전 cycle base에서 나온 경우
-- UI branch가 `develop-10.x.y_z-chat-{function}` 형식이라 parent가 `develop-10.x.y_z-chat`인 경우
-- 사용자가 `develop`이나 `main`에서 직접 branch를 뽑은 경우
-
-> 이전에 사용하던 `develop`, `develop-sandbox`, `develop-ui-chat` 같은 고정 base와 레포 이름 기반 target mapping은 더 이상 사용하지 않습니다.
-
----
-
-## 5. 에러 처리
-
-### 이슈를 찾을 수 없는 경우
-
-    이슈 {issue-id}를 찾을 수 없습니다.
-    이슈 ID를 확인해주세요 (예: NKIAAI-305)
-
-### 최신 버전 브랜치를 찾을 수 없는 경우
-
-    최신 develop-10.x.y_z 브랜치를 찾을 수 없습니다.
-    원격에 버전 브랜치가 push되어 있는지 확인해주세요.
-    $ git fetch origin
-    $ git branch -r | grep develop-10
-
-### 브랜치가 이미 존재하는 경우
-
-    브랜치 '{branch-name}'이 이미 존재합니다.
-    기존 브랜치로 전환할까요?
-
-기존 브랜치로 전환 여부를 `AskUserQuestion`으로 확인합니다.
-
-### Git 저장소가 아닌 경우
-
-    현재 디렉토리는 Git 저장소가 아닙니다.
-    프로젝트 디렉토리로 이동한 후 다시 시도해주세요.
+```text
+현재 디렉토리는 Git 저장소가 아닙니다.
+프로젝트 디렉토리로 이동한 후 다시 시도해주세요.
+```

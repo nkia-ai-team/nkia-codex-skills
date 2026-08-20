@@ -10,8 +10,8 @@ Use this skill after a PR/MR is merged or when the user asks to close out Linear
 ## CRITICAL: First Step — Read the References
 
 Before doing anything else, read:
-- [guideline-ref.md](../_shared/guideline-ref.md) — NKIA issue status, AC format, common AC, AI verification loop
-- [linear-convention.md](../_shared/linear-convention.md) — Task vs Feature behavior and parent roll-up rules
+- [guideline-ref.md](../../references/guideline-ref.md) — NKIA issue status, AC format, common AC, AI verification loop
+- [linear-convention.md](../../references/linear-convention.md) — Task vs Feature behavior and parent roll-up rules
 - [wrapup_workflow.md](references/wrapup_workflow.md) — branch cleanup, repo-scope filtering, evidence self-check, validation retry branches
 
 ## CRITICAL: Sub-workflow Contract

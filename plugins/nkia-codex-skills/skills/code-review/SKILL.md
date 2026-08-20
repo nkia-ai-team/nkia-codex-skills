@@ -10,6 +10,8 @@ description: Perform strict Korean code reviews on GitHub PRs or GitLab MRs. Use
 **BEFORE doing anything else, you MUST read:**
 - [code_review_ruleset.md](references/code_review_ruleset.md) — 브랜치명/커밋 메시지 검증 규칙, 코드 리뷰 체크리스트, 리뷰 결과 템플릿, 심각도 레벨
 - [platform_operations.md](references/platform_operations.md) — GitHub/GitLab 조회, pagination, 대용량 파일 처리, 코멘트 갱신, 인증 처리
+- Python 변경 시 [domain_python.md](references/domain_python.md)
+- React/TypeScript 변경 시 [domain_react_ts.md](references/domain_react_ts.md)
 
 **All review comments MUST be written in Korean (한국어) using the exact templates from the ruleset.**
 
@@ -52,6 +54,8 @@ This skill must review actual code, not only summarize diffs.
 - If a finding depends on an assumption, state it as an assumption.
 - If validation is blocked by auth, missing CLI, or incomplete diff data, post a blocked/incomplete verdict rather than approving.
 - Every actionable finding must include an autofix classification: `autofix-safe`, `manual-required`, or `owner-decision`.
+- Report findings only on changed lines and only when confidence is at least 80/100. Include `Confidence: NN/100` in each actionable finding.
+- Include at least one concrete positive observation when the diff contains one; never invent praise to satisfy the format.
 
 ## Usage
 
@@ -83,7 +87,7 @@ URL에서 플랫폼을 감지합니다.
 
 `gh auth status` 또는 `glab auth status`로 인증 상태를 확인합니다.
 
-**GitLab self-hosted**: `glab auth status` 대신 `~/.config/glab-cli/config.yml`에서 토큰을 직접 추출하여 `GITLAB_TOKEN`으로 전달합니다. 상세는 [platform_operations.md Section 6 — Authentication Failed](references/platform_operations.md) 참조.
+**GitLab self-hosted**: `glab auth status --hostname {hostname}`으로 저장된 인증을 확인하고, API 호출에는 hostname을 명시합니다. 토큰 원문을 읽거나 출력하지 않습니다. 상세는 [platform_operations.md Section 6 — Authentication Failed](references/platform_operations.md) 참조.
 
 CLI 설치 및 인증은 [platform_operations.md Section 5](references/platform_operations.md) 참조
 
@@ -140,6 +144,8 @@ For `lucida-next`, reject commit subjects that start with a Linear ID. Linear ID
 
 **CRITICAL: 전체 MR diff (base → head)를 리뷰합니다. 개별 커밋 diff가 아닙니다.**
 
+변경 파일은 diff만 보지 말고 관련 전체 파일과 호출부를 읽습니다. 의도가 불명확할 때만 `git blame`과 이전 PR/MR 맥락을 추가 확인합니다. 이번 diff에서 바뀌지 않은 선행 문제는 finding에서 제외합니다.
+
 Diff 완전성 검증 후, ruleset의 코드 리뷰 체크리스트에 따라 분석합니다:
 
 체크리스트 상세는 [code_review_ruleset.md Section 5](references/code_review_ruleset.md) 참조:
@@ -150,6 +156,10 @@ Diff 완전성 검증 후, ruleset의 코드 리뷰 체크리스트에 따라 �
 - 5.5 에러 처리
 - 5.6 API 문서화
 
+변경 스택에 따라 다음 도메인 체크리스트를 추가 적용합니다:
+- Python/FastAPI: [domain_python.md](references/domain_python.md)
+- React/TypeScript: [domain_react_ts.md](references/domain_react_ts.md)
+
 ### Step 7: Generate Review Results
 
 템플릿 상세는 [code_review_ruleset.md Section 6](references/code_review_ruleset.md) 참조:
@@ -157,6 +167,7 @@ Diff 완전성 검증 후, ruleset의 코드 리뷰 체크리스트에 따라 �
 - 6.1.1 승인 가능 PR/MR 최소 template
 - 6.2 상세 코멘트 형식 template
 - 6.3 심각도 레벨 (🔴 Critical, 🟡 Warning, 🔵 Info, 🟢 Praise)
+- 모든 actionable finding에 `Confidence: NN/100` 표기. 80 미만은 게시하지 않음
 - 6.1.2 structured verdict block for `$ship`
 - 리뷰 히스토리의 일시는 반드시 KST(UTC+9, `Asia/Seoul`) 기준으로 작성
 
@@ -214,3 +225,5 @@ Merge/approve: manual only
 
 - [code_review_ruleset.md](references/code_review_ruleset.md) — 브랜치명/커밋 메시지 검증 규칙, 코드 리뷰 체크리스트 (품질/보안/성능/테스트/에러/API), 리뷰 결과 작성 템플릿, 심각도 레벨
 - [platform_operations.md](references/platform_operations.md) — GitHub/GitLab CLI 명령어, 페이지네이션 처리, 대용량 파일 감지, URL 파싱, 코멘트 포스팅, CLI 설치/인증, 에러 처리
+- [domain_python.md](references/domain_python.md) — Python/FastAPI 도메인 체크리스트
+- [domain_react_ts.md](references/domain_react_ts.md) — React/TypeScript/NDS 도메인 체크리스트

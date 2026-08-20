@@ -31,16 +31,9 @@ PIMS 번호와 Linear task issue 번호는 `$ship`의 commit 단계에서 사용
 
 ### 2.1 기본 타겟 컨벤션
 
-아래 표는 레포별 기본 target branch 형태입니다. `$ship`은 이 패턴을 후보 branch 범위로 사용하되, 실제 선택은 Section 2.2의 git 히스토리 거리 기준으로 수행합니다.
+Nova 저장소는 versioned branch 패턴을 강제하지 않습니다. `$ship`은 `$start`가 실제로 사용한 공유 integration branch를 target으로 사용합니다.
 
-| 레포 | 기본 타겟 |
-|------|----------|
-| lucida-ui | 최신 `develop-10.x.y_z-chat` |
-| lucida-chat-ap | 최신 `develop-10.x.y_z` |
-| lucida-chat-ai | 최신 `develop-10.x.y_z` |
-| 기타 | 최신 `develop-10.x.y_z` |
-
-이 표는 `$start`가 새 작업 branch를 생성할 때 사용하는 base branch 컨벤션과 같습니다. 단, `$ship` 시점에 새 cycle branch가 생겼을 수 있으므로 “최신”이라는 이유만으로 target을 고르면 안 됩니다. 작업 branch가 실제로 뽑힌 base를 우선합니다.
+일반 후보는 `main`, `master`, `develop`, `develop-*`, `integration/*`입니다. 레포 이름이나 branch 이름의 버전·사전순으로 "최신" branch를 추측하지 않습니다.
 
 ### 2.2 자동 감지 원리
 
@@ -52,25 +45,25 @@ HEAD가 실제로 어느 브랜치에서 뽑혔는지 **원격 후보 브랜치�
 원격 후보 브랜치 중 <cand>..HEAD 커밋 수가 가장 작은 후보 = 실제 base
 ```
 
-예를 들어 `develop-10.2.4_3`에서 feature 브랜치를 뽑았다면:
+예를 들어 `develop-ai-uiux`에서 feature 브랜치를 뽑았다면:
 
 | 후보 | `<cand>..HEAD` | 의미 |
 |------|----------------|------|
-| `origin/develop-10.2.4_3` | N | feature 커밋 수만 남는 실제 base |
-| `origin/develop-10.2.4_2` | N + 2→3 델타 | 이전 버전 branch |
-| `origin/develop` | N + develop→10.2.4_3 누적 | 상위 base |
+| `origin/develop-ai-uiux` | N | feature 커밋 수만 남는 실제 base |
+| `origin/develop-ai` | N + integration branch 델타 | 상위 공유 branch |
+| `origin/develop` | N + 누적 델타 | 더 상위 공유 branch |
 | `origin/main` | 더 큼 | 최상위 branch |
 
-레포 이름이 `lucida-ui`, `lucida-chat-ap`, `lucida-chat-ai` 중 무엇이든 이 원리는 같습니다. 같은 레포에서도 cycle마다 base branch가 바뀌므로, 레포 이름이나 최신 versioned branch만으로 target을 정하면 안 됩니다.
+같은 레포에서도 작업별 base branch가 바뀔 수 있으므로 레포 이름이나 가장 최신처럼 보이는 branch만으로 target을 정하면 안 됩니다.
 
 ### 2.3 자동 감지 스크립트
 
 ```bash
 git fetch origin --quiet
 
-# 후보 base: versioned branch (-chat 포함) + traditional fallback
+# 후보 base: Nova 공유 integration branch + traditional fallback
 candidates=$(git for-each-ref --format='%(refname:short)' refs/remotes/origin/ \
-  | grep -E '^origin/(develop-10\.[0-9]+\.[0-9]+_[0-9]+(-chat)?|develop|main|master)$')
+  | grep -E '^origin/(develop([-/].*)?|integration/.*|main|master)$')
 
 best_base=""
 best_ahead=999999999
@@ -104,12 +97,12 @@ echo "Auto-detected target: $TARGET_BRANCH"
 
 | 케이스 | 동작 |
 |--------|------|
-| `$ship develop-10.2.4_3`처럼 직접 지정 | 자동 감지 없이 지정값 사용 |
-| `develop-10.x.y_z-chat-{function}` UI feature branch | 후보에 `develop-10.x.y_z-chat`이 포함되어 실제 parent를 선택 |
+| `$ship develop-ai-uiux`처럼 직접 지정 | 자동 감지 없이 지정값 사용 |
+| `feature/*`, `fix/*` task branch | 후보 integration branch 중 실제 parent를 선택 |
 | 여러 후보의 `ahead`가 같은 경우 | `for-each-ref` 정렬 순서에 따른 결정적 선택. 필요하면 사용자가 target branch 직접 지정 |
 | shallow clone 등으로 `rev-list` 실패 | 해당 후보 skip |
 | 후보가 없거나 모두 실패 | `develop` → `main` → `master` fallback, 그래도 없으면 중단 |
-| latest versioned branch와 실제 base가 다름 | 실제 base가 더 작은 `ahead`를 가지므로 latest branch를 잘못 선택하지 않음 |
+| 이름상 최신 branch와 실제 base가 다름 | 실제 base가 더 작은 `ahead`를 가지므로 이름만 보고 잘못 선택하지 않음 |
 
 ### 2.5 레포 이름 확인
 

@@ -211,14 +211,6 @@ Linear 이슈 없이 진행되는 standalone 작업은 Linear 이슈 번호를 `
 | 테스트 코드 | ✅ | 체크 여부 확인 |
 | 정적 분석 | ✅ | 체크 여부 확인 |
 
-### 4.2 변경 규모 검증
-
-| 변경 라인 | 상태 | 권고 |
-|----------|------|------|
-| 1-200 | ✅ 적정 | - |
-| 201-500 | ⚠️ 주의 | 분할 검토 권장 |
-| 500+ | ❌ 과다 | MR 분할 필요 |
-
 ---
 
 ## 5. 코드 리뷰 체크리스트
@@ -520,10 +512,12 @@ MANUAL_MERGE_REQUIRED: yes
 
 ### 6.2 상세 코멘트 형식
 
+모든 actionable finding은 `Confidence: NN/100`을 제목에 포함합니다. 80 미만은 게시하지 않습니다. 이번 diff에서 변경되지 않은 선행 문제도 게시하지 않습니다.
+
 ```markdown
 ### 📁 파일: `TraceQueryController.java`
 
-#### Line 45-50: 🔴 Critical - N+1 Query 문제
+#### Line 45-50: 🔴 Critical · Confidence: 95/100 — N+1 Query 문제
 
 **현재 코드:**
 ```java
@@ -544,7 +538,7 @@ List<Trace> findByIdsWithSpans(@Param("ids") List<Long> ids);
 
 ---
 
-#### Line 78: 🟡 Warning - 하드코딩된 값
+#### Line 78: 🟡 Warning · Confidence: 85/100 — 하드코딩된 값
 
 **현재 코드:**
 ```java
@@ -579,12 +573,12 @@ if (size > MAX_PAGE_SIZE) {
 
 ### 6.3 심각도 레벨
 
-| 레벨 | 아이콘 | 의미 | 조치 |
-|------|--------|------|------|
-| Critical | 🔴 | 버그, 보안 취약점 | 반드시 수정 |
-| Warning | 🟡 | 개선 권장 사항 | 수정 권장 |
-| Info | 🔵 | 제안, 스타일 | 선택적 수정 |
-| Praise | 🟢 | 좋은 코드 | 칭찬/참고 |
+| 레벨 | 아이콘 | 의미 | 게시 조건 | 조치 |
+|------|--------|------|----------|------|
+| Critical | 🔴 | 버그, 보안 취약점 | Confidence 80 이상 | 반드시 수정 |
+| Warning | 🟡 | 개선 권장 사항 | Confidence 80 이상 | 수정 권장 |
+| Info | 🔵 | 제안, 스타일 | Confidence 80 이상 | 선택적 수정 |
+| Praise | 🟢 | 좋은 코드 | 구체 근거가 있을 때 | 칭찬/참고 |
 
 ### 6.3.1 자동 수정 분류
 

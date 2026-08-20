@@ -11,8 +11,8 @@ Use this skill to create or update executable Linear child task issues.
 
 Read these before writing tasks:
 
-- [linear-convention.md](../_shared/linear-convention.md)
-- [guideline-ref.md](../_shared/guideline-ref.md) section "5.1 이슈 템플릿"
+- [linear-convention.md](../../references/linear-convention.md)
+- [guideline-ref.md](../../references/guideline-ref.md) section "5.1 이슈 템플릿"
 
 A task is the unit for branch, code, PR/MR, evidence, and validation.
 

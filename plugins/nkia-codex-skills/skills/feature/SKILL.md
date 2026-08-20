@@ -11,8 +11,8 @@ Use this skill to create or update parent feature issues in Linear.
 
 Read these before writing the issue:
 
-- [linear-convention.md](../_shared/linear-convention.md)
-- [guideline-ref.md](../_shared/guideline-ref.md) section "5.1 이슈 템플릿"
+- [linear-convention.md](../../references/linear-convention.md)
+- [guideline-ref.md](../../references/guideline-ref.md) section "5.1 이슈 템플릿"
 
 Treat feature issues as parent capability containers, not executable development tasks.
 

@@ -156,13 +156,13 @@
 
 ## Step 7: Create Issue
 
-`mcp__linear__save_issue`로 이슈 생성 후 결과 URL 표시.
+`mcp__linear__save_issue`에 **title**, **team**을 필수로 전달하고, 수집한 **project**, **assignee**, **priority**, **dueDate**, **labels**, **description**은 값이 있을 때 전달합니다. 생성 후 결과 URL을 표시합니다.
 
 ---
 
-## Pydantic Schema Reference
+## Structured Data Contract
 
-Auto Mode에서 LLM이 추출할 구조화 데이터는 `scripts/parse_natural_language.py`의 Pydantic 모델을 따릅니다.
+Auto Mode에서 추출할 구조화 데이터는 다음 계약을 따릅니다.
 
 **Key models:**
 - `ParsedIssue` — 최상위 컨테이너 (metadata + template_data)

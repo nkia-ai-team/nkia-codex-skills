@@ -116,6 +116,8 @@ Linear 이슈를 생성하겠습니다. 다음 정보를 입력해주세요:
 ## Step 6: Create the Issue
 
 `mcp__linear__save_issue`로 이슈 생성:
+- `title`, `team` 필수
+- `project`, `cycle`, `assignee`, `priority`, `dueDate`, `labels`, `description`은 수집된 값이 있을 때 전달
 - Auto-assigned project ID
 - Auto-assigned cycle ID
 - Template-based labels

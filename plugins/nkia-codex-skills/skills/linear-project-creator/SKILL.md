@@ -77,7 +77,7 @@ description: Create comprehensive Linear projects with detailed documentation in
 ### Step 5: Create the Project
 
 `mcp__linear__save_project` 호출:
-- **name**, **team**, **summary**, **priority**, **lead** (선택), **startDate** (선택), **targetDate** (선택), **description**
+- **name**, **setTeams** (팀 이름/ID 배열), **summary**, **priority**, **lead** (선택), **startDate** (선택), **targetDate** (선택), **description**
 
 ### Step 6: Show Results and Suggest Next Steps
 

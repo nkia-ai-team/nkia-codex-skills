@@ -238,7 +238,7 @@ AC가 "동작 확인", "정상 동작", "테스트 통과" 등 **실행 결과�
 
     병렬 실행 구조:
     ┌─ (A) 체크박스 업데이트 → save_issue (description)
-    └─ (B) 코멘트 작성/수정 → create_comment 또는 GraphQL update
+    └─ (B) 코멘트 작성/수정 → save_comment
 
 **(A) 체크박스 업데이트:**
 
@@ -258,15 +258,8 @@ AC가 "동작 확인", "정상 동작", "테스트 통과" 등 **실행 결과�
 2. **기존 코멘트 있음:**
    - 기존 코멘트의 히스토리 섹션을 파싱하여 시도 횟수 확인
    - 최신 검증 결과로 전체 교체 + 히스토리에 새 행 추가
-   - GraphQL API로 업데이트:
-```bash
-curl -s -X POST https://api.linear.app/graphql \
-  -H "Content-Type: application/json" \
-  -H "Authorization: ${LINEAR_API_KEY}" \
-  -d '{"query": "mutation($id: String!, $body: String!) { commentUpdate(id: $id, input: { body: $body }) { success } }", "variables": {"id": "{comment_id}", "body": "{updated_body}"}}'
-```
-3. **기존 코멘트 없음 → `mcp__linear__save_comment`로 새로 생성** (히스토리 시도 #1)
-4. `LINEAR_API_KEY` 미설정 시 새 코멘트를 생성하되, 사용자에게 이전 코멘트를 수동 삭제하도록 안내
+   - `mcp__linear__save_comment`에 기존 코멘트의 `id`와 갱신할 `body`를 전달하여 업데이트
+3. **기존 코멘트 없음:** `mcp__linear__save_comment`에 `issueId`와 `body`를 전달하여 새로 생성 (히스토리 시도 #1)
 
 **⚠️ 주의:** (A)의 `get_issue`와 (B)의 `list_comments`는 병렬 실행 가능하지만, 각각의 읽기→쓰기는 순차 유지
 

@@ -28,7 +28,7 @@ AC 항목 파싱, 체크 상태 변경, 증빙 첨부 로직을 정의합니다.
 
 ### 현행 형식 (우선)
 
-공통 템플릿 구조는 [guideline-ref.md "5.1 이슈 템플릿"](../../_shared/guideline-ref.md) 참조.
+공통 템플릿 구조는 [guideline-ref.md "5.1 이슈 템플릿"](../../../references/guideline-ref.md) 참조.
 
 ### Section Detection
 

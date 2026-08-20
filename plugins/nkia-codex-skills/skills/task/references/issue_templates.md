@@ -1,7 +1,7 @@
 # Linear 작업 템플릿별 상세 가이드
 
 모든 이슈는 가이드라인의 6섹션 번호 구조를 공통으로 사용합니다.
-공통 템플릿 구조는 [guideline-ref.md "이슈 템플릿"](../../_shared/guideline-ref.md) 참조.
+공통 템플릿 구조는 [guideline-ref.md "이슈 템플릿"](../../../references/guideline-ref.md) 참조.
 
 작업 유형별로 각 섹션에 어떤 내용을 채워야 하는지 아래에서 안내합니다.
 
@@ -283,7 +283,7 @@ AC 결과물은 **"코드를 변경했다"가 아니라 "변경한 코드가 의
 
 ## 공통 AC 항목
 
-공통 AC 항목의 정의와 적용 규칙은 [guideline-ref.md "공통 AC 항목"](../../_shared/guideline-ref.md) 참조.
+공통 AC 항목의 정의와 적용 규칙은 [guideline-ref.md "공통 AC 항목"](../../../references/guideline-ref.md) 참조.
 
 이슈 생성 시 작업 유형에 맞는 공통 AC를 자동으로 추가합니다.
 

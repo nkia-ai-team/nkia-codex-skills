@@ -24,7 +24,9 @@ Rules:
 - Move to `In Progress` when at least one child task starts.
 - Move to `In Review` only when every child task is `Done` or `In Review` and parent AC has aggregate evidence.
 - Never move a feature issue to `Done`; human final confirmation owns that transition.
-- Do not create branches, commits, or PR/MRs directly for feature issues.
+- Default to child tasks for branches, commits, and PR/MRs.
+- Exception: when the user explicitly invokes `$start <feature-id>` for that exact feature and it has concrete implementation scope plus verifiable AC that fit one focused branch, treat it as a directly executable standalone issue. Do not force child-task creation solely because of the Feature label.
+- Keep abstract capability containers or work requiring multiple independent branches on the parent/child model; use `$task` to decompose them unless the user explicitly requests direct start of that exact issue.
 
 Feature AC examples:
 - [ ] 사용자가 고객 언어로 기능 결과를 이해할 수 있다.

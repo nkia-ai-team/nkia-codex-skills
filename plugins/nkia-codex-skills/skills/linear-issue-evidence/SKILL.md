@@ -183,11 +183,9 @@ Linear API의 `save_issue`는 description을 **전체 교체**합니다. 이전�
 
     ===========================
 
-### Step 9: Screenshot Upload & Inline Mapping
+### Step 9: Manual Upload Fallback
 
-로컬 스크린샷은 Linear 업로드 도구로 업로드한 뒤 반환된 asset URL을 Step 8 규칙대로 해당 AC 본문에 삽입합니다. 업로드와 본문 삽입은 하나의 증빙 작업이며 둘 중 하나만 성공하면 해당 스크린샷 증빙은 미완료입니다.
-
-Linear 업로드 API가 없거나 업로드에 실패한 경우에만 수동 업로드를 안내합니다.
+자동 업로드와 AC 본문 삽입은 Step 8에서 완료합니다. Linear 업로드 API가 없거나 업로드에 실패한 경우에만 수동 업로드를 안내합니다.
 
     === 수동 업로드 필요 ===
 

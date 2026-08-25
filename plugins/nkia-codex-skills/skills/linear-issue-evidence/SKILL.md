@@ -30,6 +30,7 @@ description: Update evidence on Linear issue AC items — check completed items 
 - AC에 명시된 증빙 유형에 따라 실제 증빙 수집 (PR 조회, 테스트 실행, 스크린샷 캡처 등)
 - AC 항목 체크 (`[ ]` → `[x]`)
 - 증빙 자료 첨부 (`→ 결과물:` 뒤에 실제 링크/경로 삽입)
+- **스크린샷은 Linear에 업로드한 뒤 해당 AC 본문 바로 아래에 Markdown 이미지로 삽입**
 - **PR/MR 링크는 이슈 리소스(links)로 첨부** (`save_issue`의 `links` 필드 사용)
 
 **하지 않는 일:**
@@ -122,6 +123,8 @@ AC 항목의 `→ 결과물:` 뒤에 이슈 생성 시 명시된 증빙 유형(�
 
     ===========================
 
+스크린샷이 있으면 미리보기에 AC별 파일명과 삽입 대상 AC를 표시합니다. 적용 시에는 파일명만 기록하지 않고 업로드 후 생성된 asset URL을 해당 AC 본문에 inline 이미지로 삽입합니다.
+
 사용자에게 확인:
 - 질문: "이대로 증빙을 적용하시겠습니까?"
 - 선택지: "적용", "수정 필요", "취소"
@@ -148,6 +151,15 @@ Linear API의 `save_issue`는 description을 **전체 교체**합니다. 이전�
 
 **1) Description 업데이트**: AC 항목 체크 + 증빙 텍스트 삽입 → `mcp__linear__save_issue`로 description 업데이트
 
+**스크린샷 삽입 규칙:**
+
+1. 스크린샷을 Linear에 업로드하여 영구 asset URL을 얻습니다.
+2. 최신 description을 다시 조회합니다.
+3. 대상 AC의 결과물 요약 바로 아래에 `![AC 설명](asset_url)` 형식으로 삽입합니다.
+4. 여러 장이면 각 이미지를 별도 줄에 삽입합니다.
+5. 파일명만 적거나 이슈 attachment 목록에만 올리는 방식은 완료 증빙으로 인정하지 않습니다.
+6. 다른 AC에 이미 삽입된 이미지 Markdown은 수정하거나 삭제하지 않습니다.
+
 **2) PR/MR 링크는 이슈 리소스로 첨부**: 공통 AC의 "코드 리뷰 완료" 항목이 있으면, 수집된 PR/MR URL을 `save_issue`의 `links` 필드로 첨부합니다. description 텍스트에 PR URL을 삽입하지 않습니다.
 
     mcp__linear__save_issue({
@@ -171,22 +183,25 @@ Linear API의 `save_issue`는 description을 **전체 교체**합니다. 이전�
 
     ===========================
 
-### Step 9: Manual Upload Guide
+### Step 9: Screenshot Upload & Inline Mapping
 
-증빙 중 로컬 파일(스크린샷, 동영상 등)이 포함된 경우, 적용 완료 후 사용자에게 안내합니다.
+로컬 스크린샷은 Linear 업로드 도구로 업로드한 뒤 반환된 asset URL을 Step 8 규칙대로 해당 AC 본문에 삽입합니다. 업로드와 본문 삽입은 하나의 증빙 작업이며 둘 중 하나만 성공하면 해당 스크린샷 증빙은 미완료입니다.
+
+Linear 업로드 API가 없거나 업로드에 실패한 경우에만 수동 업로드를 안내합니다.
 
     === 수동 업로드 필요 ===
 
-    다음 파일은 Linear에 직접 업로드해주세요:
+    다음 파일은 Linear에 직접 업로드한 뒤 asset URL을 알려주세요:
 
     1. 📷 스크린샷: temp/playwright-mcp/nkiaai-137/result.png
        → AC #2 "테스트 작성 및 통과" 증빙
 
-    업로드 방법: Linear 이슈 → 코멘트 또는 첨부파일로 드래그 앤 드롭
+    업로드 방법: Linear 이슈 → 첨부파일로 드래그 앤 드롭 → 생성된 이미지 URL 확인
+    후속 작업: 해당 URL을 AC #2 본문 바로 아래 Markdown 이미지로 삽입
 
     ===========================
 
-**판단 기준:** 증빙 값이 URL(`http://`, `https://`)이 아닌 로컬 파일 경로이면 수동 업로드 대상으로 분류합니다.
+**판단 기준:** 증빙 값이 URL(`http://`, `https://`)이 아닌 로컬 파일 경로이고 Linear 업로드 도구도 사용할 수 없을 때만 수동 업로드 대상으로 분류합니다. 수동 업로드 안내만 한 상태에서는 AC를 체크하지 않습니다.
 
 ---
 
@@ -198,7 +213,7 @@ Linear API의 `save_issue`는 description을 **전체 교체**합니다. 이전�
 |----------|------|------|-----------|
 | PR/MR 링크 | URL | `https://github.com/org/repo/pull/42` | - |
 | CI/CD 로그 | URL | `https://ci.example.com/build/123` | - |
-| 스크린샷 | 파일 경로 | `temp/playwright-mcp/nkiaai-137/result.png` | **필요** |
+| 스크린샷 | AC 본문 inline 이미지 | `![AC #2 결과](https://uploads.linear.app/...)` | 업로드 도구 없을 때만 |
 | 동영상 | 파일 경로 | `temp/playwright-mcp/nkiaai-137/demo.mp4` | **필요** |
 | 테스트 결과 | 요약 + 실제 출력 | `pytest 5/5 passed` + 터미널 출력 | - |
 | 문서 링크 | URL | `https://confluence.example.com/page/123` | - |

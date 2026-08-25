@@ -44,7 +44,7 @@ AC 항목의 `→ 결과물:` 뒤에 명시된 증빙 유형을 파악하고, �
 | API 응답 | O | curl 명령어 + JSON 응답 |
 | 데이터 경로 | O | ls + wc + head 출력 |
 | PR/MR 링크 | X | URL만 (이슈 리소스로 첨부) |
-| 스크린샷 | X | 파일 경로만 (수동 업로드) |
+| 스크린샷 | X | Linear 업로드 후 해당 AC 본문 아래 Markdown 이미지 삽입 |
 | 문서 링크 | X | URL만 |
 
 ### CRITICAL: 원본 출력을 가공 없이 사용
@@ -372,7 +372,21 @@ browser_resize를 호출하지 않으면 Playwright MCP 기본 viewport(약 780�
 
 ### 수집 결과 형식
 
-    temp/playwright-mcp/nkiaai-137/login-screen.png
+스크린샷을 Linear에 업로드한 뒤 해당 AC 결과물 요약 바로 아래에 삽입합니다.
+
+    - [x] 로그인 성공 화면이 표시된다 → 결과물: 스크린샷 2장
+
+      ![AC #2 로그인 성공](https://uploads.linear.app/.../login-success.png)
+
+      ![AC #2 로그인 완료](https://uploads.linear.app/.../login-complete.png)
+
+**필수 규칙:**
+
+- 캡처 파일마다 Linear 업로드를 완료하고 반환된 asset URL을 AC와 매핑합니다.
+- Markdown 이미지는 증빙 대상 AC 본문 바로 아래에 삽입합니다.
+- 로컬 파일명만 `→ 결과물:`에 기록하면 안 됩니다.
+- 이슈 attachment 목록에만 업로드하고 AC 본문에 이미지를 삽입하지 않으면 안 됩니다.
+- 업로드 API를 사용할 수 없을 때만 수동 업로드와 asset URL 회수를 안내하며, inline 삽입 전에는 해당 스크린샷 증빙을 완료로 처리하지 않습니다.
 
 ---
 

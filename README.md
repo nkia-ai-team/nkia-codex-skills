@@ -2,7 +2,7 @@
 
 NKIA-AI 팀의 Codex 플러그인 마켓플레이스입니다. Linear 기반 기능/태스크 관리, 개발 착수, PR/MR 제출, 머지 후 마무리, 주간업무보고 자동화를 Codex 스킬로 제공합니다.
 
-현재 버전: **v0.2.7**
+현재 버전: **v0.2.8**
 
 ## 개요
 
@@ -87,6 +87,7 @@ cd nkia-codex-skills
 # 2. Codex 스킬 디렉토리에 복사
 mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
 cp -R plugins/nkia-codex-skills/skills/* "${CODEX_HOME:-$HOME/.codex}/skills/"
+cp -R plugins/nkia-codex-skills/references "${CODEX_HOME:-$HOME/.codex}/"
 
 # 3. Codex 재시작
 ```
@@ -97,6 +98,7 @@ cp -R plugins/nkia-codex-skills/skills/* "${CODEX_HOME:-$HOME/.codex}/skills/"
 cd nkia-codex-skills
 git pull
 cp -R plugins/nkia-codex-skills/skills/* "${CODEX_HOME:-$HOME/.codex}/skills/"
+cp -R plugins/nkia-codex-skills/references "${CODEX_HOME:-$HOME/.codex}/"
 ```
 
 ## 사전 준비
@@ -471,6 +473,7 @@ codex plugin marketplace upgrade
 cd nkia-codex-skills
 git pull
 cp -R plugins/nkia-codex-skills/skills/* "${CODEX_HOME:-$HOME/.codex}/skills/"
+cp -R plugins/nkia-codex-skills/references "${CODEX_HOME:-$HOME/.codex}/"
 ```
 
 업데이트 후 Codex를 재시작합니다.

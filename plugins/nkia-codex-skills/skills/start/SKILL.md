@@ -25,13 +25,13 @@ Read [linear-convention.md](../../references/linear-convention.md). Prefer task 
    - stop if uncommitted changes exist unless the user explicitly wants to continue
 4. Resolve the repository's active integration branch.
    - Use an explicit user-supplied base when provided.
-   - Otherwise, if the current branch is a shared integration branch with an upstream, use its remote branch. Common Nova examples are `main`, `develop`, `develop-ai`, `develop-ai-uiux`, and `integration/*`.
+   - Otherwise, if the current branch is a shared integration branch with an upstream, use that local branch as the base and its upstream for synchronization. Common Nova examples are `main`, `develop`, `develop-ai`, `develop-ai-uiux`, and `integration/*`.
    - If currently on a task branch, infer the nearest remote non-task ancestor. Ask only when multiple candidates remain genuinely ambiguous.
    - Do not require versioned release branches or choose a branch merely because its name sorts latest.
-5. Create the issue branch using the branch convention below.
+5. Follow [branching.md](references/branching.md#생성): switch to the local base, pull with `--ff-only`, then create the issue branch from that local base using the convention below. Fetching and branching directly from `origin/<base>` is not a substitute. If synchronization fails or local-only commits remain, stop before creating a branch or changing Linear status; do not reset, rebase, or bypass the local base.
 6. Move the issue to `In Progress` if it is not already there.
 7. For a child task, move its parent feature to `In Progress` if the parent is still `Todo` or `Backlog`.
-8. Summarize issue title/type, parent feature when present, base branch, branch name, and AC.
+8. Summarize issue title/type, parent feature when present, local base branch and synchronized commit, branch name, and AC.
 
 ## Branch Convention
 

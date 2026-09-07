@@ -36,6 +36,7 @@ Before running the review stage, read [code-review SKILL.md](../code-review/SKIL
 3. Inspect git state:
    - if changes are staged or unstaged, offer to create a commit
    - if commits already exist, skip commit generation
+   - For plugin changes (including skills and references), check release metadata before committing or pushing: bump the changed plugin's version from the target branch according to repository conventions, and synchronize README or other current-version declarations. If this PR already includes the appropriate bump, do not bump again for every review fix. Validate manifest JSON and version consistency; do not ship changed plugin content with unchanged release metadata.
 4. If committing, generate the commit message from [commit_workflow.md](references/commit_workflow.md):
    - default NKIA format for general repos
    - UI repo format for `lucida-ui`
@@ -49,6 +50,7 @@ Before running the review stage, read [code-review SKILL.md](../code-review/SKIL
    - task ID and task title are primary
    - parent feature is context
    - use the Korean caveman PR/MR body rules in [pr_mr_workflow.md §5](references/pr_mr_workflow.md#5-prmr-본문-문체-caveman)
+   - group changes under numbered topic headings (`## 1. ...`, `## 2. ...`), followed by `## 검증`, even for small PRs; preserve explicit user or required repository templates
    - preserve change reasons, verification evidence, failures, and unverified limits; do not compress away technical meaning
 8. Run `$code-review {pr-or-mr-url}`.
 9. Judge the review result:

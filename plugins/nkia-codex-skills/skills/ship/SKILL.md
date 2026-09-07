@@ -51,6 +51,7 @@ Before running the review stage, read [code-review SKILL.md](../code-review/SKIL
    - parent feature is context
    - use the Korean caveman PR/MR body rules in [pr_mr_workflow.md §5](references/pr_mr_workflow.md#5-prmr-본문-문체-caveman)
    - group changes under numbered topic headings (`## 1. ...`, `## 2. ...`), followed by `## 검증`, even for small PRs; preserve explicit user or required repository templates
+   - name the changed target in each topic heading or opening sentence (skill, screen, service, API, or module), then explain the trigger/problem and resulting behavior. A reviewer must understand each section without this conversation; brevity must not remove the subject or causal context.
    - preserve change reasons, verification evidence, failures, and unverified limits; do not compress away technical meaning
 8. Run `$code-review {pr-or-mr-url}`.
 9. Judge the review result:

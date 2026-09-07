@@ -7,7 +7,7 @@ Nova 저장소는 버전 branch 패턴을 강제하지 않는다. 작업 시점�
 우선순위:
 
 1. 사용자가 base를 명시하면 그 branch를 사용한다.
-2. 현재 branch가 upstream을 가진 공유 integration branch면 해당 remote branch를 사용한다.
+2. 현재 branch가 upstream을 가진 공유 integration branch면 해당 local branch를 base로 사용하고 upstream으로 최신화한다.
    - 일반 예: `main`, `develop`, `develop-ai`, `develop-ai-uiux`, `integration/*`
 3. 현재 branch가 `feature/*`, `fix/*`, `refactor/*`, `config/*`, `docs/*` 같은 task branch면 remote branch들과의 merge-base/commit distance를 확인해 가장 가까운 non-task ancestor를 사용한다.
 4. 후보가 없거나 둘 이상이 같은 근거로 남으면 임의 선택하지 않고 사용자에게 base를 묻는다.
@@ -60,18 +60,34 @@ git show-ref --verify --quiet "refs/remotes/origin/$BASE"
 
 ### 생성
 
-선택한 remote integration branch에서 task branch를 만든다.
+선택한 **local integration branch를 pull로 최신화한 뒤 그 local branch에서** task branch를 만든다. `fetch`만 수행하고 `origin/$BASE`에서 직접 분기하는 것으로 대체하지 않는다.
+
+아래 예시는 `origin`의 동명 branch가 upstream인 경우다. 실제 upstream의 remote/branch가 다르면 조회한 값을 사용한다. 각 명령의 성공을 확인한 뒤 다음 단계로 진행한다.
 
 ```bash
-git fetch origin "$BASE"
-git checkout -b {prefix}/{team-key}-{no}-{slug} "origin/$BASE"
+git switch "$BASE"
+git pull --ff-only origin "$BASE"
+git rev-list --left-right --count "$BASE...origin/$BASE"
+# 위 결과가 0 0일 때만 생성한다.
+git switch --no-track -c {prefix}/{team-key}-{no}-{slug} "$BASE"
+git rev-parse HEAD "$BASE" "origin/$BASE"
 ```
+
+- local base가 없으면 `git fetch origin "$BASE"` 후 `git switch --track -c "$BASE" "origin/$BASE"`로 local base부터 만들고 위 pull 절차를 따른다.
+- pull 실패, local-only commit, divergence가 있으면 차이를 보고하고 분기·Linear 상태 변경 전에 중단한다. reset/rebase/강제 갱신 또는 remote 직접 분기로 우회하지 않는다.
+- base가 다른 worktree에서 사용 중이면 해당 worktree의 변경 상태를 확인하고 그곳에서 최신화한 뒤 local base에서 분기한다. `--ignore-other-worktrees`로 강제 전환하지 않는다.
+- 생성 직후 HEAD, local base, remote ref가 동일한 커밋인지 확인한다. task branch는 integration upstream을 상속하지 않도록 `--no-track`을 사용한다.
 
 예:
 
 ```bash
-BASE=develop-ai-uiux
-git checkout -b feature/nkiaai-805-ai-now-one-page origin/develop-ai-uiux
+BASE=develop-ai
+git switch "$BASE"
+git pull --ff-only origin "$BASE"
+git rev-list --left-right --count "$BASE...origin/$BASE"
+# 0 0 확인 후:
+git switch --no-track -c fix/nkiaai-823-ai-now-pagination-layout "$BASE"
+git rev-parse HEAD "$BASE" "origin/$BASE"
 ```
 
 ## 3. 후속 `$ship` target

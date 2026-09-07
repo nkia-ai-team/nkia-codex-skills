@@ -48,7 +48,8 @@ Before running the review stage, read [code-review SKILL.md](../code-review/SKIL
 7. Write PR/MR title and body around the task scope:
    - task ID and task title are primary
    - parent feature is context
-   - include concise summary and changes
+   - use the Korean caveman PR/MR body rules in [pr_mr_workflow.md §5](references/pr_mr_workflow.md#5-prmr-본문-문체-caveman)
+   - preserve change reasons, verification evidence, failures, and unverified limits; do not compress away technical meaning
 8. Run `$code-review {pr-or-mr-url}`.
 9. Judge the review result:
    - `VERDICT: approved` with Critical 0 and Warning 0: stop and wait for manual merge

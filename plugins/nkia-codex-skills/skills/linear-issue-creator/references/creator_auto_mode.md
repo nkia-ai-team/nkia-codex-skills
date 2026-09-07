@@ -26,7 +26,7 @@
 **추출 항목:**
 1. `template_type` — 작업 유형 자동 결정
 2. `title` — 영문 제목 (English Title Patterns 참고)
-3. `team`, `project`, `assignee`, `priority`, `due_date` — 메타데이터
+3. `team`, `project`, `assignee`, `cycle`, `state`, `estimate`, `priority`, `due_date` — 메타데이터
 4. `labels` — 템플릿 타입 기반 work type 라벨 자동 선택 + 내용 분석으로 domain 라벨 추가
 5. `dod_items`, `ac_items` — 구체적이고 측정 가능한 항목 생성
 
@@ -57,6 +57,9 @@
     "team": "Nkia-AI",
     "project": null,
     "assignee": "이성원",
+    "cycle": null,
+    "state": "Backlog",
+    "estimate": 3,
     "priority": "Normal",
     "due_date": "2025-11-25",
     "labels": ["data"]
@@ -75,6 +78,8 @@
   }
 }
 ```
+
+추출 예시의 `cycle: null`은 미결정 값이다. Step 5에서 사용자 의도 또는 명시적 미할당을 확인한 후 저장한다.
 
 ## Step 3: Display Extracted Information and Offer Editing
 
@@ -120,12 +125,9 @@
 - 활성 프로젝트 목록을 번호와 함께 표시하고 사용자에게 선택 요청
 - "(없음)" 선택지도 제공 — 프로젝트 미할당 허용
 
-## Step 5: Auto-assign Cycle Based on Due Date
+## Step 5: Resolve Metadata
 
-`due_date`가 있는 경우:
-1. `mcp__linear__list_cycles`로 팀 사이클 조회
-2. `startsAt <= due_date < endsAt`인 사이클 선택
-3. 매칭 실패 시 null
+[SKILL.md의 Metadata Resolution & Verification](../SKILL.md#metadata-resolution--verification-auto--manual-공통)에 따라 담당자·사이클·상태·포인트를 결정한다. 마감일이 없어도 명시 사이클과 기존 지시를 반영한다.
 
 ## Step 6: Generate Markdown Description and Show Preview
 
@@ -141,22 +143,21 @@
 우선순위: [우선순위]
 담당자: [담당자]
 마감일: [마감일]
-사이클: [사이클] (if found)
+사이클: [사이클 번호/이름 또는 명시적 미할당]
+상태: [실제 팀 상태]
+포인트: [estimate 및 잠정 산정 근거]
 라벨: [라벨들]
 
 --- 설명 ---
 [생성될 마크다운 내용]
 --------------
 
-사용자에게 확인:
-- 질문: "이대로 생성하시겠습니까?"
-- 선택지: "이대로 생성", "수정 후 생성"
-- 사용자는 "Other"로 다른 지시사항을 입력할 수 있음
+등록 지시와 필요한 정보가 있으면 바로 생성한다. 미결정 정보만 한 번에 확인한다.
 ```
 
 ## Step 7: Create Issue
 
-`mcp__linear__save_issue`에 **title**, **team**을 필수로 전달하고, 수집한 **project**, **assignee**, **priority**, **dueDate**, **labels**, **description**은 값이 있을 때 전달합니다. 생성 후 결과 URL을 표시합니다.
+공통 Metadata Resolution & Verification 규칙대로 `save_issue`에 **title, team, description, assignee, cycle, state, estimate**와 결정된 선택 필드를 전달한다. 반환값 또는 `get_issue`로 네 메타데이터를 검증하고, 누락은 동일 이슈를 수정한다. 최종 결과에 링크·담당자·사이클·상태·포인트를 표시한다.
 
 ---
 
@@ -166,7 +167,7 @@ Auto Mode에서 추출할 구조화 데이터는 다음 계약을 따릅니다.
 
 **Key models:**
 - `ParsedIssue` — 최상위 컨테이너 (metadata + template_data)
-- `IssueMetadata` — template_type, title, team, project, assignee, priority, due_date, labels
+- `IssueMetadata` — template_type, title, team, project, assignee, cycle, state, estimate, priority, due_date, labels
 - Template-specific models: `BuildDeployTemplate`, `DataWorkTemplate`, `EvaluationTemplate`, `FeatureNewTemplate`, `FeatureImproveTemplate`, `RefactoringTemplate`, `ResearchTemplate`, `BugTemplate`, `DocumentationTemplate`
 
 All templates include `dod_items: List[str]` and `ac_items: List[str]`.

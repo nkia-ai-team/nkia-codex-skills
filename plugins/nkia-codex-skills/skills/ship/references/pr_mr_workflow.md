@@ -135,16 +135,11 @@ PR/MR 생성 시 assignee는 반드시 PR/MR을 생성하는 CLI 인증 계정 �
 
 ### GitHub
 
+본문은 §5 규칙으로 임시 UTF-8 파일에 작성한 뒤 전달합니다. 사용자 문구를 쉘 명령 문자열에 보간하지 않습니다.
+
     gh pr create \
       --title "{pr-title}" \
-      --body "$(cat <<'EOF'
-    ## Summary
-    - 변경 사항 요약
-
-    ## Changes
-    - 변경 단위별 불릿
-    EOF
-    )" \
+      --body-file {body-file} \
       --base {target-branch} \
       --head {current-branch} \
       --assignee @me
@@ -172,25 +167,43 @@ GitLab self-hosted 인증은 [code-review platform_operations.md Section 6](../.
 
 ---
 
-## 5. PR Body 생성 규칙
+## 5. PR/MR 본문 문체 (Caveman)
 
-Summary와 Changes 섹션만 작성합니다. Test plan 섹션은 불필요.
+PR/MR 생성·수정 시 **짧은 한국어 구문**을 기본으로 사용합니다. 별도 caveman 설치나 활성화는 필요 없습니다. caveman의 외부 문서 일반 문체 기본값보다 이 PR/MR 전용 규칙을 우선합니다. 사용자 지정 언어·문체와 저장소 필수 템플릿이 있으면 그 지시를 우선합니다.
 
-### Summary
+- “수정합니다 / 적용했습니다 / 확인할 수 있습니다” 대신 “수정 / 적용 / 확인”처럼 간결하게 끝냅니다. 억지 비문·음슴체·장식용 이모지는 넣지 않습니다.
+- 첫 1~2줄에 문제와 결과. 같은 내용을 요약과 변경 목록에서 반복하지 않습니다.
+- 한 불릿에 한 변경. 무엇을 바꿨는지와 필요한 이유를 함께 적습니다. 큰 변경만 번호 섹션으로 구분하고, 작은 변경은 짧은 본문과 검증만으로 충분합니다.
+- 마지막에 실제 검증 명령·결과·증빙 링크와 미실행/실패/차단 항목을 적습니다. 미실행을 통과로 표현하지 않습니다.
+- 기술명·코드·API·경로·이슈 ID·수치·단위는 원문 유지. 부정·조건·예외·제약·변경 순서와 인과관계는 생략하지 않습니다. 압축하면 모호해지는 부분은 완전한 문장으로 씁니다.
+- 새 약어·인과 화살표·형식적인 마무리 문구는 추가하지 않습니다.
+- 적용 범위는 PR/MR 제목·본문의 설명 문구입니다. 제목의 이슈 ID·레포 형식, 커밋 규칙, 코드 리뷰의 필수 템플릿·`review-verdict` 키는 유지합니다.
 
-이슈 제목과 AC를 기반으로 1~3줄 요약:
+### 예시
 
-    ## Summary
-    - StreamEventEmitter를 WriterEmitterAdapter로 전환하여 스트리밍 구조 단순화
+```markdown
+Linear 이슈 생성 시 담당자·사이클·상태·포인트 누락 수정.
+자동·수동 생성 모두 실제 필드 저장 후 검증.
 
-### Changes
+## 1. 메타데이터 저장
 
-`git log {target}..HEAD --oneline`과 `git diff {target}..HEAD --stat`을 기반으로 작성:
+- 사용자 지정값 우선. 미지정 담당자는 요청자, 포인트는 근거 포함 잠정 산정.
+- 마감일 없이 지정한 사이클도 반영. 명시적 미할당과 미결정 구분.
+- 저장값 불일치 시 동일 이슈 1회 보정. 재실패 시 중단, 중복 생성 금지.
 
-    ## Changes
-    - StreamEventEmitter(Thread-safe Queue + 50ms 폴링) 완전 제거
-    - WriterEmitterAdapter(get_stream_writer()) 신규 — emitter 인터페이스 래핑
-    - 단위 테스트 5건 추가
+## 2. 설치·버전
+
+- 수동 설치에 공통 references 복사 추가. guideline-ref.md 참조 누락 해결.
+- 플러그인·README 버전 0.2.8로 통일.
+
+## 검증
+
+- quick_validate.py, git diff --check 통과.
+- 최초·반복 설치의 상대 참조 경로 검증 통과.
+- 실제 Linear 생성 E2E 미실행.
+```
+
+예시의 버전·검증 결과는 형식 참고용입니다. 실제 diff와 실행 결과로 작성합니다.
 
 ---
 

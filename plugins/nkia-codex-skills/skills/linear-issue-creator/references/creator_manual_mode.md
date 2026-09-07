@@ -26,8 +26,11 @@ Linear 이슈를 생성하겠습니다. 다음 정보를 입력해주세요:
 3. 프로젝트 이름: (선택사항, 없으면 엔터)
 4. 이슈 제목:
 5. 우선순위: (Urgent/High/Normal/Low, 선택사항)
-6. 담당자: (이름/이메일/'me', 선택사항)
+6. 담당자: (이름/이메일/'me', 기본 요청자; 명시적 미할당 가능)
 7. 마감일: (YYYY-MM-DD, 선택사항)
+8. 사이클: (번호/현재/다음/미할당)
+9. 상태: (팀 상태 목록에서 선택, 미지정 시 공통 규칙 적용)
+10. 포인트: (미지정 시 범위에 따라 잠정 산정)
 ```
 
 ## Step 2: Suggest Improved Title
@@ -85,11 +88,9 @@ Linear 이슈를 생성하겠습니다. 다음 정보를 입력해주세요:
 2. 이슈 제목/설명 키워드와 프로젝트 이름 매칭
 3. 높은 신뢰도 매칭 시만 할당 (강제 할당 금지)
 
-## Step 4.6: Auto-assign Cycle Based on Due Date
+## Step 4.6: Resolve Metadata
 
-`due_date` 제공 시:
-1. `mcp__linear__list_cycles`로 사이클 조회
-2. `startsAt <= due_date < endsAt`인 사이클 선택
+[SKILL.md의 Metadata Resolution & Verification](../SKILL.md#metadata-resolution--verification-auto--manual-공통)에 따라 담당자·사이클·상태·포인트를 결정한다. 이미 제공된 값은 다시 묻지 않는다.
 
 ## Step 5: Show Preview and Confirm
 
@@ -103,23 +104,18 @@ Linear 이슈를 생성하겠습니다. 다음 정보를 입력해주세요:
 우선순위: [우선순위]
 담당자: [담당자]
 마감일: [마감일]
-사이클: [자동 배정된 사이클]
+사이클: [사이클 번호/이름 또는 명시적 미할당]
+상태: [실제 팀 상태]
+포인트: [estimate 및 잠정 산정 근거]
 라벨: [자동 선택된 라벨들]
 
 --- 설명 ---
 [마크다운 내용]
 --------------
 
-미리보기 확인 없이 바로 생성합니다. 수정이 필요하면 Linear에서 직접 수정합니다.
+등록 지시와 필요한 정보가 있으면 바로 생성한다. 미결정 정보만 한 번에 확인한다.
 ```
 
 ## Step 6: Create the Issue
 
-`mcp__linear__save_issue`로 이슈 생성:
-- `title`, `team` 필수
-- `project`, `cycle`, `assignee`, `priority`, `dueDate`, `labels`, `description`은 수집된 값이 있을 때 전달
-- Auto-assigned project ID
-- Auto-assigned cycle ID
-- Template-based labels
-
-결과 URL 표시.
+공통 Metadata Resolution & Verification 규칙대로 `save_issue`에 **title, team, description, assignee, cycle, state, estimate**와 결정된 선택 필드를 전달한다. 반환값 또는 `get_issue`로 네 메타데이터를 검증하고, 누락은 동일 이슈를 수정한다. 최종 결과에 링크·담당자·사이클·상태·포인트를 표시한다.

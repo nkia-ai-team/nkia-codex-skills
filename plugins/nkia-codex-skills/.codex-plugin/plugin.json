@@ -1,6 +1,6 @@
 {
   "name": "nkia-codex-skills",
-  "version": "0.3.0+codex.20260910042836",
+  "version": "0.3.1+codex.20260910045247",
   "description": "Codex skills for NKIA development, Linear, Confluence publishing, review, and reporting workflows.",
   "author": {
     "name": "NKIA-AI Team"

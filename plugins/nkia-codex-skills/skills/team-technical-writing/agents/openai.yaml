@@ -1,0 +1,4 @@
+interface:
+  display_name: "팀 기술문서 작성"
+  short_description: "Write readable team technical docs with titles and templates"
+  default_prompt: "Use $team-technical-writing to write or improve this technical document for team readers."

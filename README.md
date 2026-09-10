@@ -2,7 +2,7 @@
 
 NKIA-AI 팀의 Codex 플러그인 마켓플레이스입니다. Linear 기반 기능/태스크 관리, 개발 착수, PR/MR 제출, 머지 후 마무리, 주간업무보고 자동화를 Codex 스킬로 제공합니다.
 
-현재 버전: **v0.2.9**
+현재 버전: **v0.3.0**
 
 ## 개요
 
@@ -14,7 +14,7 @@ plugins/nkia-codex-skills/.codex-plugin/plugin.json
 plugins/nkia-codex-skills/skills/
 ```
 
-Codex에서 사용하는 스킬은 아래 17개입니다.
+Codex에서 사용하는 스킬은 아래 18개입니다.
 
 ```text
 $feature → $task → $start → (개발) → $commit → $ship → (수동 머지) → $finish
@@ -45,6 +45,7 @@ $linear-project-creator → $linear-project-updater → $linear-initiative-updat
 | `$code-review` | GitHub PR/GitLab MR 단독 코드 리뷰 및 검증 코멘트 작성 |
 | `$finish` | 머지 후 브랜치 정리, 증빙 수집, AC 검증, Task/Feature 상태 정리 |
 | `$weekly` | Linear/Git/Calendar 기반 주간업무보고 작성 및 Google Sheet 기록 |
+| `$team-technical-writing` | 사람이 읽고 공유하기 쉬운 기술문서 작성·검토, 제목·위치 기준과 유형별 템플릿 적용 |
 | `$confluence-md-upload` | Markdown 보고서를 Mermaid/SVG 보존 상태로 Confluence 페이지에 업로드 |
 | `$develop-from-design` | 설계 문서를 구현 계획·코드·검증까지 연결하는 end-to-end 실행 |
 | `$linear-issue-creator` | 작업 유형별 템플릿으로 Linear 이슈 생성 |
@@ -158,6 +159,22 @@ gws auth login
 - `https://www.googleapis.com/auth/calendar.readonly`
 
 ## 스킬 상세
+
+### `$team-technical-writing`
+
+사람이 쉽게 읽고 정확하게 이해하며 공유할 수 있도록 기술문서를 작성·수정·검토합니다.
+
+- 핵심 먼저, 불릿 중심으로 정리하되 필요한 이유·조건·근거를 보존합니다.
+- 제목·문서 위치·갱신 기준과 설계, 사용·운영, 실험·평가, 장애·변경 템플릿을 제공합니다.
+- 짧은 수정에는 전체 템플릿을 강제하지 않으며, 원문의 수치·정책·예외를 임의로 바꾸지 않습니다.
+- Confluence 게시에는 별도로 연결된 도구가 필요합니다. 로컬 문서 작성에는 연결이 필요하지 않습니다.
+
+```text
+$team-technical-writing 이 설계 문서를 팀원이 읽기 쉽게 다듬어줘
+$team-technical-writing 이 문서의 Before/After와 변경 이유를 보여줘
+```
+
+---
 
 ### `$confluence-md-upload`
 

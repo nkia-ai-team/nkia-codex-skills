@@ -1,6 +1,6 @@
 {
   "name": "nkia-codex-skills",
-  "version": "0.2.9+codex.20260907015615",
+  "version": "0.3.0+codex.20260910042836",
   "description": "Codex skills for NKIA development, Linear, Confluence publishing, review, and reporting workflows.",
   "author": {
     "name": "NKIA-AI Team"
@@ -25,13 +25,14 @@
     "markdown",
     "report-publishing",
     "design-implementation",
-    "evidence-validation"
+    "evidence-validation",
+    "technical-writing"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "NKIA Codex Skills",
     "shortDescription": "NKIA development, Linear, review, and reporting skills",
-    "longDescription": "Codex skills for NKIA-AI Linear planning and updates, task start, design-driven implementation, SonarQube remediation, commits, PR/MR review and shipping, evidence validation, weekly reporting, and Markdown-to-Confluence publishing.",
+    "longDescription": "Codex skills for NKIA-AI Linear planning and updates, task start, design-driven implementation, SonarQube remediation, commits, PR/MR review and shipping, evidence validation, weekly reporting, and Markdown-to-Confluence publishing. Includes readability-first team technical writing with document management rules and templates.",
     "developerName": "NKIA-AI Team",
     "category": "Productivity",
     "capabilities": [
@@ -48,7 +49,8 @@
       "Use $confluence-md-upload to publish Markdown reports to Confluence with diagrams preserved.",
       "Use $develop-from-design with a design document to implement and verify its scope.",
       "Use $linear-issue-evidence and $linear-issue-validator to register and verify AC evidence.",
-      "Use $linear-project-updater and $linear-initiative-updater for status reporting."
+      "Use $linear-project-updater and $linear-initiative-updater for status reporting.",
+      "Use $team-technical-writing to write or improve readable team technical documents."
     ]
   }
 }

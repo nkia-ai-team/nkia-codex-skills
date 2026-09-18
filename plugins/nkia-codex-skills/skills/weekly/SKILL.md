@@ -1,6 +1,6 @@
 ---
 name: weekly
-description: Generate NKIA-AI weekly work reports for Google Sheets by collecting Linear issues, Git commits, and Google Calendar vacation events. Use when users ask Codex to write, preview, or update the team weekly report.
+description: Generate NKIA-AI weekly work reports for Google Sheets from the invoking user’s Linear, Git, local work evidence, and Calendar, with estimated target dates and progress. Use when users ask Codex to write, preview, or update the team weekly report.
 ---
 
 # Weekly
@@ -25,8 +25,8 @@ $weekly --reconfigure
 
 Read only the references needed for the current action:
 
-- [data_collection.md](references/data_collection.md) — Linear, Git, Calendar collection logic.
-- [report_rendering.md](references/report_rendering.md) — B/C/D/F/G column rendering.
+- [data_collection.md](references/data_collection.md) — reporter identity and Linear, Git, local activity, Calendar collection.
+- [report_rendering.md](references/report_rendering.md) — date/progress estimation and readable B/C/D/F/G rendering.
 - [sheet_operations.md](references/sheet_operations.md) — Google Sheet tab/row/cell operations.
 - [README.md](references/README.md) — Google auth setup note.
 
@@ -36,7 +36,9 @@ Do:
 
 - Collect this week's Linear work.
 - Summarize Done/In Review work and next-week planned work.
-- Use Git commits to enrich work details when connected to Linear issues.
+- Identify the invoking user from their config, Linear account, and Git identities; never hardcode a team member.
+- Include attributable uncommitted work and dated local results even without a Linear issue or commit.
+- Infer the current work scope from code and work records when no issue or acceptance criteria exist; estimate dates/progress using report_rendering.md.
 - Read Google Calendar vacation/half-day events.
 - Preview the generated report before writing.
 - If the target Thursday tab is missing, copy the configured template tab and use the copy as the target tab.
@@ -48,7 +50,8 @@ Do not:
 - Write another teammate's row unless explicitly requested.
 - Change sheet structure, formulas, formatting, or tab names, except copying the template tab when the target weekly tab is missing.
 - Create a blank weekly tab with `addSheet`; weekly tabs must come from the template so formatting, formulas, dropdowns, and widths are preserved.
-- Invent work that is not backed by Linear, Git, Calendar, or explicit user-provided next-week text.
+- Invent work or measured results without source evidence. Date/progress estimates are allowed and briefly explained in the preview.
+- Require an issue or written completion criteria before estimating progress, or treat future enhancements as unfinished current work.
 
 ## Configuration
 
@@ -109,24 +112,29 @@ Required scopes:
 
 ## Workflow
 
-1. Determine target report week.
-   - Default: current week's Thursday.
-   - `--week YYYY-MM-DD`: Thursday in that date's week.
-   - Reporting window: Friday through Thursday.
-2. Load config.
+1. Determine target report window.
+   - Default: the current work week through the execution date.
+   - The report window starts on Monday and ends on the execution date.
+   - If executed on Thursday, collect Monday through Thursday.
+   - If executed on Friday, collect Monday through Friday.
+   - If executed on Monday, collect Monday only.
+   - If executed on Saturday or Sunday, use the preceding Monday through Friday.
+   - `--week YYYY-MM-DD`: use the work week containing that date, capped at that date unless the date is Saturday/Sunday, then capped at Friday.
+   - The weekly sheet tab still uses that work week's Thursday date in `YYYYMMDD`.
+2. Load config and identify the invoking reporter using data_collection.md §0.
 3. Collect data:
    - Linear current cycle Done/In Review issues.
    - Previous cycle issues completed or moved to review in the report window.
    - `In Progress` / `Todo` issues for next-week planning.
-   - Git commits for repos linked from Linear attachments.
+   - The reporter’s Git commits, relevant uncommitted changes, and local work/results, including work without issue attachments.
    - Calendar vacation/half-day events by configured Google account.
 4. Render:
    - B: 업무구분, usually `백로그`.
-   - C: 업무 (목표일, 진행율).
+   - C: 업무명 목록 (날짜·진척도 없이).
    - D: 업무 내용.
    - F: 차주 업무 구분, usually `백로그`.
    - G: 차주 업무.
-5. Preview the full report.
+5. Preview the full report, with a brief note outside the cell content explaining inferred scope, dates, and progress.
 6. If `--dry-run`, stop after preview.
 7. Ask for confirmation before writing.
 8. Resolve the target Thursday tab:
@@ -169,7 +177,7 @@ Never write column E or any columns after G.
 
 Weekly tab creation:
 
-- Target tab name: Thursday date in `YYYYMMDD`.
+- Target tab name: Thursday date of the report work week in `YYYYMMDD`, even when the report window ends on Friday.
 - Template tab: config `templateTabName`, otherwise `템플릿`, `Template`, `template` in that order.
 - If the target tab is missing, duplicate the template tab and name the copy `YYYYMMDD`.
 - Never create an empty weekly tab manually.
@@ -185,7 +193,7 @@ Preview in a compact but complete format:
 [B] 업무구분:
 백로그
 
-[C] 업무 (목표일, 진행율):
+[C] 업무:
 1. ...
 
 [D] 업무 내용:
@@ -205,37 +213,36 @@ Preview in a compact but complete format:
 Match the real sheet examples:
 
 - B and F are usually exactly `백로그`.
-- C is a compact numbered list of high-level work themes, not raw issue IDs.
-- D repeats each C number and adds indented detail bullets with ` - `.
-- G is a numbered list of next-week work, with detail bullets only when useful.
+- C lists work names only, without dates or percentages; related items may sit under a common heading.
+- D repeats C numbering and work names, adding `(~MM/DD, N%)` to each concrete work item title. Estimate child tasks separately when their progress differs. Put `문제:` and `작업 내용:` on separate lines, then list actions under `작업 내용:` with one action/result per line. See report_rendering.md for the example.
+- G is a numbered list of next-week work without dates or percentages, with detail bullets only when useful.
 - Keep blank lines between numbered blocks in D and G when there are bullets.
 - Use Korean prose, but keep technical nouns like API, PR, MR, LLM, RCA, ITSM, KDB, GPU as-is.
 - Prefer feature/customer language for C/G and concrete implementation details for D.
 - Include vacation/training under `기타` in D, not C unless it is the only notable item.
 
-Example shape:
+Example shape (illustrative dates/progress, not defaults):
 
 ```text
 [C]
-1. RCA Agent
-2. 기타
+1. 문서 검색 개선
 
 [D]
-1. RCA Agent
- - 에이전트 구조 개선작업 진행중
+1. 문서 검색 개선 (~09/18, 90%)
+   문제: 필요한 문서가 검색 상위 결과에서 누락됨.
 
-2. 기타
- - 5/4 연차, 5/6 오전반차, 5/8 연차
- - AI 교육 (5/6)
+   작업 내용:
+   - 벡터·키워드 혼합 검색 구현
+   - 대표 질문으로 검색 결과 비교 및 누락 원인 보완
+   - 주요 경로 검증 후 최종 회귀 확인 진행
 
 [G]
-1. RCA Agent 개발완료
-2. RCA Agent가 이전 분석을 활용하는 기능 추가
+1. 검색 결과를 활용한 답변의 근거 전달 보완
 ```
 
 ## Failure Handling
 
-- If Linear is unavailable, continue with Git/Calendar only after telling the user what will be missing.
+- If Linear is unavailable, continue with Git/local activity/Calendar after telling the user what will be missing.
 - If Google auth is missing, stop before write and show exact auth commands.
 - If the target tab is missing, copy it from the template tab before row lookup.
 - If the template tab is missing or cannot be copied, stop before write and report the missing template and available tabs.

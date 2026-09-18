@@ -41,8 +41,10 @@
 
 ### 2.1 목요일 날짜로 탭 이름 생성
 
-    thursdayDate = weekEnd  // data_collection.md에서 계산된 목요일
+    thursdayDate = weekStart + 3일  // data_collection.md에서 계산된 해당 업무주의 목요일
     tabName = thursdayDate.format("YYYYMMDD")  // 예: "20260409"
+
+보고 범위 종료일(`weekEnd`)이 금요일이어도 탭 이름은 해당 업무주의 목요일 날짜를 사용합니다.
 
 ### 2.2 탭 존재 확인
 

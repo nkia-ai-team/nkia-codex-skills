@@ -184,25 +184,21 @@ Weekly tab creation:
 
 ## Output Style
 
-Preview in a compact but complete format:
+Preview in a compact but complete format. Column letters are internal Sheets mappings; do not show `[B]`, `[C]`, `[D]`, `[F]`, or `[G]` in the report. Show the work category once when B and F match; if they differ, label this-week and next-week categories separately.
 
 ```text
 === 주간 업무 보고서 미리보기 ===
 대상: <reporterName> | 탭: YYYYMMDD | 행: N
 
-[B] 업무구분:
-백로그
+업무구분: 백로그
 
-[C] 업무:
+업무:
 1. ...
 
-[D] 업무 내용:
+업무 내용:
 1. ...
 
-[F] 차주 업무 구분:
-백로그
-
-[G] 차주 업무:
+차주 업무:
 1. ...
 
 휴가/반차: 없음
@@ -216,6 +212,7 @@ Match the real sheet examples:
 - C lists work names only, without dates or percentages; related items may sit under a common heading.
 - D repeats C numbering and work names, adding `(~MM/DD, N%)` to each concrete work item title. Estimate child tasks separately when their progress differs. Put `문제:` and `작업 내용:` on separate lines, then list actions under `작업 내용:` with one action/result per line. See report_rendering.md for the example.
 - G is a numbered list of next-week work without dates or percentages, with detail bullets only when useful.
+- Let the actual work determine the number of topics and detail bullets; do not impose item counts or a fixed opening verb. Merge duplicate evidence into a coherent account of the work.
 - Keep blank lines between numbered blocks in D and G when there are bullets.
 - Use Korean prose, but keep technical nouns like API, PR, MR, LLM, RCA, ITSM, KDB, GPU as-is.
 - Prefer feature/customer language for C/G and concrete implementation details for D.
@@ -224,10 +221,10 @@ Match the real sheet examples:
 Example shape (illustrative dates/progress, not defaults):
 
 ```text
-[C]
+업무:
 1. 문서 검색 개선
 
-[D]
+업무 내용:
 1. 문서 검색 개선 (~09/18, 90%)
    문제: 필요한 문서가 검색 상위 결과에서 누락됨.
 
@@ -236,7 +233,7 @@ Example shape (illustrative dates/progress, not defaults):
    - 대표 질문으로 검색 결과 비교 및 누락 원인 보완
    - 주요 경로 검증 후 최종 회귀 확인 진행
 
-[G]
+차주 업무:
 1. 검색 결과를 활용한 답변의 근거 전달 보완
 ```
 

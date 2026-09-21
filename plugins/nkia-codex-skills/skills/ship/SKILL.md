@@ -49,7 +49,7 @@ Before running the review stage, read [code-review SKILL.md](../code-review/SKIL
 7. Write PR/MR title and body around the task scope:
    - task ID and task title are primary
    - parent feature is context
-   - use the Korean caveman PR/MR body rules in [pr_mr_workflow.md §5](references/pr_mr_workflow.md#5-prmr-본문-문체-caveman)
+   - use the reader-first Korean PR/MR body rules in [pr_mr_workflow.md §5](references/pr_mr_workflow.md#5-prmr-본문-문체). Explain the observed problem and resulting behavior for teammates who did not implement it; put implementation details after that explanation.
    - group changes under numbered topic headings (`## 1. ...`, `## 2. ...`), followed by `## 검증`, even for small PRs; preserve explicit user or required repository templates
    - name the changed target in each topic heading or opening sentence (skill, screen, service, API, or module), then explain the trigger/problem and resulting behavior. A reviewer must understand each section without this conversation; brevity must not remove the subject or causal context.
    - write headings as natural phrases combining the primary target and change, without separating them with a dash or listing every related target. Put supporting targets in the body and group their changes under the appropriate topic.

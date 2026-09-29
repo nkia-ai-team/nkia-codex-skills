@@ -20,7 +20,7 @@ Claude `/submit` delegates to `/code-review`. Codex `$ship` follows the same orc
 
 - During the review phase, execute the `$code-review` workflow on the PR/MR URL.
 - Do not replace `$code-review` by doing a lighter inline review.
-- Parse the `$code-review` comment verdict from the `review-verdict` fenced block in `# MR 코드 리뷰 결과`.
+- Read the current-head review comment's human-readable overall decision, findings and blockers under `# MR 코드 리뷰 결과`, following ruleset section 6.1.2.
 - Re-review by running `$code-review` again, which updates the existing review comment instead of adding duplicates.
 
 ## First Step
@@ -57,9 +57,9 @@ Before running the review stage, read [code-review SKILL.md](../code-review/SKIL
    - preserve change reasons, verification evidence, failures, and unverified limits; do not compress away technical meaning
 8. Run `$code-review {pr-or-mr-url}`.
 9. Judge the review result:
-   - `VERDICT: approved` with Critical 0 and Warning 0: stop and wait for manual merge
-   - `VERDICT: needs-fix`: auto-fix safe items and re-review
-   - `VERDICT: blocked`: stop and report the blocked reason
+   - `PASS` with Critical 0 and Warning 0, complete diff coverage and no blocker: stop and wait for manual merge
+   - `FAIL · 수정 필요`: auto-fix safe items and re-review
+   - `FAIL · 검토 차단`: stop and report the blocked reason
 10. Auto-fix review comments when safe, recommit, push, and rerun review up to 3 total review attempts. Stop earlier when changes need human judgment.
 11. When validation passes, report that the PR/MR is ready for human merge.
 12. Never merge or approve automatically.

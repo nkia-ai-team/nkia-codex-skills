@@ -37,7 +37,7 @@ Perform comprehensive code reviews on GitHub Pull Requests or GitLab Merge Reque
 - Security vulnerability detection (OWASP Top 10)
 - Performance issue detection (N+1, pagination, etc.)
 - Test code review
-- Structured verdict block for `$ship` parsing
+- Human-readable review decision for `$ship` and `$submit`
 - Automatic comment posting to PR/MR
 
 ## Review Quality Bar
@@ -168,12 +168,11 @@ Diff 완전성 검증 후, ruleset의 코드 리뷰 체크리스트에 따라 �
 - 6.2 상세 코멘트 형식 template
 - 6.3 심각도 레벨 (🔴 Critical, 🟡 Warning, 🔵 Info, 🟢 Praise)
 - 모든 actionable finding에 `Confidence: NN/100` 표기. 80 미만은 게시하지 않음
-- 6.1.2 structured verdict block for `$ship`
+- 6.1.2 본문 판정과 후속 처리
 - 리뷰 히스토리의 일시는 반드시 KST(UTC+9, `Asia/Seoul`) 기준으로 작성
 
 **CRITICAL: 템플릿을 임의로 축약하거나 재구성하지 않습니다.**
-- `review-verdict` fenced block의 key는 반드시 `VERDICT:`, `CRITICAL:`, `WARNING:`, `INFO:`, `AUTOFIX_SAFE:`, `BLOCKED_REASON:`, `MANUAL_MERGE_REQUIRED:`를 대문자로 사용합니다.
-- `status`, `critical`, `warning`, `info`처럼 소문자/별도 key로 바꾸면 `$ship` 파싱 대상이 아니므로 금지합니다.
+- 본문의 전체 판정·상세 지적·차단 사유를 기준으로 판단하며 별도 기계용 판정 블록은 작성하지 않습니다.
 - 이슈가 0건이어도 `요약` 표, 브랜치명 검증, 커밋 메시지 검증, Diff 완전성, 상세 리뷰, 검증, 리뷰 히스토리를 포함합니다.
 - PR/MR 플랫폼과 무관하게 코멘트 제목은 기존 검색/업데이트 로직을 위해 `# MR 코드 리뷰 결과`로 시작합니다.
 

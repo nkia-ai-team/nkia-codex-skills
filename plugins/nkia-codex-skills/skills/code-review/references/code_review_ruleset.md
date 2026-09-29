@@ -366,8 +366,7 @@ catch (ResourceNotFoundException e) {
 리뷰 코멘트는 아래 구조를 그대로 사용합니다. 승인 가능한 PR/MR도 최소 구조를 생략하지 않습니다.
 
 **금지 사항:**
-- `review-verdict` block의 key를 소문자나 다른 이름으로 바꾸지 않습니다.
-- `status: approved` 같은 축약 verdict를 쓰지 않습니다.
+- 별도 기계용 판정 블록을 쓰지 않습니다. 본문의 전체 판정·상세 지적·차단 사유를 일치시킵니다.
 - 이슈가 0건이라는 이유로 요약 표, 검증 섹션, 리뷰 히스토리를 생략하지 않습니다.
 - 검색/업데이트 기준인 `# MR 코드 리뷰 결과` 제목을 변경하지 않습니다.
 
@@ -375,16 +374,6 @@ catch (ResourceNotFoundException e) {
 
 ````markdown
 # MR 코드 리뷰 결과
-
-```review-verdict
-VERDICT: needs-fix
-CRITICAL: 0
-WARNING: 1
-INFO: 0
-AUTOFIX_SAFE: yes
-BLOCKED_REASON: none
-MANUAL_MERGE_REQUIRED: yes
-```
 
 ## 요약
 
@@ -399,7 +388,11 @@ MANUAL_MERGE_REQUIRED: yes
 | 성능 | ⚠️ 개선 권장 |
 | 테스트 | ❌ 테스트 추가 필요 |
 
-**전체 판정:** ⚠️ 수정 후 승인 권장
+**전체 판정:** ❌ FAIL · 수정 필요
+
+- 리뷰 기준: `{head SHA}` · `{YYYY-MM-DD HH:mm KST}`
+- 차단 사유: 없음
+- 남은 지적은 상세 리뷰에 위치·영향·조치·중요도·자동 수정 가능 여부로 작성한다.
 ````
 
 ### 6.1.1 승인 가능 PR/MR 최소 템플릿
@@ -408,16 +401,6 @@ MANUAL_MERGE_REQUIRED: yes
 
 ````markdown
 # MR 코드 리뷰 결과
-
-```review-verdict
-VERDICT: approved
-CRITICAL: 0
-WARNING: 0
-INFO: 0
-AUTOFIX_SAFE: yes
-BLOCKED_REASON: none
-MANUAL_MERGE_REQUIRED: yes
-```
 
 ## 요약
 
@@ -432,7 +415,12 @@ MANUAL_MERGE_REQUIRED: yes
 | 성능 | ✅ Pass |
 | 테스트 | ✅ Pass |
 
-**전체 판정:** ✅ 승인 가능
+**전체 판정:** ✅ PASS
+
+- 리뷰 기준: `{head SHA}` · `{YYYY-MM-DD HH:mm KST}`
+- 남은 지적: Critical 0, Warning 0
+- 차단 사유: 없음
+- 수동 병합 필요
 
 ## 브랜치명 검증
 
@@ -484,31 +472,18 @@ MANUAL_MERGE_REQUIRED: yes
 | 1 | `{YYYY-MM-DD HH:mm KST}` | ✅ 승인 가능 | 0/0/0 | 최초 리뷰 |
 ````
 
-### 6.1.2 Structured Verdict Block
+### 6.1.2 본문 판정과 후속 처리
 
-리뷰 코멘트 최상단에는 `$ship`이 파싱할 수 있는 fenced block을 반드시 포함합니다.
+별도 기계용 판정 블록 없이 사람이 읽는 리뷰 본문을 판단 기준으로 사용한다.
 
-````markdown
-```review-verdict
-VERDICT: approved | needs-fix | blocked
-CRITICAL: {number}
-WARNING: {number}
-INFO: {number}
-AUTOFIX_SAFE: yes | partial | no
-BLOCKED_REASON: none | {reason}
-MANUAL_MERGE_REQUIRED: yes
-```
-````
-
-판정 규칙:
-
-| VERDICT | 조건 |
-|---------|------|
-| approved | Critical 0, Warning 0, Diff 완전성 Pass, blocking scope/security/test issue 없음. Linear 이슈가 없는 standalone 작업은 Linear Scope `N/A`여도 승인 가능 |
-| needs-fix | Critical 또는 Warning이 있거나, 수정 후 재리뷰가 필요한 품질/보안/성능/테스트 이슈가 있음 |
-| blocked | PR/MR 데이터 불완전, 인증 실패, diff 누락, 대용량 파일 조회 실패, Linear task ID가 있는데 scope 검증 불가가 치명적일 때 |
-
-`approved`여도 merge/approve는 사람이 직접 수행합니다.
+- 현재 head SHA와 리뷰 기준 SHA가 일치하는 댓글의 전체 판정·상세 지적·차단 사유를 함께 확인한다. 예전 이력 행을 현재 판정으로 읽지 않는다.
+- **PASS**: Critical 0, Warning 0, 전체 diff 확인 완료, 차단 사유 없음. 지적이 없으면 상세 리뷰에 `지적 없음`을 명시한다. standalone 작업의 Linear Scope N/A는 실패가 아니다.
+- **FAIL · 수정 필요**: 수정할 Critical/Warning 또는 품질·보안·성능·테스트 문제가 남아 있다. 각 지적의 `autofix-safe`만 자동 수정하며 `manual-required`·`owner-decision`은 사용자 판단을 요청한다. Info만으로 자동 수정을 시작하지 않는다.
+- **FAIL · 검토 차단**: 인증·diff 누락·필수 자료 부족 등으로 판단할 수 없다. 사유와 필요한 조치를 적고 자동 수정을 시작하지 않는다.
+- 판정이 없거나 여러 현재 판정이 충돌하거나, PASS인데 수정할 지적이 남아 있으면 통과로 추정하지 않는다. 댓글 후보가 여러 개이거나 SHA가 다를 때도 멈추고 확인·재리뷰한다.
+- 기존 댓글의 `승인`·`승인 가능`은 PASS 후보, `수정 후 승인 권장`·`수정 필요`는 FAIL로 읽되 위 조건을 동일하게 확인한다. 과거 기계용 블록만으로 통과시키지 않는다. 본문에 판단 근거가 없으면 새로 리뷰한다.
+- 댓글 갱신 시 기존 제목 접두사·댓글 ID·히스토리는 보존한다. 과거 기계용 블록은 제거하고 본문 판정으로 통일한다. 형식 변경만으로 리뷰 SHA·시각·판정을 새로 만들지 않는다.
+- PASS여도 실제 approve·merge는 사람이 한다. submit의 Draft 해제는 별도의 현재 SHA·CI·충돌 조건을 만족해야 한다.
 
 ### 6.2 상세 코멘트 형식
 

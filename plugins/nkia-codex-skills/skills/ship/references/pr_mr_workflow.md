@@ -195,7 +195,7 @@ PR/MR 생성·수정 시 구현에 참여하지 않은 팀원·팀장도 이해�
 - 마지막에 실제 검증 명령·결과·증빙 링크와 미실행/실패/차단 항목을 적습니다. 미실행을 통과로 표현하지 않습니다.
 - 기술명·코드·API·경로·이슈 ID·수치·단위는 원문 유지. 부정·조건·예외·제약·변경 순서와 인과관계는 생략하지 않습니다. 압축하면 모호해지는 부분은 완전한 문장으로 씁니다.
 - 새 약어·인과 화살표·형식적인 마무리 문구는 추가하지 않습니다.
-- 적용 범위는 PR/MR 제목·본문의 설명 문구입니다. 제목의 이슈 ID·레포 형식, 커밋 규칙, 코드 리뷰의 필수 템플릿·`review-verdict` 키는 유지합니다.
+- 적용 범위는 PR/MR 제목·본문의 설명 문구입니다. 제목의 이슈 ID·레포 형식, 커밋 규칙, 코드 리뷰의 본문 판정·상세 지적·차단 사유는 유지합니다.
 
 ### 구현 표현을 사용자 관점으로 바꾸는 예시
 
@@ -315,29 +315,14 @@ glab mr approve
 
 동등한 approve/merge API 호출도 금지합니다.
 
-### 리뷰 결과 파싱
+### 리뷰 결과 판독
 
-`$ship`은 `$code-review`가 PR/MR에 게시한 `# MR 코드 리뷰 결과` 코멘트 최상단의 `review-verdict` fenced block을 우선 파싱합니다.
+[리뷰 규칙 6.1.2](../../code-review/references/code_review_ruleset.md#612-본문-판정과-후속-처리)에 따라 현재 head SHA에 대응하는 댓글의 본문을 읽는다. 별도 기계용 블록은 생성하거나 판단 근거로 요구하지 않는다.
 
-```text
-VERDICT: approved | needs-fix | blocked
-CRITICAL: {number}
-WARNING: {number}
-INFO: {number}
-AUTOFIX_SAFE: yes | partial | no
-BLOCKED_REASON: none | {reason}
-MANUAL_MERGE_REQUIRED: yes
-```
-
-Structured verdict가 없을 때만 기존 prose 판정을 fallback으로 파싱합니다:
-
-| 코멘트 내용 | 판정 |
-|------------|------|
-| `전체 판정: 승인` | 승인 |
-| `전체 판정: 수정 후 승인 권장` | 수정 필요 |
-| `전체 판정: 수정 필요` | 수정 필요 |
-
-`VERDICT: blocked`이거나 `BLOCKED_REASON`이 `none`이 아니면 자동 수정하지 않고 사용자에게 blocked reason을 보고합니다.
+- PASS이며 Critical·Warning과 차단 사유가 없으면 수동 병합을 기다린다.
+- FAIL · 수정 필요이면 상세 지적 중 autofix-safe만 수정·재리뷰한다.
+- FAIL · 검토 차단, 판정 누락·상충, SHA 불일치, 모호한 댓글 후보는 통과로 해석하지 않는다.
+- 기존 승인·수정 필요 문구도 읽되 상세 지적과 모순되면 확인한다. 과거 기계용 블록만 있는 댓글은 재리뷰한다.
 
 ### 자동 수정 프로세스
 

@@ -1,6 +1,6 @@
 {
   "name": "nkia-codex-skills",
-  "version": "0.3.3+codex.20260918014207",
+  "version": "0.4.0+codex.20260929022753",
   "description": "Codex skills for NKIA development, Linear, Confluence publishing, review, and reporting workflows.",
   "author": {
     "name": "NKIA-AI Team"
@@ -26,7 +26,8 @@
     "report-publishing",
     "design-implementation",
     "evidence-validation",
-    "technical-writing"
+    "technical-writing",
+    "submit"
   ],
   "skills": "./skills/",
   "interface": {
@@ -42,6 +43,7 @@
     "defaultPrompt": [
       "Use $feature to define a parent Linear feature.",
       "Use $task to create child implementation tasks.",
+      "Use $submit to validate a completed Linear task and prepare its PR/MR for manual merge.",
       "Use $sonarqube-pass to restore a repo SonarQube quality gate with Linear evidence.",
       "Use $code-review to validate a GitHub PR or GitLab MR.",
       "Use $finish after PR/MR merge to clean branches, register evidence, validate AC, and roll up Linear status.",

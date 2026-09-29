@@ -29,14 +29,14 @@ Linear 자동 생성 브랜치 형식을 권장하지만, Linear 이슈 없이 �
 
 **정규식 패턴:**
 ```regex
-^(?:(feature|bugfix|fix|hotfix|refactor|docs|test|config|chore|ci|build|perf)/(?:[A-Za-z]+-[0-9]+-)?[a-z0-9]+(?:-[a-z0-9]+)*|develop-[0-9]+(?:\.[0-9]+)*_[0-9]+-chat-[a-z0-9]+(?:-[a-z0-9]+)*)$
+^(?:(feature|feat|bugfix|fix|hotfix|refactor|docs|test|config|chore|ci|build|perf)/(?:[A-Za-z]+-[0-9]+-)?[a-z0-9]+(?:-[a-z0-9]+)*|develop-[0-9]+(?:\.[0-9]+)*_[0-9]+-chat-[a-z0-9]+(?:-[a-z0-9]+)*)$
 ```
 
 **검증 항목:**
 
 | 항목 | 규칙 | 예시 |
 |------|------|------|
-| Type Prefix | feature, bugfix, fix, hotfix, refactor, docs, test, config, chore, ci, build, perf 중 하나 | `feature/` |
+| Type Prefix | feature, feat, bugfix, fix, hotfix, refactor, docs, test, config, chore, ci, build, perf 중 하나 | `feature/` |
 | Linear 이슈 번호 | 선택 항목. 있으면 `{팀키}-{이슈번호}` 형식 (대소문자 허용) | `nkiaai-129`, `NKIAAI-129` |
 | 설명 | kebab-case, 소문자 | `improve-rca-logging-system` |
 | UI repo standalone | `develop-10.x.y_z-chat-{function}` 형식 허용 | `develop-10.2.1_3-chat-filter` |
@@ -52,7 +52,7 @@ Linear 자동 생성 브랜치 형식을 권장하지만, Linear 이슈 없이 �
 
 | 브랜치 타입 | 허용되는 작업 |
 |-------------|--------------|
-| feature | 새로운 기능 추가 |
+| feature / feat | 새로운 기능 추가 |
 | bugfix | 버그 수정 |
 | fix | 버그 수정 (`bugfix` alias) |
 | hotfix | 긴급 운영 이슈 수정 |
@@ -173,8 +173,8 @@ Linear 이슈 없이 진행되는 standalone 작업은 Linear 이슈 번호를 `
 
 검증 규칙:
 - 브랜치와 커밋 양쪽에 Linear 이슈 번호가 있으면 동일해야 합니다.
-- 브랜치에 Linear 이슈 번호가 있는데 커밋에 없으면 경고로 표시합니다.
-- 커밋에 Linear 이슈 번호가 있는데 브랜치에 없으면 경고로 표시합니다.
+- Linear ID는 선택 항목이다. 한쪽에만 있어도 누락을 경고로 표시하지 않는다. 저장소 정본이 필수로 요구하면 해당 규칙을 우선한다.
+- Git이 생성한 실제 병합 커밋은 부모가 2개 이상인지 확인하며 일반 작업 커밋의 Type 구분자를 강제하지 않는다.
 - 브랜치/제목/커밋 어디에도 Linear 이슈 번호가 없으면 standalone 작업으로 간주하고, Linear 이슈 번호 누락을 경고/실패로 계산하지 않습니다.
 - `lucida-next`는 예외입니다. 브랜치에 Linear 이슈 번호가 있어도 commit subject에 없으면 정상이며, Linear ID가 body/trailer 또는 MR/Linear linking에만 있어도 됩니다.
 
@@ -206,7 +206,7 @@ Linear 이슈 없이 진행되는 standalone 작업은 Linear 이슈 번호를 `
 | Title | ✅ | 명확한 설명. Linear 이슈 번호는 있으면 검증하고, standalone 작업이면 없어도 실패 처리하지 않음 |
 | Description | ✅ | 기능 상세 설명 작성 |
 | Part (FE/BE) | ✅ | 해당 파트 선택 |
-| Target Branch | ✅ | develop (master 아님) |
+| Target Branch | ✅ | 저장소의 실제 통합 대상 브랜치와 일치 (main/develop 등) |
 | 연관 백로그 | 권장 | `#이슈번호` 형식 |
 | 테스트 코드 | ✅ | 체크 여부 확인 |
 | 정적 분석 | ✅ | 체크 여부 확인 |

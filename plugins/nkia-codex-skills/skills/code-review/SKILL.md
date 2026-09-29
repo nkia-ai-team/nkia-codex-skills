@@ -122,7 +122,7 @@ If complete PR/MR data cannot be fetched, verdict must be `blocked`; do not appr
 
 브랜치명을 ruleset 기준으로 검증합니다.
 
-**Pattern:** `^(?:(feature|bugfix|fix|hotfix|refactor|docs|test|config|chore|ci|build|perf)/(?:[A-Za-z]+-[0-9]+-)?[a-z0-9]+(?:-[a-z0-9]+)*|develop-[0-9]+(?:\.[0-9]+)*_[0-9]+-chat-[a-z0-9]+(?:-[a-z0-9]+)*)$`
+**Pattern:** `^(?:(feature|feat|bugfix|fix|hotfix|refactor|docs|test|config|chore|ci|build|perf)/(?:[A-Za-z]+-[0-9]+-)?[a-z0-9]+(?:-[a-z0-9]+)*|develop-[0-9]+(?:\.[0-9]+)*_[0-9]+-chat-[a-z0-9]+(?:-[a-z0-9]+)*)$`
 
 **Check:** Type prefix, optional Linear 이슈 번호 형식 when present, kebab-case, 브랜치-작업 타입 일치
 

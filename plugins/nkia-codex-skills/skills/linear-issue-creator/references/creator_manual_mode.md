@@ -1,5 +1,7 @@
 # Manual Mode Workflow
 
+먼저 [공통 계약](../../../references/issue-contract.md)을 읽고 4절 본문, Type 하나·프로젝트 하나, 생성 후 저장값 검증을 적용한다. 수집된 검증 방법·참고사항은 관련 절에 통합하며 5·6절을 생성하지 않는다.
+
 템플릿 기반으로 정보를 단계별로 수집하여 이슈를 생성합니다.
 
 ---
@@ -21,9 +23,11 @@ Linear 이슈를 생성하겠습니다. 다음 정보를 입력해주세요:
    7) 리서치
    8) 버그 수정
    9) 문서 작업
+   10) 기술 조사 (Investigation)
+   11) 팀 운영·지원 (Task)
 
 2. 팀 이름: (사용 가능한 팀: [팀 목록])
-3. 프로젝트 이름: (선택사항, 없으면 엔터)
+3. 프로젝트: (필수, 제품·이니셔티브와 함께 확인)
 4. 이슈 제목:
 5. 우선순위: (Urgent/High/Normal/Low, 선택사항)
 6. 담당자: (이름/이메일/'me', 기본 요청자; 명시적 미할당 가능)
@@ -59,9 +63,9 @@ Linear 이슈를 생성하겠습니다. 다음 정보를 입력해주세요:
 
 3. 완료 조건 (AC) - 3~5개 권장:
    예시:
-   - [ ] 데이터 파이프라인 실행 완료 → 결과물: 저장 경로 {{storage_path}}
-   - [ ] 목표 데이터 {{record_count}}건 이상 수집 → 결과물: 데이터 경로 {{data_path}}
-   - [ ] 품질 기준 충족 (Null < {{null_threshold}}%) → 결과물: 품질 리포트 {{quality_report}}
+   - [ ] 데이터 파이프라인 실행 완료
+   - [ ] 목표 데이터 {{record_count}}건 이상 수집
+   - [ ] 품질 기준 충족 (Null < {{null_threshold}}%)
 
 입력:
 - [ ]
@@ -75,12 +79,7 @@ Linear 이슈를 생성하겠습니다. 다음 정보를 입력해주세요:
 
 ## Step 4: Apply Issue Type and Labels Automatically
 
-템플릿 기반 자동 매핑:
-1. Linear 이슈 타입 결정 (Task/Feature/Research/Bug)
-2. 템플릿별 라벨 적용
-3. 내용 기반 추가 라벨
-
-**See `references/issue_templates.md` Section "작업 템플릿 → 이슈 타입 자동 매핑" and "라벨 자동 적용 규칙".**
+[공통 계약](../../../references/issue-contract.md)에 따라 활성 정식 Type 라벨을 조회하고 실제 ID 하나를 선택한다. 옛 domain 라벨을 자동 적용하지 않는다.
 
 ## Step 4.5: Auto-assign Project Based on Content
 
@@ -100,14 +99,14 @@ Linear 이슈를 생성하겠습니다. 다음 정보를 입력해주세요:
 제목: [개선된 제목]
 타입: [자동 매핑된 이슈 타입]
 팀: [팀]
-프로젝트: [프로젝트명] (자동 매칭됨) 또는 (없음)
+프로젝트: [프로젝트명] (이니셔티브·실제 ID 확인)
 우선순위: [우선순위]
 담당자: [담당자]
 마감일: [마감일]
 사이클: [사이클 번호/이름 또는 명시적 미할당]
 상태: [실제 팀 상태]
 포인트: [estimate 및 잠정 산정 근거]
-라벨: [자동 선택된 라벨들]
+Type: [정식 그룹에서 선택한 라벨 ID]
 
 --- 설명 ---
 [마크다운 내용]
@@ -118,4 +117,4 @@ Linear 이슈를 생성하겠습니다. 다음 정보를 입력해주세요:
 
 ## Step 6: Create the Issue
 
-공통 Metadata Resolution & Verification 규칙대로 `save_issue`에 **title, team, description, assignee, cycle, state, estimate**와 결정된 선택 필드를 전달한다. 반환값 또는 `get_issue`로 네 메타데이터를 검증하고, 누락은 동일 이슈를 수정한다. 최종 결과에 링크·담당자·사이클·상태·포인트를 표시한다.
+공통 Metadata Resolution & Verification 규칙대로 `save_issue`에 **title, team, description, assignee, cycle, state, estimate**와 필수 project·정식 Type ID labels 및 결정된 선택 필드를 전달한다. 반환값 또는 `get_issue`로 네 메타데이터를 검증하고, 누락은 동일 이슈를 수정한다. 최종 결과에 링크·담당자·사이클·상태·포인트를 표시한다.

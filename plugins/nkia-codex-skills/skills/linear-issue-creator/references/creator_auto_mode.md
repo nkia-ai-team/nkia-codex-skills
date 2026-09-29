@@ -1,5 +1,7 @@
 # Auto Mode Workflow
 
+먼저 [공통 계약](../../../references/issue-contract.md)을 읽고 4절 본문, Type 하나·프로젝트 하나, 생성 후 저장값 검증을 적용한다. 수집된 검증 방법·참고사항은 관련 절에 통합하며 5·6절을 생성하지 않는다.
+
 회의록, 메모, 자연어 텍스트에서 자동으로 이슈 정보를 추출하여 생성합니다.
 
 ---
@@ -27,7 +29,7 @@
 1. `template_type` — 작업 유형 자동 결정
 2. `title` — 영문 제목 (English Title Patterns 참고)
 3. `team`, `project`, `assignee`, `cycle`, `state`, `estimate`, `priority`, `due_date` — 메타데이터
-4. `labels` — 템플릿 타입 기반 work type 라벨 자동 선택 + 내용 분석으로 domain 라벨 추가
+4. `labels` — 공통 계약에 따라 조회한 정식 Type ID 하나 선택
 5. `dod_items`, `ac_items` — 구체적이고 측정 가능한 항목 생성
 
 **Title:** 무엇을 왜 하는지 한 줄로 파악 가능하게 작성. 작업 유형(fix, feat 등)은 Linear의 이슈 타입 + 라벨로 이미 표현되므로 제목에 넣지 않습니다.
@@ -55,24 +57,24 @@
     "template_type": "데이터 작업",
     "title": "WSS 데이터셋 수집 및 전처리",
     "team": "Nkia-AI",
-    "project": null,
+    "project": "아직 미결정 — 저장 전 실제 ID 확인",
     "assignee": "이성원",
     "cycle": null,
     "state": "Backlog",
     "estimate": 3,
     "priority": "Normal",
     "due_date": "2025-11-25",
-    "labels": ["data"]
+    "labels": []
   },
   "template_data": {
     "background": "WSS 모델 학습을 위한 고품질 데이터셋 구축 필요",
     "description": "WSS 학습용 데이터 수집, 정제 및 검증 작업",
     "dod_items": [
-      "데이터 파이프라인 실행 완료 → 결과물: 저장 경로 {{storage_path}}"
+      "데이터 파이프라인 실행 완료 "
     ],
     "ac_items": [
-      "목표 데이터 {{record_count}}건 이상 수집 → 결과물: 데이터 경로 {{data_path}}",
-      "품질 기준 충족 (Null < {{null_threshold}}%) → 결과물: 품질 리포트 {{quality_report}}"
+      "목표 데이터 {{record_count}}건 이상 수집 ",
+      "품질 기준 충족 (Null < {{null_threshold}}%) "
     ],
     "notes": "데이터 포맷: JSONL, 최소 10,000개 샘플 확보"
   }
@@ -95,7 +97,7 @@
 - 담당자: 이성원
 - 우선순위: Normal
 - 마감일: 2025-11-25
-- 라벨: task
+- Type: 주된 목적 확인 후 결정
 
 **작업 상세:**
 [배경, 작업 설명, DoD, AC, 참고사항 표시]
@@ -105,25 +107,9 @@
 
 추출된 정보를 물어보지 않고 그대로 사용합니다. 최종 미리보기(Step 6)에서 확인 가능합니다.
 
-## Step 4: Auto-assign Project Based on Content
+## Step 4: Resolve Project and Type
 
-1. `mcp__linear__list_projects`로 팀의 활성 프로젝트 조회
-2. 이슈 제목/설명 키워드를 프로젝트 **name + description** 모두와 매칭
-3. 높은 신뢰도로 매칭된 경우만 프로젝트 할당
-
-**Project matching criteria:**
-- 이슈 제목/설명의 키워드와 프로젝트 **이름 및 설명** 매칭
-- 활성 프로젝트 우선 (완료된 프로젝트보다)
-- 시맨틱 유사성 활용 (예: "채팅 SSE 스트리밍" → "Lucida Chat AI" 프로젝트)
-- 여러 프로젝트 매칭 시 최근 업데이트된 프로젝트 우선
-
-**폴백 규칙:**
-- 특정 제품/서비스 프로젝트에 매칭되지 않는 팀 내부 작업(스킬 개선, 개발 환경, 온보딩, 공통 도구 등)은 **"AI팀 공통 이슈"** 프로젝트를 폴백으로 제안
-- 폴백 제안 시에도 사용자 확인 필요 (자동 할당하지 않음)
-
-**매칭 실패 시:**
-- 활성 프로젝트 목록을 번호와 함께 표시하고 사용자에게 선택 요청
-- "(없음)" 선택지도 제공 — 프로젝트 미할당 허용
+[공통 계약](../../../references/issue-contract.md)에 따라 제품·이니셔티브와 프로젝트 ID 하나, 정식 Type ID 하나를 확인한다. 미결정값은 한 번에 확인하고 저장을 보류한다.
 
 ## Step 5: Resolve Metadata
 
@@ -139,14 +125,14 @@
 제목: [제목]
 타입: [이슈 타입]
 팀: [팀]
-프로젝트: [프로젝트명] (자동 매칭됨) 또는 (없음)
+프로젝트: [프로젝트명] (이니셔티브·실제 ID 확인)
 우선순위: [우선순위]
 담당자: [담당자]
 마감일: [마감일]
 사이클: [사이클 번호/이름 또는 명시적 미할당]
 상태: [실제 팀 상태]
 포인트: [estimate 및 잠정 산정 근거]
-라벨: [라벨들]
+Type: [정식 그룹에서 선택한 라벨 ID]
 
 --- 설명 ---
 [생성될 마크다운 내용]
@@ -157,7 +143,7 @@
 
 ## Step 7: Create Issue
 
-공통 Metadata Resolution & Verification 규칙대로 `save_issue`에 **title, team, description, assignee, cycle, state, estimate**와 결정된 선택 필드를 전달한다. 반환값 또는 `get_issue`로 네 메타데이터를 검증하고, 누락은 동일 이슈를 수정한다. 최종 결과에 링크·담당자·사이클·상태·포인트를 표시한다.
+공통 Metadata Resolution & Verification 규칙대로 `save_issue`에 **title, team, description, assignee, cycle, state, estimate**와 필수 project·정식 Type ID labels 및 결정된 선택 필드를 전달한다. 반환값 또는 `get_issue`로 네 메타데이터를 검증하고, 누락은 동일 이슈를 수정한다. 최종 결과에 링크·담당자·사이클·상태·포인트를 표시한다.
 
 ---
 

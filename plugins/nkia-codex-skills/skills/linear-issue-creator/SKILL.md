@@ -5,6 +5,10 @@ description: Create well-structured Linear issues with work-specific templates (
 
 # Linear Issue Creator
 
+## 공통 계약
+
+먼저 [이슈 본문·Type·증빙 계약](../../references/issue-contract.md)을 읽는다. 본문·분류·증빙은 이 계약을 우선 적용하고, 기존 가이드의 상태·Estimate·검토 절차는 유지한다.
+
 ## CRITICAL: First Step — Read the Guideline Reference
 
 **BEFORE creating any issue, you MUST read:**
@@ -16,7 +20,7 @@ description: Create well-structured Linear issues with work-specific templates (
 
 ## Overview
 
-Create well-structured Linear issues following the guideline's 6-section template, with improved titles, automatic label application, Estimate-based AC review workflow, and **concrete, measurable AC**.
+Create well-structured Linear issues following the guideline's 4-section template, with improved titles, automatic label application, Estimate-based AC review workflow, and **concrete, measurable AC**.
 
 **Two creation modes:**
 1. **Manual Mode** — Step-by-step template-based input
@@ -26,7 +30,7 @@ Create well-structured Linear issues following the guideline's 6-section templat
 
 ## Issue Body Template
 
-모든 이슈는 가이드라인의 6섹션 번호 구조를 따릅니다. 상세 템플릿은 [guideline-ref.md "이슈 템플릿"](../../references/guideline-ref.md) 참조.
+모든 신규 이슈는 공통 계약의 문제·변경 내용·완료 조건·범위 4절을 사용한다.
 
 작업 유형별 섹션 내용 가이드와 AC 생성 패턴은 [issue_templates.md](references/issue_templates.md) 참조.
 
@@ -45,33 +49,7 @@ Estimate 규칙과 AC 검토 컨벤션은 [guideline-ref.md "Estimate", "AC 검�
 
 ## Work Templates and Issue Type Mapping
 
-9 work templates are available, each automatically mapped to a Linear issue type and labels.
-Labels are divided into **work type** (what) and **domain** (where), and multiple labels can be applied per issue.
-
-| Work Template | Issue Type | Auto Labels |
-|--------------|-----------|-------------|
-| 1. 빌드/배포 | Task | "build" |
-| 2. 데이터 작업 | Task | "data" |
-| 3. 평가 | Task | "research" |
-| 4. 새로운 기능 개발 | Feature | "feature" |
-| 5. 기능 개선 | Feature | "improve" |
-| 6. 리팩토링 | Feature | "refactor" |
-| 7. 리서치 | Research | "research" |
-| 8. 버그 수정 | Bug | "bug" |
-| 9. 문서 작업 | Task | "document" |
-
-**Available Linear labels:**
-
-| Category | Labels |
-|----------|--------|
-| Work type | bug, feature, improve, refactor, research, document, task |
-| Domain | build, infra, data |
-
-- **Work type**: 작업의 성격 (what) — 템플릿 선택 시 자동 부여
-- **Domain**: 작업의 대상/영역 (where) — 내용 분석을 통해 추가 부여
-- 복수 라벨 조합 가능 (예: "refactor" + "data", "document" + "build")
-
-템플릿별 섹션 내용 가이드, AC 생성 패턴, 제목 개선 가이드라인은 [issue_templates.md](references/issue_templates.md) 참조
+작업별 수집 항목은 [issue_templates.md](references/issue_templates.md)을 따른다. Type은 [공통 계약](../../references/issue-contract.md)의 10종에서 주된 목적에 맞게 하나를 선택한다. 데이터 작업을 포함한 입력 유형과 Type은 동일한 개념이 아니다.
 
 ---
 
@@ -109,22 +87,11 @@ Manual Mode 전체 워크플로우는 [creator_manual_mode.md](references/creato
 - **Keep it minimal**: AC 3~5개 이내 권장
 - **Be concrete and measurable**: 구체적 숫자, 메트릭, 링크 사용
 - **Include evidence**: 검증에 필요한 증빙 명시
-- **공통 AC**: 작업 유형별 공통 항목은 [guideline-ref.md "공통 AC 항목"](../../references/guideline-ref.md) 참조
+- 제출 절차를 공통 AC로 자동 생성하지 않는다. AC ID와 관찰 가능한 결과만 작성한다.
 
 ### Project Auto-Assignment
 
-**매칭 순서:**
-1. `mcp__linear__list_projects`로 팀의 활성 프로젝트 조회
-2. 이슈 제목/설명 키워드를 프로젝트 **name + description** 모두와 매칭
-3. 높은 신뢰도로 매칭된 경우만 프로젝트 할당
-
-**폴백 규칙:**
-- 특정 제품/서비스 프로젝트에 매칭되지 않는 팀 내부 작업(스킬 개선, 개발 환경, 온보딩, 공통 도구 등)은 **"AI팀 공통 이슈"** 프로젝트를 폴백으로 제안
-- 폴백 제안 시에도 사용자 확인 필요 (자동 할당하지 않음)
-
-**매칭 실패 시:**
-- 활성 프로젝트 목록을 번호와 함께 표시하고 사용자에게 선택 요청
-- "(없음)" 선택지도 제공 — 프로젝트 미할당 허용
+공통 계약에 따라 이니셔티브·제품을 확인하고 프로젝트 하나를 실제 ID로 지정한다. 불명확하면 후보와 미결정 필드를 한 번에 묻고 저장을 보류한다.
 
 ### Metadata Resolution & Verification (Auto / Manual 공통)
 
@@ -140,7 +107,7 @@ Manual Mode 전체 워크플로우는 [creator_manual_mode.md](references/creato
 - 마감일이 없어도 사이클 해석을 생략하지 않는다. 배치 의도가 불분명하면 다음 사이클/Backlog 등 후보를 포함해 필요한 정보를 한 번에 묻는다. 사용자 의도 확인 없이 현재 사이클에 편입하거나, 조회 실패를 미할당으로 처리하지 않는다. 명시한 값이 조회되지 않으면 다른 값으로 대체하지 않고 그 필드만 확인한다.
 - 진행 중 사이클 편입을 사용자가 이미 요청했다면 그 요청을 근거로 저장하며 중복 승인을 요구하지 않는다. 그런 지시 없이 자동 편입하려는 경우에는 중간 투입 제약과 다음 사이클/Backlog 대안을 안내한다.
 - 미리보기에는 **담당자·사이클·상태·포인트**를 모두 표시한다. 의도적인 미할당과 아직 결정하지 못한 값을 구분한다. 등록 권한이 이미 주어졌고 필요한 정보가 결정됐으면 재확인 없이 생성한다.
-- `save_issue`에 `title`, `team`, `description`, `assignee`, `cycle`, `state`, `estimate`를 전달한다. `project`, `priority`, `dueDate`, `labels` 등도 결정된 값을 전달한다. 명시적 미할당 필드는 도구가 지원하는 `null`을 사용한다.
+- `save_issue`에 `title`, `team`, `description`, `assignee`, `cycle`, `state`, `estimate`를 전달한다. `project`와 정식 Type ID가 포함된 `labels`는 필수로 전달한다. `priority`, `dueDate`는 결정된 값을 전달한다. 명시적 미할당 필드는 도구가 지원하는 `null`을 사용한다.
 - 응답에서 담당자 ID·사이클 ID·상태·포인트를 요청값과 대조한다. 응답에 필드가 없으면 `get_issue`로 재조회한다. 누락/불일치는 생성된 **동일 ID**를 한 번 수정하고 다시 검증한다. 재검증도 실패하면 추가 쓰기를 중단하고 이슈 링크·기대값·실제값·오류를 보고한다. 생성 응답이 불확실하면 조회로 생성 여부부터 확인하며 중복 이슈를 만들지 않는다.
 - 최종 결과에 이슈 링크와 네 필드의 실제 저장값을 표시한다. 본문의 “담당자·일정·Estimate 미정” 문구도 실제 메타데이터와 일치시킨다.
 

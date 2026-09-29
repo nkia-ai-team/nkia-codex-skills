@@ -2,7 +2,7 @@
 
 NKIA-AI 팀의 Codex 플러그인 마켓플레이스입니다. Linear 기반 기능/태스크 관리, 개발 착수, PR/MR 제출, 머지 후 마무리, 주간업무보고 자동화를 Codex 스킬로 제공합니다.
 
-현재 버전: **v0.2.9**
+현재 버전: **v0.3.3**
 
 ## 개요
 
@@ -14,7 +14,7 @@ plugins/nkia-codex-skills/.codex-plugin/plugin.json
 plugins/nkia-codex-skills/skills/
 ```
 
-Codex에서 사용하는 스킬은 아래 17개입니다.
+Codex에서 사용하는 스킬은 아래 18개입니다.
 
 ```text
 $feature → $task → $start → (개발) → $commit → $ship → (수동 머지) → $finish
@@ -45,6 +45,7 @@ $linear-project-creator → $linear-project-updater → $linear-initiative-updat
 | `$code-review` | GitHub PR/GitLab MR 단독 코드 리뷰 및 검증 코멘트 작성 |
 | `$finish` | 머지 후 브랜치 정리, 증빙 수집, AC 검증, Task/Feature 상태 정리 |
 | `$weekly` | Linear/Git/Calendar 기반 주간업무보고 작성 및 Google Sheet 기록 |
+| `$team-technical-writing` | 사람이 읽고 공유하기 쉬운 기술문서 작성·검토, 제목·위치 기준과 유형별 템플릿 적용 |
 | `$confluence-md-upload` | Markdown 보고서를 Mermaid/SVG 보존 상태로 Confluence 페이지에 업로드 |
 | `$develop-from-design` | 설계 문서를 구현 계획·코드·검증까지 연결하는 end-to-end 실행 |
 | `$linear-issue-creator` | 작업 유형별 템플릿으로 Linear 이슈 생성 |
@@ -158,6 +159,23 @@ gws auth login
 - `https://www.googleapis.com/auth/calendar.readonly`
 
 ## 스킬 상세
+
+### `$team-technical-writing`
+
+사람이 쉽게 읽고 정확하게 이해하며 공유할 수 있도록 기술문서를 작성·수정·검토합니다.
+
+- 현황·결과는 짧은 불릿으로, 이유·조건은 필요한 만큼 설명합니다. 작업 회고와 중복을 줄이고 근거를 보존합니다.
+- 제목·문서 위치·갱신 기준과 완료 리뷰, 설계, 사용·운영, 실험·평가, 장애·변경 템플릿을 제공합니다.
+- 완료 리뷰는 문제·개선 방법과 정책·결과 순서로 설명하고, 현황 보고와 구분합니다. 도표는 실제 표시 크기의 가독성을 확인합니다.
+- 짧은 수정에는 전체 템플릿을 강제하지 않으며, 원문의 수치·정책·예외를 임의로 바꾸지 않습니다.
+- Confluence 게시에는 별도로 연결된 도구가 필요합니다. 로컬 문서 작성에는 연결이 필요하지 않습니다.
+
+```text
+$team-technical-writing 이 설계 문서를 팀원이 읽기 쉽게 다듬어줘
+$team-technical-writing 이 문서의 Before/After와 변경 이유를 보여줘
+```
+
+---
 
 ### `$confluence-md-upload`
 
@@ -382,15 +400,18 @@ $finish 이 MR 머지됐어. Linear 마무리해줘.
 
 ### `$weekly`
 
-NKIA-AI 팀 주간업무보고를 생성합니다. Linear, Git commit, Google Calendar 휴가/반차 정보를 모아 Google Sheet의 B/C/D/F/G 컬럼 형식으로 렌더링합니다.
+NKIA-AI 팀 주간업무보고를 생성합니다. 실행자 본인의 Linear, Git 커밋·미커밋 작업, 로컬 검증 기록, Google Calendar 휴가/반차 정보를 모아 Google Sheet의 B/C/D/F/G 컬럼 형식으로 렌더링합니다.
 
 주요 기능:
 
-- 금요일~목요일 보고 기간 계산
+- 월요일~실행일 보고 기간 계산(주말 실행은 월~금), 해당 주 목요일 날짜를 시트 탭으로 사용
+- 설정·Linear 계정·Git 이름과 이메일을 대조해 실행자 자동 식별
 - 현재 cycle의 `Done`/`In Review` 이슈를 금주 실적으로 수집
 - 직전 cycle에서 이번 주 완료 또는 review 전환된 이슈 추적
 - `In Progress`/`Todo` 이슈로 차주 업무 계획 작성
-- Linear attachment의 PR/MR URL에서 repo를 식별하고 commit 로그로 상세 보강
+- 이슈·PR 유무와 관계없이 본인 커밋·미커밋 변경과 작업 기록으로 업무 수집
+- 코드·검증·남은 작업을 근거로 예상일과 진척도 추정(AC가 없어도 가능)
+- C열은 업무명만, D열은 예상일·진척도와 줄바꿈한 `문제 / 작업 내용`으로 작성
 - Calendar에서 연차/반차 이벤트 조회
 - Google Sheet 입력 전 미리보기
 - 대상 주간 탭이 없으면 템플릿 탭을 복사해 날짜 탭 생성
@@ -433,20 +454,20 @@ $weekly --reconfigure
 === 주간 업무 보고서 미리보기 ===
 대상: 장재훈 | 탭: 20260507 | 행: N
 
-[B] 업무구분:
-백로그
+업무구분: 백로그
 
-[C] 업무 (목표일, 진행율):
-1. ...
+업무:
+1. 문서 검색 개선
 
-[D] 업무 내용:
-1. ...
- - ...
+업무 내용:
+1. 문서 검색 개선 (~05/08, 80%)
+   문제: 필요한 문서가 검색 상위 결과에서 누락됨.
 
-[F] 차주 업무 구분:
-백로그
+   작업 내용:
+   - 벡터·키워드 혼합 검색 구현
+   - 대표 질문 검증 후 누락 사례 보완 진행
 
-[G] 차주 업무:
+차주 업무:
 1. ...
 ```
 

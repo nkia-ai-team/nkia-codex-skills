@@ -1,6 +1,6 @@
 # 저장 위치 규칙
 
-원본 출력·긴 로그·쿼리 응답은 resource·attachment의 리포트로 저장한다. 아래 수집 예시의 코드 블록은 원본 리포트 형식이며 이슈 본문에 복사하는 지시가 아니다. 본문에는 [공통 계약](../../../references/issue-contract.md)에 따라 AC 아래 링크·짧은 결과·필요한 대표 이미지만 표시한다.
+[공통 계약](../../../references/issue-contract.md)에 따라 짧은 결과·로그는 AC 아래 코드 블록으로 직접 표시한다. 장문 문서·로그는 이슈 Resources → Add document에 해당하는 Linear document로 작성해 링크한다. 이미지·바이너리만 파일 attachment를 사용한다.
 
 # Evidence Gathering Methods
 
@@ -12,7 +12,7 @@ AC의 관찰 가능한 결과에서 필요한 증빙 유형을 정한다. 기존
 
 ## 0. 원본 리포트 형식
 
-아래 코드 블록은 resource·attachment에 저장하는 원본 리포트용이다. 이슈 본문에는 AC 아래 실제 링크와 짧은 결과만 표시한다.
+아래 코드 블록은 짧으면 AC 아래에 직접 넣고, 길면 Linear document 본문에 넣는다. AC 문장에 증빙 안내를 덧붙이지 않고 하위 증빙 불릿을 사용한다.
 
 ### 구조: 요약 텍스트 + 코드 블록
 
@@ -49,7 +49,7 @@ AC의 관찰 가능한 결과에서 필요한 증빙 유형을 정한다. 기존
 | 데이터 경로 | O | ls + wc + head 출력 |
 | PR/MR 링크 | X | URL만 (이슈 리소스로 첨부) |
 | 스크린샷 | X | Linear 업로드 후 해당 AC 본문 아래 Markdown 이미지 삽입 |
-| 작업에서 만든 문서 | X | Linear에 원문 업로드 후 asset URL |
+| 장문 문서·로그 | 로그는 O | Linear document 생성 후 문서 URL |
 
 ### CRITICAL: 원본 출력을 가공 없이 사용
 
@@ -463,7 +463,7 @@ MCP 미연결 시 수집 실패로 처리합니다.
 
 ### 기타 문서
 
-설계서·검증 보고서 등 작업에서 만든 문서는 로컬 원문을 확보해 Linear attachment로 업로드한다. 공통 계약의 업로드·재조회·내용 확인 절차를 따른다. GitHub/GitLab blob·raw URL을 links에 넣는 것으로 대신하지 않는다. AC·검증 댓글에는 업로드한 영구 asset URL을 사용한다. 명시적인 기존 외부 원본 문서만 원래 URL을 유지하며, 원문 확보나 업로드에 실패하면 미검증으로 남긴다.
+장문 설계·검증 보고서·로그는 원문을 확보해 `save_document`의 issue·title·content로 이슈 Resources에 document를 생성하거나 기존 ID를 갱신한다. 재조회 후 document URL을 AC·검증 댓글에서 링크한다. 파일 업로드·GitHub/GitLab blob 링크로 대신하지 않는다. 짧은 결과·로그는 AC 아래 코드 블록으로 직접 표시한다. 원문 확보·document 저장에 실패하면 미검증으로 남긴다.
 
 ### 수집 결과 형식
 

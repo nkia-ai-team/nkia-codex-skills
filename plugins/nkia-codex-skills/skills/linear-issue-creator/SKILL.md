@@ -86,7 +86,7 @@ Manual Mode 전체 워크플로우는 [creator_manual_mode.md](references/creato
 - DoD/AC를 분리하지 않고 **"완료 조건 (Acceptance Criteria)"** 단일 섹션으로 통합
 - **Keep it minimal**: AC 3~5개 이내 권장
 - **Be concrete and measurable**: 구체적 숫자, 메트릭, 링크 사용
-- **Include evidence**: 검증에 필요한 증빙 명시
+- **Include evidence**: 각 AC 아래 `증빙 예정:` 불릿에 필요한 자료와 확인할 내용을 명시한다. AC 문장 끝에 붙이지 않는다.
 - 제출 절차를 공통 AC로 자동 생성하지 않는다. AC ID와 관찰 가능한 결과만 작성한다.
 
 ### Project Auto-Assignment

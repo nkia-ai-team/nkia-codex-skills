@@ -103,6 +103,8 @@ $linear-issue-validator <issue-id-or-url>
 - AC 섹션 찾기 (`## 3. 완료 조건 (Acceptance Criteria)`, `## 3. 완료 조건`)
 - 각 체크박스 항목 파싱 (`- [ ]` 또는 `- [x]`)
 - AC 아래 `증빙:` 링크·대표 이미지와 resource·attachment를 추출한다. 기존 `→ 결과물:`은 읽기 호환으로 유지한다.
+- 짧은 로그·결과는 AC 아래 코드 블록 자체를 검증한다. 장문은 Resources의 Linear document 본문을 읽는다. 짧은 실제 출력에 별도 링크·첨부를 강제하지 않는다.
+- `증빙 예정:`은 계획으로 구분하고 완료 증빙으로 인정하지 않는다. 필수 예정 자료가 남거나 실제 자료가 예정된 확인 내용을 충족하지 않으면 해당 AC는 FAIL이다.
 
 **레거시 형식 (호환):**
 - DoD 섹션 찾기 (`## Definition of Done`, `## DoD` 등)

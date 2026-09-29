@@ -46,6 +46,7 @@ Before running the review stage, read [code-review SKILL.md](../code-review/SKIL
    - If the user specified a target branch, use it.
    - Otherwise, use git history distance against remote base candidates; do not infer target branch from repo name or latest version alone.
    - Assign the PR/MR to the authenticated CLI account that creates it (`gh`/`glab` current user).
+   - PR/MR 생성 또는 기존 PR/MR 재사용 직후 대상 Linear 이슈를 조회하고, 같은 URL이 없으면 `save_issue(id=이슈 ID, links=[{title: PR/MR 제목, url: 실제 PR/MR URL}])`로 직접 연결한다. GitHub/GitLab 훅·자동 연동 유무와 관계없이 수행하며, 이미 연결되어 있으면 중복 등록하지 않는다. 저장 후 이슈 attachments에서 URL을 재조회한다. 실패하면 연결 미완료로 보고하고 제출 완료로 처리하지 않는다. 이 작업을 위해 훅·저장소 권한·통합 설정을 변경하지 않는다. 링크 등록은 PR 상태 자동 동기화·머지 시 이슈 자동 전환·Linear 내 코드 열람을 보장하지 않는다. 이슈 없는 standalone 작업에는 새 이슈를 만들지 않고 N/A로 기록한다.
 7. Write PR/MR title and body around the task scope:
    - task ID and task title are primary
    - parent feature is context

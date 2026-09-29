@@ -7,7 +7,7 @@ description: Create or update executable Linear child task issues under parent f
 
 ## 신규 이슈 작성 기준
 
-먼저 [이슈 공통 계약](../../references/issue-contract.md)을 읽고 적용한다. 신규 출력은 문제·변경 내용·완료 조건·범위 4절로 작성한다. 참조·검증 정보는 관련 절에 보존한다. Type은 정식 그룹에서 실제 ID 하나로 지정하고 프로젝트는 필수다. 제출 절차 AC와 결과물 placeholder는 신규 생성하지 않는다. task/feature라는 스킬 이름만으로 Type을 고정하지 않는다.
+먼저 [이슈 공통 계약](../../references/issue-contract.md)을 읽고 적용한다. 신규 출력은 문제·변경 내용·완료 조건·범위 4절로 작성한다. 참조·검증 정보는 관련 절에 보존한다. Type은 정식 그룹에서 실제 ID 하나로 지정하고 프로젝트는 필수다. 제출 절차 AC·가짜 증빙 링크는 생성하지 않는다. 각 AC 아래에 `증빙 예정:` 불릿을 작성하고 증빙 게이트에서 실제 자료로 교체한다. task/feature라는 스킬 이름만으로 Type을 고정하지 않는다.
 
 Use this skill to create or update executable Linear child task issues.
 
@@ -55,7 +55,9 @@ Task AC must be verifiable:
 
 ## 3. 완료 조건
 - [ ] **AC-01** 정상 시나리오에서 기대 결과를 확인할 수 있다.
+  - 증빙 예정: 정상 시나리오 실행 결과와 화면 또는 API 응답
 - [ ] **AC-02** 실패·경계 조건에서도 정의한 동작을 유지한다.
+  - 증빙 예정: 실패·경계 조건 테스트 결과
 
 ## 4. 범위
 - 포함:

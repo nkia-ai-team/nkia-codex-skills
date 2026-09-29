@@ -19,7 +19,7 @@ description: Update evidence on Linear issue AC items — check completed items 
 
 ## CRITICAL: 실제 출력은 반드시 코드 블록으로 감쌀 것
 
-테스트·로그·쿼리 원문은 코드 블록을 포함한 리포트로 저장한다. 이슈 본문에는 해당 AC 아래 링크·짧은 결과만 넣고 긴 실행 출력을 복사하지 않는다.
+짧은 테스트·로그·쿼리 결과는 AC 아래 증빙 불릿에 코드 블록으로 직접 넣는다. 장문은 이슈 Resources의 Add document로 저장하고 해당 document URL을 링크한다. 장문 텍스트를 파일 attachment로 올리지 않는다.
 
 상세 형식과 적용 대상은 [evidence_gathering_methods.md Section 0](references/evidence_gathering_methods.md) 참조
 
@@ -94,7 +94,7 @@ Description에서 AC 항목을 파싱합니다.
 - git 상태, 최근 커밋 등 환경 정보
 
 **증빙 유형 결정:**
-AC가 요구한 결과를 증명하는 자료를 수집한다. 기존 결과물 표기는 읽기 호환으로 처리하고 신규 증빙은 AC 아래에 표시한다.
+AC 아래 `증빙 예정:`에 적힌 자료와 확인 내용을 기준으로 수집한다. 실제 저장·내용 확인 후 같은 불릿을 `증빙: 실제 링크·결과`로 교체한다. 필수 자료가 남으면 예정 안내와 미체크 상태를 유지한다. 기존 결과물 표기는 읽기 호환으로 처리한다.
 
 ### Step 6: Gather Evidence (병렬)
 
@@ -227,7 +227,7 @@ Linear API의 `save_issue`는 description을 **전체 교체**합니다. 이전�
 
 | 스킬 | 연동 |
 |-----|------|
-| `$linear-issue-creator` | 이슈 생성 시 AC에 결과 중심 AC ID 생성, 증빙 placeholder 없음 |
+| `$linear-issue-creator` | 결과 중심 AC와 하위 `증빙 예정:` 불릿 생성; 증빙 게이트에서 실제 자료로 교체 |
 | `$linear-issue-validator` | 증빙 첨부 후 별도 세션에서 객관적 검증 |
 
 ---

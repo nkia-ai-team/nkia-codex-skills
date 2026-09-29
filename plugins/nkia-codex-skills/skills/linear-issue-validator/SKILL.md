@@ -12,7 +12,7 @@ description: Validate and verify completed Linear issues by checking DoD (Defini
 ## CRITICAL: First Step — Read the References
 
 **BEFORE generating any validation report, you MUST read:**
-- [guideline-ref.md](../../references/guideline-ref.md) — 이슈 상태 규칙, AI-Verification Loop, Estimate 규칙
+- [guideline-ref.md](../../references/guideline-ref.md) — 이슈 상태 규칙, AI-Verification Loop, 포인트 미사용·별도 AC 승인 폐지 규칙
 - [validation_templates.md](references/validation_templates.md) — 검증 결과 코멘트 템플릿, 실패 유형별 메시지, Evidence Type 분류 규칙
 
 **All validation comments MUST follow the exact templates from the references file.**
@@ -290,7 +290,7 @@ AC가 "동작 확인", "정상 동작", "테스트 통과" 등 **실행 결과�
 
 ## Resources
 
-- [guideline-ref.md](../../references/guideline-ref.md) — 가이드라인 핵심 규칙 (이슈 상태, Estimate, AI-Verification Loop)
+- [guideline-ref.md](../../references/guideline-ref.md) — 가이드라인 핵심 규칙 (이슈 상태, 포인트 미사용, AI-Verification Loop)
 - [validation_templates.md](references/validation_templates.md) — 검증 결과 코멘트 템플릿, 실패 유형별 메시지, 검증 상세 메시지, 히스토리 템플릿, Evidence Type 분류 규칙, 에러 메시지
 - [evidence_validation_methods.md](references/evidence_validation_methods.md) — 유형별 상세 검증 방법 (PR/MR, CI/CD, URL, 문서, API, 모니터링, 이미지/동영상, 텍스트, 데이터 경로), 인증 처리, 실패 유형 및 blocked_items 형식
 - [mr_scope_validation.md](references/mr_scope_validation.md) — 스코프 파싱, 시스템-MR 매핑, MR 커버리지 검증, Diff 분석, AC 커버리지 확인

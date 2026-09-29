@@ -31,7 +31,7 @@ A task is the unit for branch, code, PR/MR, evidence, and validation.
    - concrete scope
    - AC with expected evidence
    - parent feature link
-   - exactly one resolved Type label and project; estimate under the creator metadata rules
+   - exactly one resolved Type label and project; omit estimate under the creator metadata rules
 4. Create or update the child issues through the available Linear integration.
 5. Keep tasks in `Todo` until `$start` begins work.
 
@@ -69,7 +69,7 @@ Task AC must be verifiable:
 - Prefer one task per branch/PR/MR.
 - Split backend, frontend, prompt/config, data migration, and verification work when they can ship independently.
 - Avoid tasks that simply repeat the feature title.
-- If a task estimate would be 13+, split it further.
+- Split tasks when they cannot be independently completed and verified within a cycle; do not estimate points to decide.
 
 ## References
 

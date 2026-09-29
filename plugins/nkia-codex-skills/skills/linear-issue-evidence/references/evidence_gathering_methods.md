@@ -1,3 +1,7 @@
+# 저장 위치 규칙
+
+원본 출력·긴 로그·쿼리 응답은 resource·attachment의 리포트로 저장한다. 아래 수집 예시의 코드 블록은 원본 리포트 형식이며 이슈 본문에 복사하는 지시가 아니다. 본문에는 [공통 계약](../../../references/issue-contract.md)에 따라 AC 아래 링크·짧은 결과·필요한 대표 이미지만 표시한다.
+
 # Evidence Gathering Methods
 
 증빙 유형별 실제 수집 방법을 정의합니다.

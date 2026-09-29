@@ -5,6 +5,10 @@ description: Update evidence on Linear issue AC items — check completed items 
 
 # Linear Issue Evidence
 
+## 본문 증빙 계약
+
+먼저 [공통 증빙 계약](../../references/issue-contract.md)을 읽는다. 원본을 저장·검증하고 대상 AC 아래에 실제 링크·짧은 결과와 필요한 대표 이미지를 표시한다. 재검증 이력은 댓글에 보존하며 본문에는 최신 요약만 유지한다. 기존 `→ 결과물:`은 읽기 호환으로만 유지한다. 체크 상태만으로 PASS하지 않는다.
+
 ## CRITICAL: First Step — Read the Guideline Reference
 
 **BEFORE updating any evidence, you MUST read:**
@@ -15,7 +19,7 @@ description: Update evidence on Linear issue AC items — check completed items 
 
 ## CRITICAL: 실제 출력은 반드시 코드 블록으로 감쌀 것
 
-**테스트 결과, 로그, diff, 쿼리 결과 등 터미널 출력을 포함하는 증빙은 반드시 마크다운 코드 블록(```)으로 감싸서 Linear description에 삽입합니다.** 코드 블록 없이 인라인 텍스트로 삽입하면 가독성이 크게 떨어집니다.
+테스트·로그·쿼리 원문은 코드 블록을 포함한 리포트로 저장한다. 이슈 본문에는 해당 AC 아래 링크·짧은 결과만 넣고 긴 실행 출력을 복사하지 않는다.
 
 상세 형식과 적용 대상은 [evidence_gathering_methods.md Section 0](references/evidence_gathering_methods.md) 참조
 
@@ -29,7 +33,7 @@ description: Update evidence on Linear issue AC items — check completed items 
 - 완료된 AC 항목 자동 판단
 - AC에 명시된 증빙 유형에 따라 실제 증빙 수집 (PR 조회, 테스트 실행, 스크린샷 캡처 등)
 - AC 항목 체크 (`[ ]` → `[x]`)
-- 증빙 자료 첨부 (`→ 결과물:` 뒤에 실제 링크/경로 삽입)
+- 증빙 자료 첨부 (대상 AC 아래 실제 링크·짧은 결과 표시)
 - **스크린샷은 Linear에 업로드한 뒤 해당 AC 본문 바로 아래에 Markdown 이미지로 삽입**
 - **PR/MR 링크는 이슈 리소스(links)로 첨부** (`save_issue`의 `links` 필드 사용)
 
@@ -72,9 +76,9 @@ Description에서 AC 항목을 파싱합니다.
     상태: In Progress
 
     AC 항목:
-    1. [ ] 브랜치명 검증 패턴 수정 → 결과물: (미첨부)
-    2. [ ] 테스트 작성 및 통과 → 결과물: (미첨부)
-    3. [x] 코드 리뷰 완료 → 결과물: PR #42
+    1. [ ] 브랜치명 검증 패턴 수정
+    2. [ ] 테스트 작성 및 통과
+    3. [x] 코드 리뷰 완료
 
     진행률: 1/3 (33%)
 
@@ -90,7 +94,7 @@ Description에서 AC 항목을 파싱합니다.
 - git 상태, 최근 커밋 등 환경 정보
 
 **증빙 유형 결정:**
-AC 항목의 `→ 결과물:` 뒤에 이슈 생성 시 명시된 증빙 유형(예: "PR 링크", "테스트 결과")을 따릅니다.
+AC가 요구한 결과를 증명하는 자료를 수집한다. 기존 결과물 표기는 읽기 호환으로 처리하고 신규 증빙은 AC 아래에 표시한다.
 
 ### Step 6: Gather Evidence (병렬)
 
@@ -112,12 +116,12 @@ AC 항목의 `→ 결과물:` 뒤에 이슈 생성 시 명시된 증빙 유형(�
 
     === 증빙 업데이트 미리보기 ===
 
-    1. [x] AC #1: writer 전파 → 결과물: 코드 변경 (AI MR !64)
-    2. [x] AC #4: AP toolCalls DB 저장 → 결과물: 코드 변경 (AP MR !20)
+    - [x] **AC-01** writer 변경이 대상 경로에 반영된다.
+      - 증빙: [검증 리포트](실제 URL) · 대상·방법·통과/실패 수·통과율
+    - [x] **AC-04** toolCalls가 DB에 저장된다.
+      - 증빙: [API·DB 확인 결과](실제 URL) · 관찰한 결과
 
-    공통:
-    3. [x] 코드 리뷰 완료 → 이슈 리소스에 MR 첨부
-         🔗 AP MR !20
+    PR/MR은 별도 resource로 연결한다. 제출 절차 AC는 체크하지 않는다.
 
     이대로 적용하시겠습니까?
 
@@ -156,11 +160,11 @@ Linear API의 `save_issue`는 description을 **전체 교체**합니다. 이전�
 1. 스크린샷을 Linear에 업로드하여 영구 asset URL을 얻습니다.
 2. 최신 description을 다시 조회합니다.
 3. 대상 AC의 결과물 요약 바로 아래에 `![AC 설명](asset_url)` 형식으로 삽입합니다.
-4. 여러 장이면 각 이미지를 별도 줄에 삽입합니다.
+4. 바로 봐야 하는 대표 이미지만 삽입하고 나머지는 링크로 표시합니다.
 5. 파일명만 적거나 이슈 attachment 목록에만 올리는 방식은 완료 증빙으로 인정하지 않습니다.
 6. 다른 AC에 이미 삽입된 이미지 Markdown은 수정하거나 삭제하지 않습니다.
 
-**2) PR/MR 링크는 이슈 리소스로 첨부**: 공통 AC의 "코드 리뷰 완료" 항목이 있으면, 수집된 PR/MR URL을 `save_issue`의 `links` 필드로 첨부합니다. description 텍스트에 PR URL을 삽입하지 않습니다.
+**2) PR/MR 링크는 이슈 리소스로 첨부**: 수집된 PR/MR URL을 `save_issue`의 `links` 필드로 첨부합니다. description 텍스트에 PR URL을 삽입하지 않습니다.
 
     mcp__linear__save_issue({
       id: "issue-uuid",
@@ -172,14 +176,10 @@ Linear API의 `save_issue`는 description을 **전체 교체**합니다. 이전�
 
     === 증빙 업데이트 적용 ===
 
-    1. [x] 브랜치명 검증 패턴 수정 → 결과물: CI 로그 https://ci.example.com/build/123  ← UPDATED
-    2. [x] 테스트 작성 및 통과 → 결과물: pytest 5/5 passed  ← UPDATED
+    - [x] **AC-01** 허용된 브랜치명은 통과하고 잘못된 이름은 거절된다.
+      - 증빙: [테스트 리포트](실제 URL) · 대상 테스트 5/5 PASS
 
-    공통:
-    3. [x] 코드 리뷰 완료 → 이슈 리소스에 PR/MR 링크 첨부  ← RESOURCE ADDED
-         🔗 PR #43 https://github.com/org/repo/pull/43
-
-    진행률: 3/3 (100%)
+    기능 AC: 1/1. PR/MR resource 저장 확인.
 
     ===========================
 
@@ -227,7 +227,7 @@ Linear API의 `save_issue`는 description을 **전체 교체**합니다. 이전�
 
 | 스킬 | 연동 |
 |-----|------|
-| `$linear-issue-creator` | 이슈 생성 시 AC에 `→ 결과물:` 플레이스홀더 포함 |
+| `$linear-issue-creator` | 이슈 생성 시 AC에 결과 중심 AC ID 생성, 증빙 placeholder 없음 |
 | `$linear-issue-validator` | 증빙 첨부 후 별도 세션에서 객관적 검증 |
 
 ---

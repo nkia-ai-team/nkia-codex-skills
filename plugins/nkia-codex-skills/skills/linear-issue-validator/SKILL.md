@@ -5,6 +5,10 @@ description: Validate and verify completed Linear issues by checking DoD (Defini
 
 # Linear Issue Validator
 
+## 본문 증빙 계약
+
+먼저 [공통 증빙 계약](../../references/issue-contract.md)을 읽는다. 신규 증빙 저장·표시에는 이 계약을 우선한다. 원본을 저장·검증하고 대상 AC 아래에 실제 링크·짧은 결과와 필요한 대표 이미지를 표시한다. 재검증 이력은 댓글에 보존하며 본문에는 최신 요약만 유지한다. 기존 `→ 결과물:` 파싱은 읽기 호환으로만 유지한다. 단순 체크나 링크 존재만으로 PASS하지 않는다. 제출 절차 AC는 기존 상태를 보존하고 기능 판정에서 제외한다.
+
 ## CRITICAL: First Step — Read the References
 
 **BEFORE generating any validation report, you MUST read:**

@@ -492,64 +492,31 @@ catch (ResourceNotFoundException e) {
 
 ### 6.2 상세 코멘트 형식
 
-모든 actionable finding은 `Confidence: NN/100`을 제목에 포함합니다. 80 미만은 게시하지 않습니다. 이번 diff에서 변경되지 않은 선행 문제도 게시하지 않습니다.
+Confidence 80 이상인 지적만 게시합니다. 이번 diff에서 변경되지 않은 선행 문제도 게시하지 않습니다. Confidence와 자동 수정 분류는 게시·판정 기준으로만 쓰고 댓글에 적지 않습니다.
 
-```markdown
-### 📁 파일: `TraceQueryController.java`
+- 제목 왼쪽에 중요도 이모지(🔴·🟡·🔵·🟢)를 붙이고 제목 뒤 꼬리말을 붙이지 않습니다. 제목은 파일명이 아니라 변경 목적·동작과 지적 내용으로 씁니다.
+- 본문은 위치·이유·영향·조치만 씁니다. 판정·중요도·Confidence·분류 줄은 쓰지 않습니다.
+- 🟢 잘한 점은 구체 근거가 있을 때만 씁니다. 없으면 쓰지 않고, 여러 개면 각각 씁니다. 개수를 맞추려고 만들지 않으며 정상 파일마다 `양호`를 반복하지 않습니다.
+- 지적과 잘한 점이 모두 없으면 `✅ 지적 없음`만 씁니다.
 
-#### Line 45-50: 🔴 Critical · Confidence: 95/100 — N+1 Query 문제
+````markdown
+### 🔴 trace 목록 조회에서 span 을 trace마다 개별 조회 (N+1)
+- 위치: `TraceQueryController.java:45-50`
+- 이유·영향: trace 100개 조회 시 101개 쿼리가 실행되어 목록 응답이 느려진다.
+- 조치: `JOIN FETCH t.spans` 로 한 번에 조회한다.
 
-**현재 코드:**
-```java
-traces.forEach(trace -> {
-    trace.getSpans().size();  // N+1 발생
-});
-```
+### 🟡 페이지 크기 상한을 하드코딩
+- 위치: `TraceQueryController.java:78`
+- 이유·영향: 상한 변경 시 여러 곳을 고쳐야 하고 오류 메시지에 상한이 드러나지 않는다.
+- 조치: `MAX_PAGE_SIZE` 상수로 추출하고 메시지에 포함한다.
 
-**문제점:**
-- 각 trace마다 개별 쿼리 발생
-- 100개 trace 조회 시 101개 쿼리 실행
+### 🟢 대용량 콜백 처리의 실패 경로를 테스트로 고정
+- 위치: `trace_callback.py`, `test_trace_callback.py`
+- 이유·영향: 재시도·타임아웃 경로가 테스트로 방어되어 회귀 위험이 낮다.
+- 조치: 없음
+````
 
-**권장 수정:**
-```java
-@Query("SELECT t FROM Trace t JOIN FETCH t.spans WHERE t.id IN :ids")
-List<Trace> findByIdsWithSpans(@Param("ids") List<Long> ids);
-```
-
----
-
-#### Line 78: 🟡 Warning · Confidence: 85/100 — 하드코딩된 값
-
-**현재 코드:**
-```java
-if (size > 100) {
-    throw new IllegalArgumentException("Size exceeded");
-}
-```
-
-**권장 수정:**
-```java
-private static final int MAX_PAGE_SIZE = 100;
-
-if (size > MAX_PAGE_SIZE) {
-    throw new IllegalArgumentException("Page size cannot exceed " + MAX_PAGE_SIZE);
-}
-```
-
-**수정 분류:** `autofix-safe`
-
----
-
-### 📦 파일: `trace_callback.py` (대용량 파일)
-
-> ℹ️ **대용량 파일**: diff가 축소되어 전체 내용을 별도 조회하여 리뷰했습니다.
-
-#### 전체 리뷰 결과: 🟢 양호
-
-- 파일 크기: +646 lines
-- 신규 파일로 전체 내용 검토 완료
-- 특이 사항 없음
-```
+대용량 파일은 diff가 축소되면 전체 내용을 별도 조회해 리뷰하고, 그 사실은 `검증` 절에 적습니다.
 
 ### 6.3 심각도 레벨
 
@@ -558,11 +525,11 @@ if (size > MAX_PAGE_SIZE) {
 | Critical | 🔴 | 버그, 보안 취약점 | Confidence 80 이상 | 반드시 수정 |
 | Warning | 🟡 | 개선 권장 사항 | Confidence 80 이상 | 수정 권장 |
 | Info | 🔵 | 제안, 스타일 | Confidence 80 이상 | 선택적 수정 |
-| Praise | 🟢 | 좋은 코드 | 구체 근거가 있을 때 | 칭찬/참고 |
+| Praise | 🟢 | 잘한 점 | 구체 근거가 있을 때만, 0개 이상 | 참고 |
 
 ### 6.3.1 자동 수정 분류
 
-모든 Critical/Warning/Info 지적사항에는 아래 중 하나를 붙입니다.
+모든 Critical/Warning/Info 지적사항을 아래 중 하나로 분류합니다. 분류는 판정 산정(`FAIL · 수정 필요` / `FAIL · 검토 차단`)과 자동 수정 대상 선정에만 쓰고 댓글 본문에는 적지 않습니다.
 
 | 분류 | 의미 |
 |------|------|

@@ -54,7 +54,7 @@ This skill must review actual code, not only summarize diffs.
 - If a finding depends on an assumption, state it as an assumption.
 - If validation is blocked by auth, missing CLI, or incomplete diff data, post a blocked/incomplete verdict rather than approving.
 - Every actionable finding must include an autofix classification: `autofix-safe`, `manual-required`, or `owner-decision`.
-- Report findings only on changed lines and only when confidence is at least 80/100. Include `Confidence: NN/100` in each actionable finding.
+- Report findings only on changed lines and only when confidence is at least 80/100. Use confidence only as a posting gate; do not print it in the comment.
 - Include at least one concrete positive observation when the diff contains one; never invent praise to satisfy the format.
 
 ## Usage
@@ -167,7 +167,7 @@ Diff 완전성 검증 후, ruleset의 코드 리뷰 체크리스트에 따라 �
 - 6.1.1 승인 가능 PR/MR 최소 template
 - 6.2 상세 코멘트 형식 template
 - 6.3 심각도 레벨 (🔴 Critical, 🟡 Warning, 🔵 Info, 🟢 Praise)
-- 모든 actionable finding에 `Confidence: NN/100` 표기. 80 미만은 게시하지 않음
+- Confidence 80 미만 지적은 게시하지 않음. Confidence·자동 수정 분류는 댓글에 적지 않고, 제목 왼쪽에 중요도 이모지를 붙임. 🟢 잘한 점은 구체 근거가 있을 때만 0개 이상
 - 6.1.2 본문 판정과 후속 처리
 - 리뷰 히스토리의 일시는 반드시 KST(UTC+9, `Asia/Seoul`) 기준으로 작성
 

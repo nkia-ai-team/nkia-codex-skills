@@ -90,6 +90,8 @@ Linear 이슈 없이 진행되는 standalone 작업은 Linear 이슈 번호를 `
 
 리포지토리별 커밋 규칙이 있으면 해당 규칙을 우선 적용합니다. `lucida-next`는 아래 Conventional Commit 규칙을 사용하고, 그 외 리포지토리는 기본 NKIA 형식을 사용합니다.
 
+- git이 만든 기본 병합 커밋 메시지(`Merge branch '…'`, `Merge remote-tracking branch '…' into …`, `Merge pull request #…`)는 저장소 규칙과 관계없이 허용한다. 형식 위반·지적으로 보고하지 않고 새 메시지로 다시 쓰라고 요구하지 않는다. 병합 커밋을 사람이 직접 쓴 경우에만 일반 커밋 규칙을 적용한다.
+
 ### 3.1.1 lucida-next 커밋 메시지 규칙
 
 `lucida-next`에서는 기존 Conventional Commit history를 따릅니다.

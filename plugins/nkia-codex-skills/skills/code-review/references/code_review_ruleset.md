@@ -400,7 +400,7 @@ catch (ResourceNotFoundException e) {
 
 - 리뷰 기준: `{head SHA}` · `{YYYY-MM-DD HH:mm KST}`
 - 차단 사유: 없음
-- 남은 지적은 상세 리뷰에 위치·영향·조치·중요도·자동 수정 가능 여부로 작성한다.
+- 남은 지적은 상세 리뷰에 제목 왼쪽 중요도 이모지와 위치·영향·조치로 작성한다.
 ````
 
 ### 6.1.1 승인 가능 PR/MR 최소 템플릿
@@ -482,6 +482,7 @@ catch (ResourceNotFoundException e) {
 
 - 현재 head SHA와 리뷰 기준 SHA가 일치하는 댓글의 전체 판정·상세 지적·차단 사유를 함께 확인한다. 예전 이력 행을 현재 판정으로 읽지 않는다.
 - **PASS**: Critical 0, Warning 0, 전체 diff 확인 완료, 차단 사유 없음. 지적이 없으면 상세 리뷰에 `지적 없음`을 명시한다. standalone 작업의 Linear Scope N/A는 실패가 아니다.
+- Warning 이상(🔴 Critical·🟡 Warning) 지적이 1건이라도 남으면 사유·분류와 관계없이 PASS로 판정하지 않는다. `autofix-safe`가 남으면 `❌ FAIL · 수정 필요`, `manual-required`·`owner-decision`만 남으면 `❌ FAIL (⚠️ 검토 차단)`이다. 🔵 Info·🟢 Praise만 남은 경우에만 PASS가 가능하다. 상세 지적은 제목 왼쪽에 중요도 이모지(🔴 Critical·🟡 Warning·🔵 Info·🟢 Praise 잘한 점)를 붙여 `### 🟡 [지적 내용]`처럼 쓰고, 제목 뒤에 `— 후속 확인` 같은 꼬리말을 붙이지 않는다. 본문에는 위치·이유·영향·조치만 쓰고 판정·중요도 줄은 쓰지 않는다. 자동 수정 분류(`autofix-safe`·`manual-required`·`owner-decision`)는 판정 산정에만 쓰고 본문에 적지 않는다.
 - **FAIL · 수정 필요**: 수정할 Critical/Warning 또는 품질·보안·성능·테스트 문제가 남아 있다. 각 지적의 `autofix-safe`만 자동 수정하며 `manual-required`·`owner-decision`은 사용자 판단을 요청한다. Info만으로 자동 수정을 시작하지 않는다.
 - **FAIL · 검토 차단**: 인증·diff 누락·필수 자료 부족 등으로 판단할 수 없다. 사유와 필요한 조치를 적고 자동 수정을 시작하지 않는다.
 - 판정이 없거나 여러 현재 판정이 충돌하거나, PASS인데 수정할 지적이 남아 있으면 통과로 추정하지 않는다. 댓글 후보가 여러 개이거나 SHA가 다를 때도 멈추고 확인·재리뷰한다.

@@ -37,7 +37,7 @@ Perform comprehensive code reviews on GitHub Pull Requests or GitLab Merge Reque
 - Security vulnerability detection (OWASP Top 10)
 - Performance issue detection (N+1, pagination, etc.)
 - Test code review
-- Structured verdict block for `$ship` parsing
+- Human-readable review decision for `$ship` and `$submit`
 - Automatic comment posting to PR/MR
 
 ## Review Quality Bar
@@ -54,7 +54,7 @@ This skill must review actual code, not only summarize diffs.
 - If a finding depends on an assumption, state it as an assumption.
 - If validation is blocked by auth, missing CLI, or incomplete diff data, post a blocked/incomplete verdict rather than approving.
 - Every actionable finding must include an autofix classification: `autofix-safe`, `manual-required`, or `owner-decision`.
-- Report findings only on changed lines and only when confidence is at least 80/100. Include `Confidence: NN/100` in each actionable finding.
+- Report findings only on changed lines and only when confidence is at least 80/100. Use confidence only as a posting gate; do not print it in the comment.
 - Include at least one concrete positive observation when the diff contains one; never invent praise to satisfy the format.
 
 ## Usage
@@ -122,7 +122,7 @@ If complete PR/MR data cannot be fetched, verdict must be `blocked`; do not appr
 
 브랜치명을 ruleset 기준으로 검증합니다.
 
-**Pattern:** `^(?:(feature|bugfix|fix|hotfix|refactor|docs|test|config|chore|ci|build|perf)/(?:[A-Za-z]+-[0-9]+-)?[a-z0-9]+(?:-[a-z0-9]+)*|develop-[0-9]+(?:\.[0-9]+)*_[0-9]+-chat-[a-z0-9]+(?:-[a-z0-9]+)*)$`
+**Pattern:** `^(?:(feature|feat|bugfix|fix|hotfix|refactor|docs|test|config|chore|ci|build|perf)/(?:[A-Za-z]+-[0-9]+-)?[a-z0-9]+(?:-[a-z0-9]+)*|develop-[0-9]+(?:\.[0-9]+)*_[0-9]+-chat-[a-z0-9]+(?:-[a-z0-9]+)*)$`
 
 **Check:** Type prefix, optional Linear 이슈 번호 형식 when present, kebab-case, 브랜치-작업 타입 일치
 
@@ -167,13 +167,12 @@ Diff 완전성 검증 후, ruleset의 코드 리뷰 체크리스트에 따라 �
 - 6.1.1 승인 가능 PR/MR 최소 template
 - 6.2 상세 코멘트 형식 template
 - 6.3 심각도 레벨 (🔴 Critical, 🟡 Warning, 🔵 Info, 🟢 Praise)
-- 모든 actionable finding에 `Confidence: NN/100` 표기. 80 미만은 게시하지 않음
-- 6.1.2 structured verdict block for `$ship`
+- Confidence 80 미만 지적은 게시하지 않음. Confidence·자동 수정 분류는 댓글에 적지 않고, 제목 왼쪽에 중요도 이모지를 붙임. 🟢 잘한 점은 구체 근거가 있을 때만 0개 이상
+- 6.1.2 본문 판정과 후속 처리
 - 리뷰 히스토리의 일시는 반드시 KST(UTC+9, `Asia/Seoul`) 기준으로 작성
 
-**CRITICAL: 템플릿을 임의로 축약하거나 재구성하지 않습니다.**
-- `review-verdict` fenced block의 key는 반드시 `VERDICT:`, `CRITICAL:`, `WARNING:`, `INFO:`, `AUTOFIX_SAFE:`, `BLOCKED_REASON:`, `MANUAL_MERGE_REQUIRED:`를 대문자로 사용합니다.
-- `status`, `critical`, `warning`, `info`처럼 소문자/별도 key로 바꾸면 `$ship` 파싱 대상이 아니므로 금지합니다.
+**CRITICAL: 필수 판정·검증·이력을 보존하고 ruleset의 댓글 문체를 적용합니다.**
+- 본문의 전체 판정·상세 지적·차단 사유를 기준으로 판단하며 별도 기계용 판정 블록은 작성하지 않습니다.
 - 이슈가 0건이어도 `요약` 표, 브랜치명 검증, 커밋 메시지 검증, Diff 완전성, 상세 리뷰, 검증, 리뷰 히스토리를 포함합니다.
 - PR/MR 플랫폼과 무관하게 코멘트 제목은 기존 검색/업데이트 로직을 위해 `# MR 코드 리뷰 결과`로 시작합니다.
 

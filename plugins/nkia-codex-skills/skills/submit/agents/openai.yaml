@@ -1,0 +1,4 @@
+interface:
+  display_name: "Submit"
+  short_description: "Linear 검증부터 PR 코드리뷰까지 제출 절차 실행"
+  default_prompt: "$submit으로 개발 완료한 작업을 검증하고 수동 merge를 준비해줘."

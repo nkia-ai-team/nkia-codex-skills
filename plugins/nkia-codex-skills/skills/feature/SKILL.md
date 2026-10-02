@@ -5,6 +5,10 @@ description: Create or update parent Linear feature issues for broad NKIA produc
 
 # Feature
 
+## 신규 이슈 작성 기준
+
+먼저 [이슈 공통 계약](../../references/issue-contract.md)을 읽고 적용한다. 신규 출력은 문제·변경 내용·완료 조건·범위 4절로 작성한다. 참조·검증 정보는 관련 절에 보존한다. Type은 정식 그룹에서 실제 ID 하나로 지정하고 프로젝트는 필수다. 제출 절차 AC·가짜 증빙 링크는 생성하지 않는다. 각 AC 아래에 `증빙 예정:` 불릿을 작성하고 증빙 게이트에서 실제 자료로 교체한다. task/feature라는 스킬 이름만으로 Type을 고정하지 않는다.
+
 Use this skill to create or update parent feature issues in Linear.
 
 ## First Step
@@ -20,13 +24,7 @@ Treat feature issues as parent capability containers, not executable development
 
 1. Classify the request as a parent feature. If the user is asking for implementation work, use `$task` instead.
 2. Write the title in product/customer language, using the user's wording when it is clear.
-3. Write a rich feature description using the required six-section issue template:
-   - `## 1. 문제/배경 (Why)`
-   - `## 2. 목표/기대 결과 (What)`
-   - `## 3. 완료 조건 (Acceptance Criteria)`
-   - `## 4. 범위 (Scope)`
-   - `## 5. 검증 방법 (How to Verify)`
-   - `## 6. 참고 자료`
+3. Write the four-section issue body from the common contract, preserving product context and outcome AC.
 4. Create or update the Linear issue using the available Linear integration.
 5. Keep status in `Backlog` or `Todo` unless work has already started.
 6. Do not create branches, commits, PR/MRs, or child tasks unless the user explicitly asks.
@@ -35,7 +33,7 @@ Treat feature issues as parent capability containers, not executable development
 
 - Preserve the user's domain-specific details. Do not collapse them into generic platform statements.
 - Preserve concrete nouns, row numbers, docs paths, API names, button names, modal names, linked workflows, dependencies, and exclusions.
-- If the user supplies rich bullets, reorganize them into the six-section template instead of rewriting them into a shallow summary.
+- If the user supplies rich bullets, reorganize them into the four-section template instead of rewriting them into a shallow summary.
 - Do not invent broad unrelated scope such as "all EMS modules" when the user gave a specific scenario like RCA → ITSM ticket creation.
 - Do not add `담당/도메인` or `하위 작업` sections to feature descriptions unless the user explicitly asks.
 - If information is missing, keep a short `확인 필요:` bullet in the relevant section rather than dropping the section.
@@ -45,50 +43,22 @@ Treat feature issues as parent capability containers, not executable development
 Use product-outcome AC with expected evidence. Feature AC may mention UI/API/docs/logs as roll-up evidence, but it should not prescribe a branch-level implementation plan.
 
 ```markdown
-## 1. 문제/배경 (Why)
-- 왜 이 기능이 필요한지
-- 현재 사용자가 어떤 수동 작업/제약을 겪는지
-- 기존 로직/의존 기능을 재사용할 수 있으면 명시
-- 분리해야 하는 후속 워크플로우가 있으면 명시
+## 1. 문제
+- 현재 사용자 문제와 영향
 
-## 2. 목표/기대 결과 (What)
-- 사용자가 보게 되는 액션/화면/API 결과
-- 자동 변환/추천/생성/표시 등 핵심 제품 동작
-- 사용자 확인/미리보기/실패 처리처럼 경험상 중요한 단계
+## 2. 변경 내용
+- 완료 후 사용자가 확인할 동작
 
-## 3. 완료 조건 (Acceptance Criteria)
-- [ ] 고객 관점의 핵심 액션이 화면/API/문서에 노출된다 → 결과물: UI 스크린샷 또는 API 응답
-- [ ] 자동 변환/추천/매핑 규칙이 정의되고 결과를 확인할 수 있다 → 결과물: 매핑 문서 또는 추천 로그
-- [ ] 정상/실패 시나리오가 검증된다 → 결과물: 실행 로그, 테스트 로그, 또는 E2E 스크린샷
-- [ ] 생성/조회/이동 결과가 사용자가 확인 가능한 형태로 연결된다 → 결과물: 상세 화면 링크 또는 E2E 스크린샷
-- [ ] 코드 리뷰 완료 → 이슈 리소스에 PR/MR 링크 첨부
+## 3. 완료 조건
+- [ ] **AC-01** 정상 시나리오에서 기대 결과를 확인할 수 있다.
+  - 증빙 예정: 정상 시나리오 실행 결과와 화면 또는 API 응답
+- [ ] **AC-02** 실패·경계 조건에서도 정의한 동작을 유지한다.
+  - 증빙 예정: 실패·경계 조건 테스트 결과
 
-## 4. 범위 (Scope)
+## 4. 범위
 - 포함:
 - 제외:
-
-## 5. 검증 방법 (How to Verify)
-- 대표 사용자 시나리오 1개 이상을 end-to-end로 검증
-- 변환/추천/우선순위/링크 이동 등 핵심 판단 기준을 확인
-
-## 6. 참고 자료
-- 구글 시트/계획 문서/관련 이슈/의존 API/담당 팀 등
 ```
-
-## Bad Output Pattern
-
-Do not produce thin feature descriptions like this unless the user gave no details:
-
-```markdown
-## 5. 담당/도메인
-담당: ...
-도메인: ...
-
-## 6. 하위 작업
-추후 $task로 구현 단위 생성
-```
-
-This pattern loses verification and reference context. Use `검증 방법` and `참고 자료` as sections 5 and 6.
 
 ## Feature Examples
 

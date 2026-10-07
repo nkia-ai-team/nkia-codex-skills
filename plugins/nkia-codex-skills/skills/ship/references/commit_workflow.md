@@ -52,7 +52,7 @@ git branch --show-current
 
 **브랜치 패턴 (Linear 자동 생성):**
 ```regex
-^(feature|bugfix|fix|hotfix|refactor|docs|test|config|chore|ci|build|perf)/([A-Za-z]+-[0-9]+)-.*$
+^(feature|feat|bugfix|fix|hotfix|refactor|docs|test|config|chore|ci|build|perf)/([A-Za-z]+-[0-9]+)-.*$
 ```
 
 **예시:**

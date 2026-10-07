@@ -2,7 +2,7 @@
 
 NKIA-AI 팀의 Codex 플러그인 마켓플레이스입니다. Linear 기반 기능/태스크 관리, 개발 착수, PR/MR 제출, 머지 후 마무리, 주간업무보고 자동화를 Codex 스킬로 제공합니다.
 
-현재 버전: **v0.3.3**
+현재 버전: **v0.4.0**
 
 ## 개요
 
@@ -14,7 +14,7 @@ plugins/nkia-codex-skills/.codex-plugin/plugin.json
 plugins/nkia-codex-skills/skills/
 ```
 
-Codex에서 사용하는 스킬은 아래 18개입니다.
+Codex에서 사용하는 스킬은 아래 19개입니다.
 
 ```text
 $feature → $task → $start → (개발) → $commit → $ship → (수동 머지) → $finish
@@ -42,6 +42,7 @@ $linear-project-creator → $linear-project-updater → $linear-initiative-updat
 | `$commit` | 전체 변경사항을 논리 단위로 분리·staging하고 레포별 규칙으로 커밋 |
 | `$sonarqube-pass` | SonarQube 리포트 기반 Linear Task/브랜치 생성, 품질 게이트 수정·검증·증빙 |
 | `$ship` | 커밋, push, PR/MR 생성, 코드 검증/리뷰 루프, 수동 머지 대기 |
+| `$submit` | commit·push 후 기능 AC 검증, In Review 전환, Draft PR/MR·코드리뷰, 수동 병합 준비 |
 | `$code-review` | GitHub PR/GitLab MR 단독 코드 리뷰 및 검증 코멘트 작성 |
 | `$finish` | 머지 후 브랜치 정리, 증빙 수집, AC 검증, Task/Feature 상태 정리 |
 | `$weekly` | Linear/Git/Calendar 기반 주간업무보고 작성 및 Google Sheet 기록 |
@@ -301,6 +302,18 @@ $commit --format ui
 - 파일을 자동 stage하지 않습니다.
 - amend, squash, force-push는 하지 않습니다.
 - standalone 작업은 Linear 이슈 번호 없이 `{Type} : {description}` 형식을 사용할 수 있습니다.
+
+### `$submit`
+
+개발이 끝난 Linear 작업을 기능 검증부터 동료 리뷰 제출까지 연결합니다.
+
+`commit·push → 증빙 → AC 검증 → In Review → Draft PR/MR → 코드리뷰·재검증 → Draft 해제 → 수동 병합 대기`
+
+- PR 생성 전에는 push된 commit SHA로 검증하며 PR이나 선행 코드리뷰를 요구하지 않습니다.
+- AC 아래 짧은 증빙 링크·결과와 필요한 대표 이미지를 표시합니다. 긴 로그는 첨부로 분리합니다.
+- 기능 검증과 코드리뷰는 책임을 나누고, 코드 변경 후에는 필요한 검증을 다시 수행합니다.
+- merge·approve·Done 전환·finish는 실행하지 않습니다. 기존 `$ship` 실행 순서는 유지합니다.
+- 개인 `submit`이 설치돼 있으면 공용판은 `$nkia-codex-skills:submit`으로 구분해 호출합니다. 개인판은 자동 삭제하지 않습니다.
 
 ### `$ship`
 

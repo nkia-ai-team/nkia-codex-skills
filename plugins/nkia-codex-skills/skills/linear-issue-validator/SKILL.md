@@ -5,10 +5,14 @@ description: Validate and verify completed Linear issues by checking DoD (Defini
 
 # Linear Issue Validator
 
+## 본문 증빙 계약
+
+먼저 [공통 증빙 계약](../../references/issue-contract.md)을 읽는다. 신규 증빙 저장·표시에는 이 계약을 우선한다. 원본을 저장·검증하고 대상 AC 아래에 실제 링크·짧은 결과와 필요한 대표 이미지를 표시한다. 재검증 이력은 댓글에 보존하며 본문에는 최신 요약만 유지한다. 기존 `→ 결과물:` 파싱은 읽기 호환으로만 유지한다. 단순 체크나 링크 존재만으로 PASS하지 않는다. 제출 절차 AC는 기존 상태를 보존하고 기능 판정에서 제외한다.
+
 ## CRITICAL: First Step — Read the References
 
 **BEFORE generating any validation report, you MUST read:**
-- [guideline-ref.md](../../references/guideline-ref.md) — 이슈 상태 규칙, AI-Verification Loop, Estimate 규칙
+- [guideline-ref.md](../../references/guideline-ref.md) — 이슈 상태 규칙, AI-Verification Loop, 포인트 미사용·별도 AC 승인 폐지 규칙
 - [validation_templates.md](references/validation_templates.md) — 검증 결과 코멘트 템플릿, 실패 유형별 메시지, Evidence Type 분류 규칙
 
 **All validation comments MUST follow the exact templates from the references file.**
@@ -98,7 +102,9 @@ $linear-issue-validator <issue-id-or-url>
 **현행 형식 (우선):**
 - AC 섹션 찾기 (`## 3. 완료 조건 (Acceptance Criteria)`, `## 3. 완료 조건`)
 - 각 체크박스 항목 파싱 (`- [ ]` 또는 `- [x]`)
-- 결과물 추출 (`→ 결과물:` 이후 내용)
+- AC 아래 `증빙:` 링크·대표 이미지와 resource·attachment를 추출한다. 기존 `→ 결과물:`은 읽기 호환으로 유지한다.
+- 짧은 로그·결과는 AC 아래 코드 블록 자체를 검증한다. 장문은 Resources의 Linear document 본문을 읽는다. 짧은 실제 출력에 별도 링크·첨부를 강제하지 않는다.
+- `증빙 예정:`은 계획으로 구분하고 완료 증빙으로 인정하지 않는다. 필수 예정 자료가 남거나 실제 자료가 예정된 확인 내용을 충족하지 않으면 해당 AC는 FAIL이다.
 
 **레거시 형식 (호환):**
 - DoD 섹션 찾기 (`## Definition of Done`, `## DoD` 등)
@@ -254,10 +260,10 @@ AC가 "동작 확인", "정상 동작", "테스트 통과" 등 **실행 결과�
 
 검증 결과와 히스토리를 하나의 코멘트로 관리합니다.
 
-1. `mcp__linear__list_comments`로 기존 검증 코멘트 검색 (패턴: `# ✅ 검증 완료`, `# ⚠️ 검증 실패`, `# ❌ 검증 실패`)
+1. `mcp__linear__list_comments`로 기존 검증 코멘트 검색 (패턴: `# 검증 결과:`, `# ✅ 검증 완료`, `# ⚠️ 검증 실패`, `# ❌ 검증 실패`)
 2. **기존 코멘트 있음:**
    - 기존 코멘트의 히스토리 섹션을 파싱하여 시도 횟수 확인
-   - 최신 검증 결과로 전체 교체 + 히스토리에 새 행 추가
+   - [검증 템플릿의 이력 갱신 규칙](references/validation_templates.md)에 따라 최신 결과 본문과 이력 표 하나로 교체한다. 이전 댓글 전체는 붙이지 않는다.
    - `mcp__linear__save_comment`에 기존 코멘트의 `id`와 갱신할 `body`를 전달하여 업데이트
 3. **기존 코멘트 없음:** `mcp__linear__save_comment`에 `issueId`와 `body`를 전달하여 새로 생성 (히스토리 시도 #1)
 
@@ -284,7 +290,7 @@ AC가 "동작 확인", "정상 동작", "테스트 통과" 등 **실행 결과�
 
 ## Resources
 
-- [guideline-ref.md](../../references/guideline-ref.md) — 가이드라인 핵심 규칙 (이슈 상태, Estimate, AI-Verification Loop)
+- [guideline-ref.md](../../references/guideline-ref.md) — 가이드라인 핵심 규칙 (이슈 상태, 포인트 미사용, AI-Verification Loop)
 - [validation_templates.md](references/validation_templates.md) — 검증 결과 코멘트 템플릿, 실패 유형별 메시지, 검증 상세 메시지, 히스토리 템플릿, Evidence Type 분류 규칙, 에러 메시지
 - [evidence_validation_methods.md](references/evidence_validation_methods.md) — 유형별 상세 검증 방법 (PR/MR, CI/CD, URL, 문서, API, 모니터링, 이미지/동영상, 텍스트, 데이터 경로), 인증 처리, 실패 유형 및 blocked_items 형식
 - [mr_scope_validation.md](references/mr_scope_validation.md) — 스코프 파싱, 시스템-MR 매핑, MR 커버리지 검증, Diff 분석, AC 커버리지 확인

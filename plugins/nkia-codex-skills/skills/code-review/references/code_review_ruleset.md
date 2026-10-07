@@ -29,14 +29,14 @@ Linear 자동 생성 브랜치 형식을 권장하지만, Linear 이슈 없이 �
 
 **정규식 패턴:**
 ```regex
-^(?:(feature|bugfix|fix|hotfix|refactor|docs|test|config|chore|ci|build|perf)/(?:[A-Za-z]+-[0-9]+-)?[a-z0-9]+(?:-[a-z0-9]+)*|develop-[0-9]+(?:\.[0-9]+)*_[0-9]+-chat-[a-z0-9]+(?:-[a-z0-9]+)*)$
+^(?:(feature|feat|bugfix|fix|hotfix|refactor|docs|test|config|chore|ci|build|perf)/(?:[A-Za-z]+-[0-9]+-)?[a-z0-9]+(?:-[a-z0-9]+)*|develop-[0-9]+(?:\.[0-9]+)*_[0-9]+-chat-[a-z0-9]+(?:-[a-z0-9]+)*)$
 ```
 
 **검증 항목:**
 
 | 항목 | 규칙 | 예시 |
 |------|------|------|
-| Type Prefix | feature, bugfix, fix, hotfix, refactor, docs, test, config, chore, ci, build, perf 중 하나 | `feature/` |
+| Type Prefix | feature, feat, bugfix, fix, hotfix, refactor, docs, test, config, chore, ci, build, perf 중 하나 | `feature/` |
 | Linear 이슈 번호 | 선택 항목. 있으면 `{팀키}-{이슈번호}` 형식 (대소문자 허용) | `nkiaai-129`, `NKIAAI-129` |
 | 설명 | kebab-case, 소문자 | `improve-rca-logging-system` |
 | UI repo standalone | `develop-10.x.y_z-chat-{function}` 형식 허용 | `develop-10.2.1_3-chat-filter` |
@@ -52,7 +52,7 @@ Linear 자동 생성 브랜치 형식을 권장하지만, Linear 이슈 없이 �
 
 | 브랜치 타입 | 허용되는 작업 |
 |-------------|--------------|
-| feature | 새로운 기능 추가 |
+| feature / feat | 새로운 기능 추가 |
 | bugfix | 버그 수정 |
 | fix | 버그 수정 (`bugfix` alias) |
 | hotfix | 긴급 운영 이슈 수정 |
@@ -89,6 +89,8 @@ Linear 이슈 없이 진행되는 standalone 작업은 Linear 이슈 번호를 `
 ### 3.1 검증 규칙
 
 리포지토리별 커밋 규칙이 있으면 해당 규칙을 우선 적용합니다. `lucida-next`는 아래 Conventional Commit 규칙을 사용하고, 그 외 리포지토리는 기본 NKIA 형식을 사용합니다.
+
+- git이 만든 기본 병합 커밋 메시지(`Merge branch '…'`, `Merge remote-tracking branch '…' into …`, `Merge pull request #…`)는 저장소 규칙과 관계없이 허용한다. 형식 위반·지적으로 보고하지 않고 새 메시지로 다시 쓰라고 요구하지 않는다. 병합 커밋을 사람이 직접 쓴 경우에만 일반 커밋 규칙을 적용한다.
 
 ### 3.1.1 lucida-next 커밋 메시지 규칙
 
@@ -173,8 +175,8 @@ Linear 이슈 없이 진행되는 standalone 작업은 Linear 이슈 번호를 `
 
 검증 규칙:
 - 브랜치와 커밋 양쪽에 Linear 이슈 번호가 있으면 동일해야 합니다.
-- 브랜치에 Linear 이슈 번호가 있는데 커밋에 없으면 경고로 표시합니다.
-- 커밋에 Linear 이슈 번호가 있는데 브랜치에 없으면 경고로 표시합니다.
+- Linear ID는 선택 항목이다. 한쪽에만 있어도 누락을 경고로 표시하지 않는다. 저장소 정본이 필수로 요구하면 해당 규칙을 우선한다.
+- Git이 생성한 실제 병합 커밋은 부모가 2개 이상인지 확인하며 일반 작업 커밋의 Type 구분자를 강제하지 않는다.
 - 브랜치/제목/커밋 어디에도 Linear 이슈 번호가 없으면 standalone 작업으로 간주하고, Linear 이슈 번호 누락을 경고/실패로 계산하지 않습니다.
 - `lucida-next`는 예외입니다. 브랜치에 Linear 이슈 번호가 있어도 commit subject에 없으면 정상이며, Linear ID가 body/trailer 또는 MR/Linear linking에만 있어도 됩니다.
 
@@ -206,7 +208,7 @@ Linear 이슈 없이 진행되는 standalone 작업은 Linear 이슈 번호를 `
 | Title | ✅ | 명확한 설명. Linear 이슈 번호는 있으면 검증하고, standalone 작업이면 없어도 실패 처리하지 않음 |
 | Description | ✅ | 기능 상세 설명 작성 |
 | Part (FE/BE) | ✅ | 해당 파트 선택 |
-| Target Branch | ✅ | develop (master 아님) |
+| Target Branch | ✅ | 저장소의 실제 통합 대상 브랜치와 일치 (main/develop 등) |
 | 연관 백로그 | 권장 | `#이슈번호` 형식 |
 | 테스트 코드 | ✅ | 체크 여부 확인 |
 | 정적 분석 | ✅ | 체크 여부 확인 |
@@ -365,9 +367,16 @@ catch (ResourceNotFoundException e) {
 
 리뷰 코멘트는 아래 구조를 그대로 사용합니다. 승인 가능한 PR/MR도 최소 구조를 생략하지 않습니다.
 
+### 댓글 문체
+
+- 실제 변경·검증 결과를 짧고 쉬운 문장으로 적는다. 내부 API 용어보다 독자가 보는 기능·화면 이름을 쓴다.
+- 판정과 남은 지적 수를 먼저 적고, 판단 근거는 요약 표에 둔다. 상세에는 지적과 필요한 근거만 남기며 같은 설명·변경 목록·작업 과정을 반복하지 않는다. 별도 `확인 사항` 제목은 붙이지 않는다.
+- 삭제·유지·미지원 사실을 직접 쓴다. 서로 다른 절차를 불필요하게 연결하거나 `혼동하지 않습니다` 같은 간접 표현을 쓰지 않는다.
+- 실제 사용 검증과 설치 등 관련 미검증 경로를 구분한다. 이전 제약 목록이나 이번 저장소·변경과 관계없는 검사를 나열하지 않는다. 관련 미검증이 없으면 생략한다.
+- 간결하게 써도 SHA·판정·지적의 위치·영향·조치·차단 사유·검증 근거·기존 이력은 보존한다.
+
 **금지 사항:**
-- `review-verdict` block의 key를 소문자나 다른 이름으로 바꾸지 않습니다.
-- `status: approved` 같은 축약 verdict를 쓰지 않습니다.
+- 별도 기계용 판정 블록을 쓰지 않습니다. 본문의 전체 판정·상세 지적·차단 사유를 일치시킵니다.
 - 이슈가 0건이라는 이유로 요약 표, 검증 섹션, 리뷰 히스토리를 생략하지 않습니다.
 - 검색/업데이트 기준인 `# MR 코드 리뷰 결과` 제목을 변경하지 않습니다.
 
@@ -375,16 +384,6 @@ catch (ResourceNotFoundException e) {
 
 ````markdown
 # MR 코드 리뷰 결과
-
-```review-verdict
-VERDICT: needs-fix
-CRITICAL: 0
-WARNING: 1
-INFO: 0
-AUTOFIX_SAFE: yes
-BLOCKED_REASON: none
-MANUAL_MERGE_REQUIRED: yes
-```
 
 ## 요약
 
@@ -399,7 +398,11 @@ MANUAL_MERGE_REQUIRED: yes
 | 성능 | ⚠️ 개선 권장 |
 | 테스트 | ❌ 테스트 추가 필요 |
 
-**전체 판정:** ⚠️ 수정 후 승인 권장
+**전체 판정:** ❌ FAIL · 수정 필요
+
+- 리뷰 기준: `{head SHA}` · `{YYYY-MM-DD HH:mm KST}`
+- 차단 사유: 없음
+- 남은 지적은 상세 리뷰에 제목 왼쪽 중요도 이모지와 위치·영향·조치로 작성한다.
 ````
 
 ### 6.1.1 승인 가능 PR/MR 최소 템플릿
@@ -408,16 +411,6 @@ MANUAL_MERGE_REQUIRED: yes
 
 ````markdown
 # MR 코드 리뷰 결과
-
-```review-verdict
-VERDICT: approved
-CRITICAL: 0
-WARNING: 0
-INFO: 0
-AUTOFIX_SAFE: yes
-BLOCKED_REASON: none
-MANUAL_MERGE_REQUIRED: yes
-```
 
 ## 요약
 
@@ -432,7 +425,12 @@ MANUAL_MERGE_REQUIRED: yes
 | 성능 | ✅ Pass |
 | 테스트 | ✅ Pass |
 
-**전체 판정:** ✅ 승인 가능
+**전체 판정:** ✅ PASS
+
+- 리뷰 기준: `{head SHA}` · `{YYYY-MM-DD HH:mm KST}`
+- 남은 지적: Critical 0, Warning 0
+- 차단 사유: 없음
+- 수동 병합 필요
 
 ## 브랜치명 검증
 
@@ -465,11 +463,7 @@ MANUAL_MERGE_REQUIRED: yes
 
 ## 상세 리뷰
 
-### 📁 파일: `{file_path}`
-
-#### 전체 리뷰 결과: 🟢 양호
-
-- `{evidence_based_review_summary}`
+✅ 지적 없음
 
 ## 검증
 
@@ -479,97 +473,52 @@ MANUAL_MERGE_REQUIRED: yes
 
 ## 📜 리뷰 히스토리
 
-| # | 일시 | 판정 | 이슈 (🔴/🟡/🔵) | 변화 |
+| # | 일시 | 판정 | 지적 (C/W/I) | 변화 |
 |---|------|------|-----------------|------|
 | 1 | `{YYYY-MM-DD HH:mm KST}` | ✅ 승인 가능 | 0/0/0 | 최초 리뷰 |
 ````
 
-### 6.1.2 Structured Verdict Block
+### 6.1.2 본문 판정과 후속 처리
 
-리뷰 코멘트 최상단에는 `$ship`이 파싱할 수 있는 fenced block을 반드시 포함합니다.
+별도 기계용 판정 블록 없이 사람이 읽는 리뷰 본문을 판단 기준으로 사용한다.
 
-````markdown
-```review-verdict
-VERDICT: approved | needs-fix | blocked
-CRITICAL: {number}
-WARNING: {number}
-INFO: {number}
-AUTOFIX_SAFE: yes | partial | no
-BLOCKED_REASON: none | {reason}
-MANUAL_MERGE_REQUIRED: yes
-```
-````
-
-판정 규칙:
-
-| VERDICT | 조건 |
-|---------|------|
-| approved | Critical 0, Warning 0, Diff 완전성 Pass, blocking scope/security/test issue 없음. Linear 이슈가 없는 standalone 작업은 Linear Scope `N/A`여도 승인 가능 |
-| needs-fix | Critical 또는 Warning이 있거나, 수정 후 재리뷰가 필요한 품질/보안/성능/테스트 이슈가 있음 |
-| blocked | PR/MR 데이터 불완전, 인증 실패, diff 누락, 대용량 파일 조회 실패, Linear task ID가 있는데 scope 검증 불가가 치명적일 때 |
-
-`approved`여도 merge/approve는 사람이 직접 수행합니다.
+- 현재 head SHA와 리뷰 기준 SHA가 일치하는 댓글의 전체 판정·상세 지적·차단 사유를 함께 확인한다. 예전 이력 행을 현재 판정으로 읽지 않는다.
+- **PASS**: Critical 0, Warning 0, 전체 diff 확인 완료, 차단 사유 없음. 지적이 없으면 상세 리뷰에 `지적 없음`을 명시한다. standalone 작업의 Linear Scope N/A는 실패가 아니다.
+- Warning 이상(🔴 Critical·🟡 Warning) 지적이 1건이라도 남으면 사유·분류와 관계없이 PASS로 판정하지 않는다. `autofix-safe`가 남으면 `❌ FAIL · 수정 필요`, `manual-required`·`owner-decision`만 남으면 `❌ FAIL (⚠️ 검토 차단)`이다. 🔵 Info·🟢 Praise만 남은 경우에만 PASS가 가능하다. 상세 지적은 제목 왼쪽에 중요도 이모지(🔴 Critical·🟡 Warning·🔵 Info·🟢 Praise 잘한 점)를 붙여 `### 🟡 [지적 내용]`처럼 쓰고, 제목 뒤에 `— 후속 확인` 같은 꼬리말을 붙이지 않는다. 본문에는 위치·이유·영향·조치만 쓰고 판정·중요도 줄은 쓰지 않는다. 자동 수정 분류(`autofix-safe`·`manual-required`·`owner-decision`)는 판정 산정에만 쓰고 본문에 적지 않는다.
+- **FAIL · 수정 필요**: 수정할 Critical/Warning 또는 품질·보안·성능·테스트 문제가 남아 있다. 각 지적의 `autofix-safe`만 자동 수정하며 `manual-required`·`owner-decision`은 사용자 판단을 요청한다. Info만으로 자동 수정을 시작하지 않는다.
+- **FAIL · 검토 차단**: 인증·diff 누락·필수 자료 부족 등으로 판단할 수 없다. 사유와 필요한 조치를 적고 자동 수정을 시작하지 않는다.
+- 판정이 없거나 여러 현재 판정이 충돌하거나, PASS인데 수정할 지적이 남아 있으면 통과로 추정하지 않는다. 댓글 후보가 여러 개이거나 SHA가 다를 때도 멈추고 확인·재리뷰한다.
+- 기존 댓글의 `승인`·`승인 가능`은 PASS 후보, `수정 후 승인 권장`·`수정 필요`는 FAIL로 읽되 위 조건을 동일하게 확인한다. 과거 기계용 블록만으로 통과시키지 않는다. 본문에 판단 근거가 없으면 새로 리뷰한다.
+- 댓글 갱신 시 기존 제목 접두사·댓글 ID·히스토리는 보존한다. 과거 기계용 블록은 제거하고 본문 판정으로 통일한다. 형식 변경만으로 리뷰 SHA·시각·판정을 새로 만들지 않는다.
+- PASS여도 실제 approve·merge는 사람이 한다. submit의 Draft 해제는 별도의 현재 SHA·CI·충돌 조건을 만족해야 한다.
 
 ### 6.2 상세 코멘트 형식
 
-모든 actionable finding은 `Confidence: NN/100`을 제목에 포함합니다. 80 미만은 게시하지 않습니다. 이번 diff에서 변경되지 않은 선행 문제도 게시하지 않습니다.
+Confidence 80 이상인 지적만 게시합니다. 이번 diff에서 변경되지 않은 선행 문제도 게시하지 않습니다. Confidence와 자동 수정 분류는 게시·판정 기준으로만 쓰고 댓글에 적지 않습니다.
 
-```markdown
-### 📁 파일: `TraceQueryController.java`
+- 제목 왼쪽에 중요도 이모지(🔴·🟡·🔵·🟢)를 붙이고 제목 뒤 꼬리말을 붙이지 않습니다. 제목은 파일명이 아니라 변경 목적·동작과 지적 내용으로 씁니다.
+- 본문은 위치·이유·영향·조치만 씁니다. 판정·중요도·Confidence·분류 줄은 쓰지 않습니다.
+- 🟢 잘한 점은 구체 근거가 있을 때만 씁니다. 없으면 쓰지 않고, 여러 개면 각각 씁니다. 개수를 맞추려고 만들지 않으며 정상 파일마다 `양호`를 반복하지 않습니다.
+- 지적과 잘한 점이 모두 없으면 `✅ 지적 없음`만 씁니다.
 
-#### Line 45-50: 🔴 Critical · Confidence: 95/100 — N+1 Query 문제
+````markdown
+### 🔴 trace 목록 조회에서 span 을 trace마다 개별 조회 (N+1)
+- 위치: `TraceQueryController.java:45-50`
+- 이유·영향: trace 100개 조회 시 101개 쿼리가 실행되어 목록 응답이 느려진다.
+- 조치: `JOIN FETCH t.spans` 로 한 번에 조회한다.
 
-**현재 코드:**
-```java
-traces.forEach(trace -> {
-    trace.getSpans().size();  // N+1 발생
-});
-```
+### 🟡 페이지 크기 상한을 하드코딩
+- 위치: `TraceQueryController.java:78`
+- 이유·영향: 상한 변경 시 여러 곳을 고쳐야 하고 오류 메시지에 상한이 드러나지 않는다.
+- 조치: `MAX_PAGE_SIZE` 상수로 추출하고 메시지에 포함한다.
 
-**문제점:**
-- 각 trace마다 개별 쿼리 발생
-- 100개 trace 조회 시 101개 쿼리 실행
+### 🟢 대용량 콜백 처리의 실패 경로를 테스트로 고정
+- 위치: `trace_callback.py`, `test_trace_callback.py`
+- 이유·영향: 재시도·타임아웃 경로가 테스트로 방어되어 회귀 위험이 낮다.
+- 조치: 없음
+````
 
-**권장 수정:**
-```java
-@Query("SELECT t FROM Trace t JOIN FETCH t.spans WHERE t.id IN :ids")
-List<Trace> findByIdsWithSpans(@Param("ids") List<Long> ids);
-```
-
----
-
-#### Line 78: 🟡 Warning · Confidence: 85/100 — 하드코딩된 값
-
-**현재 코드:**
-```java
-if (size > 100) {
-    throw new IllegalArgumentException("Size exceeded");
-}
-```
-
-**권장 수정:**
-```java
-private static final int MAX_PAGE_SIZE = 100;
-
-if (size > MAX_PAGE_SIZE) {
-    throw new IllegalArgumentException("Page size cannot exceed " + MAX_PAGE_SIZE);
-}
-```
-
-**수정 분류:** `autofix-safe`
-
----
-
-### 📦 파일: `trace_callback.py` (대용량 파일)
-
-> ℹ️ **대용량 파일**: diff가 축소되어 전체 내용을 별도 조회하여 리뷰했습니다.
-
-#### 전체 리뷰 결과: 🟢 양호
-
-- 파일 크기: +646 lines
-- 신규 파일로 전체 내용 검토 완료
-- 특이 사항 없음
-```
+대용량 파일은 diff가 축소되면 전체 내용을 별도 조회해 리뷰하고, 그 사실은 `검증` 절에 적습니다.
 
 ### 6.3 심각도 레벨
 
@@ -578,11 +527,11 @@ if (size > MAX_PAGE_SIZE) {
 | Critical | 🔴 | 버그, 보안 취약점 | Confidence 80 이상 | 반드시 수정 |
 | Warning | 🟡 | 개선 권장 사항 | Confidence 80 이상 | 수정 권장 |
 | Info | 🔵 | 제안, 스타일 | Confidence 80 이상 | 선택적 수정 |
-| Praise | 🟢 | 좋은 코드 | 구체 근거가 있을 때 | 칭찬/참고 |
+| Praise | 🟢 | 잘한 점 | 구체 근거가 있을 때만, 0개 이상 | 참고 |
 
 ### 6.3.1 자동 수정 분류
 
-모든 Critical/Warning/Info 지적사항에는 아래 중 하나를 붙입니다.
+모든 Critical/Warning/Info 지적사항을 아래 중 하나로 분류합니다. 분류는 판정 산정(`FAIL · 수정 필요` / `FAIL · 검토 차단`)과 자동 수정 대상 선정에만 쓰고 댓글 본문에는 적지 않습니다.
 
 | 분류 | 의미 |
 |------|------|
@@ -591,6 +540,10 @@ if (size > MAX_PAGE_SIZE) {
 | `owner-decision` | 여러 해결책이 가능하고 owner 의사결정이 필요한 변경 |
 
 ### 6.4 리뷰 히스토리
+
+- 리뷰 히스토리의 지적 열은 `지적 (C/W/I)`로 쓰고, 값은 Critical/Warning/Info 순서의 숫자만 `0/0/0`처럼 표시한다. 기존 숫자·시각·SHA·판정은 형식 수정만으로 바꾸지 않는다.
+- 표 헤더·구분선·이력 행 사이에 빈 줄을 넣지 않는다. 저장 후 재조회하고 GitHub에서는 렌더링 HTML로 모든 이력이 같은 표에 포함되는지 확인한다.
+
 
 **재리뷰 시 코멘트 하단에 히스토리 테이블을 포함합니다.**
 
@@ -607,7 +560,7 @@ if (size > MAX_PAGE_SIZE) {
 
 ## 📜 리뷰 히스토리
 
-| # | 일시 | 판정 | 이슈 (🔴/🟡/🔵) | 변화 |
+| # | 일시 | 판정 | 지적 (C/W/I) | 변화 |
 |---|------|------|-----------------|------|
 {{#each history}}
 | {{attempt}} | {{datetime}} | {{verdict}} | {{critical}}/{{warning}}/{{info}} | {{change}} |
@@ -623,7 +576,7 @@ if (size > MAX_PAGE_SIZE) {
 ```markdown
 ## 📜 리뷰 히스토리
 
-| # | 일시 | 판정 | 이슈 (🔴/🟡/🔵) | 변화 |
+| # | 일시 | 판정 | 지적 (C/W/I) | 변화 |
 |---|------|------|-----------------|------|
 | 1 | 2026-03-03 20:00 KST | ⚠️ 수정 후 승인 권장 | 0/1/0 | 최초 리뷰 |
 | 2 | 2026-03-03 20:30 KST | ✅ 승인 | 0/0/0 | 🟡 1건 해소 |

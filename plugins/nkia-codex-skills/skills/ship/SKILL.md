@@ -20,7 +20,7 @@ Claude `/submit` delegates to `/code-review`. Codex `$ship` follows the same orc
 
 - During the review phase, execute the `$code-review` workflow on the PR/MR URL.
 - Do not replace `$code-review` by doing a lighter inline review.
-- Parse the `$code-review` comment verdict from the `review-verdict` fenced block in `# MR 코드 리뷰 결과`.
+- Read the current-head review comment's human-readable overall decision, findings and blockers under `# MR 코드 리뷰 결과`, following ruleset section 6.1.2.
 - Re-review by running `$code-review` again, which updates the existing review comment instead of adding duplicates.
 
 ## First Step
@@ -46,19 +46,21 @@ Before running the review stage, read [code-review SKILL.md](../code-review/SKIL
    - If the user specified a target branch, use it.
    - Otherwise, use git history distance against remote base candidates; do not infer target branch from repo name or latest version alone.
    - Assign the PR/MR to the authenticated CLI account that creates it (`gh`/`glab` current user).
+   - PR/MR 생성 또는 기존 PR/MR 재사용 직후 대상 Linear 이슈를 조회하고, 같은 URL이 없으면 `save_issue(id=이슈 ID, links=[{title: PR/MR 제목, url: 실제 PR/MR URL}])`로 직접 연결한다. GitHub/GitLab 훅·자동 연동 유무와 관계없이 수행하며, 이미 연결되어 있으면 중복 등록하지 않는다. 저장 후 이슈 attachments에서 URL을 재조회한다. 실패하면 연결 미완료로 보고하고 제출 완료로 처리하지 않는다. 이 작업을 위해 훅·저장소 권한·통합 설정을 변경하지 않는다. 링크 등록은 PR 상태 자동 동기화·머지 시 이슈 자동 전환·Linear 내 코드 열람을 보장하지 않는다. 이슈 없는 standalone 작업에는 새 이슈를 만들지 않고 N/A로 기록한다.
 7. Write PR/MR title and body around the task scope:
    - task ID and task title are primary
    - parent feature is context
-   - use the Korean caveman PR/MR body rules in [pr_mr_workflow.md §5](references/pr_mr_workflow.md#5-prmr-본문-문체-caveman)
+   - use the reader-first Korean PR/MR body rules in [pr_mr_workflow.md §5](references/pr_mr_workflow.md#5-prmr-본문-문체). Explain the observed problem and resulting behavior for teammates who did not implement it; put implementation details after that explanation.
    - group changes under numbered topic headings (`## 1. ...`, `## 2. ...`), followed by `## 검증`, even for small PRs; preserve explicit user or required repository templates
    - name the changed target in each topic heading or opening sentence (skill, screen, service, API, or module), then explain the trigger/problem and resulting behavior. A reviewer must understand each section without this conversation; brevity must not remove the subject or causal context.
+   - Identify the owning product, screen, or service in the PR title and each topic heading or opening sentence. A generic feature name such as Health Score, dashboard, or API is insufficient when its owner is unclear; write “AI Now의 Health Score” rather than “Health Score”. Do not rely on the issue link or conversation to supply this context.
    - write headings as natural phrases combining the primary target and change, without separating them with a dash or listing every related target. Put supporting targets in the body and group their changes under the appropriate topic.
    - preserve change reasons, verification evidence, failures, and unverified limits; do not compress away technical meaning
 8. Run `$code-review {pr-or-mr-url}`.
 9. Judge the review result:
-   - `VERDICT: approved` with Critical 0 and Warning 0: stop and wait for manual merge
-   - `VERDICT: needs-fix`: auto-fix safe items and re-review
-   - `VERDICT: blocked`: stop and report the blocked reason
+   - `PASS` with Critical 0 and Warning 0, complete diff coverage and no blocker: stop and wait for manual merge
+   - `FAIL · 수정 필요`: auto-fix safe items and re-review
+   - `FAIL · 검토 차단`: stop and report the blocked reason
 10. Auto-fix review comments when safe, recommit, push, and rerun review up to 3 total review attempts. Stop earlier when changes need human judgment.
 11. When validation passes, report that the PR/MR is ready for human merge.
 12. Never merge or approve automatically.

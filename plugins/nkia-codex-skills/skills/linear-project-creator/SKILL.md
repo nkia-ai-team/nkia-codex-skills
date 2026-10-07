@@ -8,7 +8,7 @@ description: Create comprehensive Linear projects with detailed documentation in
 ## CRITICAL: First Step — Read the Guideline Reference
 
 **BEFORE creating any project, you MUST read:**
-- [guideline-ref.md](../../references/guideline-ref.md) — 프로젝트 템플릿, 이슈 상태, Estimate 등 가이드라인 규칙
+- [guideline-ref.md](../../references/guideline-ref.md) — 프로젝트 템플릿, 이슈 상태, 포인트 미사용 등 가이드라인 규칙
 
 **프로젝트 생성 시 반드시 가이드라인의 규칙을 따라야 합니다.**
 
@@ -95,5 +95,5 @@ description: Create comprehensive Linear projects with detailed documentation in
 
 ## Resources
 
-- [guideline-ref.md](../../references/guideline-ref.md) — 가이드라인 핵심 규칙 (프로젝트 템플릿, 이슈 상태, Estimate 등)
+- [guideline-ref.md](../../references/guideline-ref.md) — 가이드라인 핵심 규칙 (프로젝트 템플릿, 이슈 상태, 포인트 미사용 등)
 - [project_template.md](references/project_template.md) — 필수/선택 수집 정보, 우선순위 매핑, 섹션별 가이드

@@ -5,6 +5,10 @@ description: Create or update executable Linear child task issues under parent f
 
 # Task
 
+## 신규 이슈 작성 기준
+
+먼저 [이슈 공통 계약](../../references/issue-contract.md)을 읽고 적용한다. 신규 출력은 문제·변경 내용·완료 조건·범위 4절로 작성한다. 참조·검증 정보는 관련 절에 보존한다. Type은 정식 그룹에서 실제 ID 하나로 지정하고 프로젝트는 필수다. 제출 절차 AC·가짜 증빙 링크는 생성하지 않는다. 각 AC 아래에 `증빙 예정:` 불릿을 작성하고 증빙 게이트에서 실제 자료로 교체한다. task/feature라는 스킬 이름만으로 Type을 고정하지 않는다.
+
 Use this skill to create or update executable Linear child task issues.
 
 ## First Step
@@ -27,7 +31,7 @@ A task is the unit for branch, code, PR/MR, evidence, and validation.
    - concrete scope
    - AC with expected evidence
    - parent feature link
-   - label/estimate when available
+   - exactly one resolved Type label and project; omit estimate under the creator metadata rules
 4. Create or update the child issues through the available Linear integration.
 5. Keep tasks in `Todo` until `$start` begins work.
 
@@ -36,34 +40,28 @@ A task is the unit for branch, code, PR/MR, evidence, and validation.
 - Preserve concrete details from the parent feature: API names, screens, buttons, modals, docs paths, row numbers, dependencies, excluded workflows, and evidence expectations.
 - Do not replace specific feature context with generic domain summaries.
 - Each task may narrow scope, but it must still explain why the slice exists and how it contributes to the parent.
-- If the parent has rich references, copy the relevant references into section 6 instead of only linking the parent.
+- If the parent has rich references, preserve the relevant references in the problem, change, or scope section instead of only linking the parent.
 
 ## Task AC Style
 
 Task AC must be verifiable:
 
 ```markdown
-## 1. 문제/배경 (Why)
--
+## 1. 문제
+- 현재 사용자 문제와 영향
 
-## 2. 목표/기대 결과 (What)
--
+## 2. 변경 내용
+- 완료 후 사용자가 확인할 동작
 
-## 3. 완료 조건 (Acceptance Criteria)
-- [ ] 구현 결과가 특정 API/UI/배치/문서에 반영된다 → 결과물: PR/MR 링크
-- [ ] 핵심 성공 케이스가 검증된다 → 결과물: 테스트 로그 또는 화면 캡처
-- [ ] 실패/예외 케이스가 처리된다 → 결과물: 테스트 로그 또는 설명
-- [ ] 코드 리뷰 완료 → 이슈 리소스에 PR/MR 링크 첨부
+## 3. 완료 조건
+- [ ] **AC-01** 정상 시나리오에서 기대 결과를 확인할 수 있다.
+  - 증빙 예정: 정상 시나리오 실행 결과와 화면 또는 API 응답
+- [ ] **AC-02** 실패·경계 조건에서도 정의한 동작을 유지한다.
+  - 증빙 예정: 실패·경계 조건 테스트 결과
 
-## 4. 범위 (Scope)
+## 4. 범위
 - 포함:
 - 제외:
-
-## 5. 검증 방법 (How to Verify)
--
-
-## 6. 참고 자료
-- Parent feature: <feature issue>
 ```
 
 ## Decomposition Guidance
@@ -71,7 +69,7 @@ Task AC must be verifiable:
 - Prefer one task per branch/PR/MR.
 - Split backend, frontend, prompt/config, data migration, and verification work when they can ship independently.
 - Avoid tasks that simply repeat the feature title.
-- If a task estimate would be 13+, split it further.
+- Split tasks when they cannot be independently completed and verified within a cycle; do not estimate points to decide.
 
 ## References
 

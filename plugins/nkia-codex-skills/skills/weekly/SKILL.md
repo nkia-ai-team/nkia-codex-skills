@@ -38,6 +38,7 @@ Do:
 - Summarize Done/In Review work and next-week planned work.
 - Identify the invoking user from their config, Linear account, and Git identities; never hardcode a team member.
 - Include attributable uncommitted work and dated local results even without a Linear issue or commit.
+- Organize each numbered report item around one feature or outcome. Treat experiments, planning, implementation, and verification as work toward that goal, and estimate progress for the goal as a whole.
 - Infer the current work scope from code and work records when no issue or acceptance criteria exist; estimate dates/progress using report_rendering.md.
 - Read Google Calendar vacation/half-day events.
 - Preview the generated report before writing.
@@ -128,7 +129,7 @@ Required scopes:
    - `In Progress` / `Todo` issues for next-week planning.
    - The reporter’s Git commits, relevant uncommitted changes, and local work/results, including work without issue attachments.
    - Calendar vacation/half-day events by configured Google account.
-4. Render:
+4. Group evidence by feature or outcome, then render:
    - B: 업무구분, usually `백로그`.
    - C: 업무명 목록 (날짜·진척도 없이).
    - D: 업무 내용.
@@ -209,9 +210,9 @@ Preview in a compact but complete format. Column letters are internal Sheets map
 Match the real sheet examples:
 
 - B and F are usually exactly `백로그`.
-- C lists work names only, without dates or percentages; related items may sit under a common heading.
-- D repeats C numbering and work names, adding `(~MM/DD, N%)` to each concrete work item title. Estimate child tasks separately when their progress differs. Put `문제:` and `작업 내용:` on separate lines, then list actions under `작업 내용:` with one action/result per line. See report_rendering.md for the example.
-- G is a numbered list of next-week work without dates or percentages, with detail bullets only when useful.
+- C lists one feature or outcome per numbered item, without dates or percentages. Name the capability being delivered; put experiments and work phases in D rather than combining their names into a title.
+- D repeats C numbering and goal names, adding one `(~MM/DD, N%)` for each goal's current scope. Put `문제:` and `작업 내용:` on separate lines, then list experiments, planning, implementation, and verification as action/result bullets under that goal. A completed experiment does not make an unfinished feature complete. See report_rendering.md for grouping and progress examples.
+- G uses the same feature/outcome level for next-week work, without dates or percentages; put the planned actions in detail bullets when useful.
 - Let the actual work determine the number of topics and detail bullets; do not impose item counts or a fixed opening verb. Merge duplicate evidence into a coherent account of the work.
 - Keep blank lines between numbered blocks in D and G when there are bullets.
 - Use Korean prose, but keep technical nouns like API, PR, MR, LLM, RCA, ITSM, KDB, GPU as-is.

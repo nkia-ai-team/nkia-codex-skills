@@ -14,10 +14,13 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+import time
+import uuid
 from typing import Any
-from urllib import request
+from urllib import error, parse, request
 
 MCP_URL = "https://mcp.atlassian.com/v1/mcp"
+TOKEN_URL = "https://mcp.atlassian.com/v1/token"
 DEFAULT_CLOUD_ID = "ed55cda3-43a9-4e60-ac24-d16a8f9aa88d"
 DEFAULT_SPACE_ID = "98313"  # NKIAAI
 
@@ -47,10 +50,37 @@ class AtlassianMCP:
         data = json.loads(path.read_text())
         for key, value in data.items():
             if str(key).startswith("atlassian|") and isinstance(value, dict):
+                if value.get("refresh_token") and value.get("expires_at", 0) < (time.time() + 60) * 1000:
+                    self._refresh(path, data, key, value)
                 token = value.get("access_token") or value.get("accessToken") or value.get("token")
                 if token:
                     return token
         die("Atlassian OAuth token not found. Run: codex mcp login atlassian")
+
+    @staticmethod
+    def _refresh(path: Path, data: dict[str, Any], key: str, entry: dict[str, Any]) -> None:
+        """Refresh an expired access token and write it back to the Codex credential store.
+
+        Atlassian rotates refresh tokens, so the new pair must be saved or Codex loses its login.
+        """
+        form = parse.urlencode(
+            {"grant_type": "refresh_token", "refresh_token": entry["refresh_token"], "client_id": entry["client_id"]}
+        ).encode()
+        req = request.Request(TOKEN_URL, data=form, headers={"Content-Type": "application/x-www-form-urlencoded"}, method="POST")
+        try:
+            with request.urlopen(req, timeout=60) as resp:  # noqa: S310 - fixed HTTPS endpoint
+                tok = json.loads(resp.read())
+        except error.HTTPError as exc:
+            die(f"Atlassian token refresh failed (HTTP {exc.code}). Run: codex mcp login atlassian")
+        entry["access_token"] = tok["access_token"]
+        if tok.get("refresh_token"):
+            entry["refresh_token"] = tok["refresh_token"]
+        entry["expires_at"] = int((time.time() + int(tok.get("expires_in", 3600))) * 1000)
+        data[key] = entry
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(data))
+        os.chmod(tmp, 0o600)
+        tmp.replace(path)
 
     def _post(self, payload: dict[str, Any], *, expect_session: bool = False, allow_empty: bool = False) -> dict[str, Any]:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -149,7 +179,7 @@ def render_mermaid_blocks(markdown: str, workdir: Path, mermaid_width: int) -> s
 def pandoc_to_html(markdown: str, cwd: Path) -> str:
     require_tool("pandoc")
     proc = subprocess.run(
-        ["pandoc", "--from", "gfm+raw_html", "--to", "html", "--wrap=none"],
+        ["pandoc", "--from", "gfm+raw_html-auto_identifiers", "--to", "html", "--wrap=none"],
         input=markdown,
         text=True,
         stdout=subprocess.PIPE,
@@ -162,6 +192,220 @@ def pandoc_to_html(markdown: str, cwd: Path) -> str:
         print(proc.stderr, file=sys.stderr)
         die("pandoc conversion failed")
     return proc.stdout
+
+
+def sanitize_confluence_html(body: str) -> str:
+    """Remove Pandoc attributes Atlassian MCP HTML rejects.
+
+    Confluence MCP accepts structured HTML but rejects auto-generated heading ids and
+    Pandoc code/pre classes. Mermaid is rendered to images before this step, so these
+    attributes are not needed for diagram fidelity.
+    """
+    return re.sub(r'\s(?:id|class)="[^"]*"', "", body)
+
+
+def find_puppeteer() -> str:
+    """Use the puppeteer bundled with mermaid-cli, which this skill already requires."""
+    mmdc = Path(require_tool("mmdc")).resolve()
+    for base in [mmdc.parent, *mmdc.parents]:
+        cand = base / "node_modules" / "puppeteer"
+        if cand.is_dir():
+            return str(cand)
+    die("puppeteer not found next to mmdc")
+    return ""
+
+
+def frames_to_gif(frames: list[dict[str, Any]], out: Path, step_ms: int, colors: int) -> None:
+    """Join step screenshots into one looping GIF; every frame is padded to the largest size."""
+    ffmpeg = require_tool("ffmpeg")
+    w = max(f["width"] for f in frames)
+    h = max(f["height"] for f in frames)
+    w, h = w + w % 2, h + h % 2
+    lst = out.with_suffix(".txt")
+    lines = []
+    for n, f in enumerate(frames):
+        hold = step_ms * (2 if n == len(frames) - 1 else 1)
+        lines += [f"file '{f['file']}'", f"duration {hold / 1000:.2f}"]
+    lines.append(f"file '{frames[-1]['file']}'")
+    lst.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    vf = (
+        f"pad={w}:{h}:0:0:white,split[a][b];[a]palettegen=max_colors={colors}:stats_mode=diff[p];"
+        "[b][p]paletteuse=dither=bayer:bayer_scale=5"
+    )
+    subprocess.run(
+        [ffmpeg, "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(lst), "-vf", vf, "-loop", "0", str(out)],
+        check=True,
+        timeout=300,
+    )
+
+
+def render_html_report(html_path: Path, workdir: Path, args: argparse.Namespace) -> str:
+    """Render HTML in headless Chrome, turn each demo into a step GIF, return a static body."""
+    cfg = {
+        "html": str(html_path),
+        "outDir": str(workdir),
+        "demoSelector": args.demo_selector,
+        "captureSelector": args.demo_capture,
+        "removeSelector": args.demo_remove,
+        "nextText": args.demo_next_text,
+        "waitMs": args.demo_wait_ms,
+        "maxSteps": args.demo_max_steps,
+        "width": args.render_width,
+        "snapshotSelector": args.snapshot_selector,
+    }
+    cfg_path = workdir / "render.json"
+    cfg_path.write_text(json.dumps(cfg, ensure_ascii=False), encoding="utf-8")
+    env = {**os.environ, "PUPPETEER_PATH": find_puppeteer()}
+    script = Path(__file__).with_name("render_html.cjs")
+    # Run with the node that installed mermaid-cli, so puppeteer matches its runtime.
+    node = Path(shutil.which("mmdc") or "").parent / "node"
+    node_bin = str(node) if node.is_file() else require_tool("node")
+    subprocess.run([node_bin, str(script), str(cfg_path)], check=True, env=env, timeout=1800)
+    demos = json.loads((workdir / "demos.json").read_text(encoding="utf-8"))
+    for n, demo in enumerate(demos, 1):
+        if not demo["frames"]:
+            print(f"WARN: demo {n} produced no frames", file=sys.stderr)
+            continue
+        frames_to_gif(demo["frames"], workdir / f"demo-{n:02d}.gif", args.demo_step_ms, args.image_colors)
+        print(f"demo-{n:02d}: {len(demo['frames'])} steps")
+    # Figures are flat charts; a small palette keeps the page under the MCP request size limit.
+    for png in sorted(workdir.glob("figure-*.png")):
+        out = png.with_suffix(".p.png")
+        subprocess.run(
+            [require_tool("ffmpeg"), "-y", "-loglevel", "error", "-i", str(png), "-vf",
+             f"split[a][b];[a]palettegen=max_colors={args.image_colors}[p];[b][p]paletteuse=dither=none", str(out)],
+            check=True, timeout=120,
+        )
+        out.replace(png)
+    return (workdir / "body.html").read_text(encoding="utf-8")
+
+
+HTML_EMBED_APP = "7ab333e9-27d6-4645-8590-4b76a05b279e/04e07b35-6adc-46c6-bbd8-a58687c0270a"
+HTML_EMBED_KEY = f"{HTML_EMBED_APP}/static/html-live-preview"
+
+
+def html_embed_adf(html_code: str, page_id: str, version: int, account_id: str, cloud_id: str, space_id: str, space_key: str) -> dict[str, Any]:
+    """ADF doc holding the whole HTML in one "Advanced HTML & Iframe Embed" (Forge) macro.
+
+    The app renders the HTML in its own iframe, so scripts, styles and animations keep working.
+    """
+    local_id = str(uuid.uuid4())
+    return {
+        "type": "doc",
+        "version": 1,
+        "content": [
+            {
+                "type": "extension",
+                "attrs": {
+                    "layout": "default",
+                    "extensionType": "com.atlassian.ecosystem",
+                    "extensionKey": HTML_EMBED_KEY,
+                    "text": "Advanced HTML & Iframe Embed",
+                    "parameters": {
+                        "layout": "extension",
+                        "guestParams": {"body": json.dumps({"htmlCode": html_code}, ensure_ascii=False)},
+                        "forgeEnvironment": "PRODUCTION",
+                        "embeddedMacroContext": {
+                            "accountId": account_id,
+                            "cloudId": cloud_id,
+                            "extensionData": {
+                                "type": "macro",
+                                "content": {"id": page_id, "type": "page", "version": version},
+                                "space": {"id": space_id, "key": space_key},
+                            },
+                        },
+                        "localId": local_id,
+                        "extensionId": f"ari:cloud:ecosystem::extension/{HTML_EMBED_KEY}",
+                        "extensionTitle": "Advanced HTML & Iframe Embed",
+                    },
+                    "localId": local_id,
+                },
+            }
+        ],
+    }
+
+
+def upload_embedded_html(client: AtlassianMCP, args: argparse.Namespace, src: Path, title: str, page_id: str | None, parent_id: str | None) -> None:
+    html_code = src.read_text(encoding="utf-8")
+    if not page_id:
+        if not parent_id:
+            die("Create requires --parent-id/--parent-url, or use --page-id/--page-url to update")
+        page = parse_mcp_page(
+            client.tool(
+                "createConfluencePage",
+                {"cloudId": args.cloud_id, "spaceId": args.space_id, "parentId": parent_id, "title": title,
+                 "body": "<p>HTML</p>", "contentType": "page", "contentFormat": "html"},
+            )
+        )
+        page_id = str(page.get("id"))
+    current = parse_mcp_page(
+        client.tool("getConfluencePage", {"cloudId": args.cloud_id, "pageId": page_id, "contentType": "page", "contentFormat": "adf"})
+    )
+    version = int(current.get("version", {}).get("number", 1)) + 1
+    account = json.loads(client.tool("atlassianUserInfo", {})["content"][0]["text"])["account_id"]
+    doc = html_embed_adf(html_code, page_id, version, account, args.cloud_id, args.space_id, args.space_key)
+    parse_mcp_page(
+        client.tool(
+            "updateConfluencePage",
+            {"cloudId": args.cloud_id, "pageId": page_id, "title": title, "body": json.dumps(doc, ensure_ascii=False),
+             "contentType": "page", "contentFormat": "adf", "versionMessage": "Embed HTML report"},
+        )
+    )
+    page = parse_mcp_page(
+        client.tool("getConfluencePage", {"cloudId": args.cloud_id, "pageId": page_id, "contentType": "page", "contentFormat": "adf"})
+    )
+    body = page.get("body")
+    body = json.loads(body) if isinstance(body, str) else body
+    stored = [n for n in body.get("content", []) if n.get("type") == "extension"]
+    size = len(json.loads(stored[0]["attrs"]["parameters"]["guestParams"]["body"])["htmlCode"]) if stored else 0
+    print(f"page: {page.get('title')} / version {page.get('version', {}).get('number')}")
+    print(f"embedded html: {size} chars (source {len(html_code)})")
+    print(f"url: https://nkia-ai.atlassian.net/wiki/spaces/NKIAAI/pages/{page_id}")
+
+
+EXPAND_OPEN = "[[EXPAND-OPEN]]"
+EXPAND_CLOSE = "[[EXPAND-CLOSE]]"
+
+
+def adf_text(node: dict[str, Any]) -> str:
+    return "".join(c.get("text", "") for c in node.get("content") or [] if isinstance(c, dict))
+
+
+def fold_expands(adf: dict[str, Any], flatten: bool = False) -> int:
+    """Turn marker paragraphs left by render_html.cjs into ADF expand nodes.
+
+    With flatten=True the markers become a bold title line instead (fallback when
+    Confluence rejects an expand's content).
+    """
+    folded = 0
+    root: list[Any] = []
+    stack: list[tuple[list[Any], dict[str, Any] | None]] = [(root, None)]
+    for node in adf.get("content") or []:
+        text = adf_text(node) if isinstance(node, dict) and node.get("type") == "paragraph" else ""
+        if text.startswith(EXPAND_OPEN):
+            title = text[len(EXPAND_OPEN):].strip()
+            if flatten:
+                stack[-1][0].append({"type": "paragraph", "content": [{"type": "text", "text": title, "marks": [{"type": "strong"}]}]})
+                continue
+            exp = {"type": "expand", "attrs": {"title": title}, "content": []}
+            stack.append((exp["content"], exp))
+            continue
+        if text == EXPAND_CLOSE:
+            if flatten or len(stack) == 1:
+                continue
+            content, exp = stack.pop()
+            if not content:
+                content.append({"type": "paragraph"})
+            stack[-1][0].append(exp)
+            folded += 1
+            continue
+        stack[-1][0].append(node)
+    while len(stack) > 1:
+        content, exp = stack.pop()
+        stack[-1][0].append(exp)
+        folded += 1
+    adf["content"] = root
+    return folded
 
 
 def embed_local_images(body: str, base_dir: Path, image_width: int) -> str:
@@ -191,7 +435,10 @@ def parse_mcp_page(result: dict[str, Any]) -> dict[str, Any]:
     text = result.get("content", [{}])[0].get("text")
     if not text:
         die(f"MCP result has no page text: {str(result)[:300]}")
-    return json.loads(text)
+    page = json.loads(text)
+    if isinstance(page, dict) and page.get("error"):
+        die(page.get("message") or json.dumps(page, ensure_ascii=False))
+    return page
 
 
 def svg_url_with_intrinsic_width(url: str, width: int) -> str:
@@ -324,6 +571,19 @@ def verify_page(client: AtlassianMCP, cloud_id: str, page_id: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--markdown", type=Path, help="Markdown file to upload")
+    parser.add_argument("--html", type=Path, help="HTML report to upload (rendered in headless Chrome; demos become step GIFs)")
+    parser.add_argument("--embed-html", type=Path, help="HTML file shown as-is in an Advanced HTML & Iframe Embed macro (scripts and animations keep working)")
+    parser.add_argument("--space-key", default=os.environ.get("ATLASSIAN_SPACE_KEY", "NKIAAI"))
+    parser.add_argument("--demo-selector", default=".demo", help="HTML mode: interactive demo container")
+    parser.add_argument("--demo-capture", default=".stage,.say", help="HTML mode: parts of a demo to capture (whole demo if none match)")
+    parser.add_argument("--demo-remove", default=".ctrl", help="HTML mode: demo parts dropped from the page (controls)")
+    parser.add_argument("--demo-next-text", default="다음", help="HTML mode: label of the demo's next-step button")
+    parser.add_argument("--demo-wait-ms", type=int, default=1500, help="HTML mode: wait after each step for transitions")
+    parser.add_argument("--demo-step-ms", type=int, default=2500, help="HTML mode: GIF frame duration")
+    parser.add_argument("--demo-max-steps", type=int, default=40)
+    parser.add_argument("--render-width", type=int, default=1200, help="HTML mode: browser viewport width")
+    parser.add_argument("--image-colors", type=int, default=64, help="HTML mode: palette size for GIFs and figure PNGs")
+    parser.add_argument("--snapshot-selector", default=".figure,[role=img],svg,canvas", help="HTML mode: drawn figures outside demos saved as still images")
     parser.add_argument("--title", help="Confluence page title")
     parser.add_argument("--page-id")
     parser.add_argument("--page-url")
@@ -347,17 +607,30 @@ def main() -> None:
         verify_page(client, args.cloud_id, page_id)
         return
 
-    if not args.markdown:
-        die("--markdown is required unless --verify-only is used")
-    md_path = args.markdown.resolve()
-    if not md_path.exists():
-        die(f"Markdown file not found: {md_path}")
-    title = args.title or md_path.stem
+    if args.embed_html:
+        src = args.embed_html.resolve()
+        if not src.exists():
+            die(f"HTML file not found: {src}")
+        upload_embedded_html(AtlassianMCP(), args, src, args.title or src.stem, page_id, parent_id)
+        return
 
-    raw_md = md_path.read_text(encoding="utf-8")
-    md = render_mermaid_blocks(raw_md, md_path.parent, args.mermaid_width)
-    body = pandoc_to_html(md, md_path.parent)
-    body = embed_local_images(body, md_path.parent, args.image_width)
+    if bool(args.markdown) == bool(args.html):
+        die("Give exactly one of --markdown or --html unless --verify-only is used")
+    src_path = (args.markdown or args.html).resolve()
+    if not src_path.exists():
+        die(f"Source file not found: {src_path}")
+    title = args.title or src_path.stem
+
+    if args.html:
+        workdir = Path(tempfile.mkdtemp(prefix="confluence-html-"))
+        body = render_html_report(src_path, workdir, args)
+        body = embed_local_images(body, workdir, args.image_width)
+    else:
+        raw_md = src_path.read_text(encoding="utf-8")
+        md = render_mermaid_blocks(raw_md, src_path.parent, args.mermaid_width)
+        body = pandoc_to_html(md, src_path.parent)
+        body = sanitize_confluence_html(body)
+        body = embed_local_images(body, src_path.parent, args.image_width)
 
     if args.dry_run_html:
         args.dry_run_html.write_text(body, encoding="utf-8")
@@ -409,19 +682,34 @@ def main() -> None:
     if not isinstance(adf, dict):
         die("ADF body missing after upload")
     counts = adjust_adf_media(adf, args.mermaid_width, args.image_width)
-    if counts["mediaSingle"]:
-        client.tool(
-            "updateConfluencePage",
-            {
-                "cloudId": args.cloud_id,
-                "pageId": page_id,
-                "title": title,
-                "body": json.dumps(adf, ensure_ascii=False),
-                "contentType": "page",
-                "contentFormat": "adf",
-                "versionMessage": "Normalize diagram media widths after Markdown upload",
-            },
-        )
+    expands = fold_expands(json.loads(json.dumps(adf))) if args.html else 0
+    if counts["mediaSingle"] or expands:
+        def push(doc: dict[str, Any]) -> dict[str, Any]:
+            return client.tool(
+                "updateConfluencePage",
+                {
+                    "cloudId": args.cloud_id,
+                    "pageId": page_id,
+                    "title": title,
+                    "body": json.dumps(doc, ensure_ascii=False),
+                    "contentType": "page",
+                    "contentFormat": "adf",
+                    "versionMessage": "Normalize media widths and fold toggles after upload",
+                },
+            )
+
+        if expands:
+            folded = json.loads(json.dumps(adf))
+            fold_expands(folded)
+            try:
+                parse_mcp_page(push(folded))
+                print(f"expand: {expands}")
+            except SystemExit:
+                print("WARN: Confluence rejected expands; toggles kept as bold titles", file=sys.stderr)
+                fold_expands(adf, flatten=True)
+                parse_mcp_page(push(adf))
+        else:
+            push(adf)
 
     verify_page(client, args.cloud_id, page_id)
     print(f"url: https://nkia-ai.atlassian.net/wiki/spaces/NKIAAI/pages/{page_id}")

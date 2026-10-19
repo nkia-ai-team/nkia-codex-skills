@@ -47,7 +47,7 @@ $linear-project-creator → $linear-project-updater → $linear-initiative-updat
 | `$finish` | 머지 후 브랜치 정리, 증빙 수집, AC 검증, Task/Feature 상태 정리 |
 | `$weekly` | Linear/Git/Calendar 기반 주간업무보고 작성 및 Google Sheet 기록 |
 | `$team-technical-writing` | 사람이 읽고 공유하기 쉬운 기술문서 작성·검토, 제목·위치 기준과 유형별 템플릿 적용 |
-| `$confluence-md-upload` | Markdown 보고서를 Mermaid/SVG 보존 상태로 Confluence 페이지에 업로드 |
+| `$confluence-md-upload` | HTML 보고서는 원본 그대로, Markdown 보고서는 Mermaid/SVG 보존 상태로 Confluence 페이지에 업로드 |
 | `$develop-from-design` | 설계 문서를 구현 계획·코드·검증까지 연결하는 end-to-end 실행 |
 | `$linear-issue-creator` | 작업 유형별 템플릿으로 Linear 이슈 생성 |
 | `$linear-issue-evidence` | Linear AC 항목에 증빙 수집·등록 |
@@ -180,18 +180,21 @@ $team-technical-writing 이 문서의 Before/After와 변경 이유를 보여줘
 
 ### `$confluence-md-upload`
 
-Markdown 보고서를 Confluence 페이지로 업로드합니다. 로컬 Markdown preview처럼 보이도록 Mermaid fence를 SVG로 렌더링하고, 상대 이미지/SVG를 data URI로 내장하며, Confluence ADF의 `mediaSingle.width`까지 보정합니다.
+HTML 보고서(Claude 아티팩트 포함)는 원본 그대로 올립니다. HTML 전체를 Advanced HTML & Iframe Embed 매크로에 넣어 스타일·토글·애니메이션이 그대로 보입니다(`--embed-html`). HTML은 첨부 파일이 아니라 페이지 본문에 저장되므로 로컬 파일을 지워도 페이지는 남고, 고치면 다시 올립니다.
+
+Markdown 보고서는 Confluence 페이지로 업로드합니다. 로컬 Markdown preview처럼 보이도록 Mermaid fence를 SVG로 렌더링하고, 상대 이미지/SVG를 data URI로 내장하며, Confluence ADF의 `mediaSingle.width`까지 보정합니다.
 
 사용 예시:
 
 ```text
+$confluence-md-upload /path/to/report.html 을 NKIAAI Confluence 폴더 아래 새 페이지로 올려줘
 $confluence-md-upload /path/to/report.md 를 NKIAAI Confluence parent page 아래 새 페이지로 올려줘
 $confluence-md-upload 기존 Confluence page에 이 최종보고서 md를 갱신해줘
 ```
 
 주의:
 
-- Atlassian MCP OAuth가 필요합니다. 안 되면 `codex mcp login atlassian` 후 재시도합니다.
+- Atlassian MCP OAuth가 필요합니다. 만료된 토큰은 스크립트가 자동 갱신하며, 갱신도 실패하면 `codex mcp login atlassian` 후 재시도합니다.
 - 다이어그램 크기는 기본 Mermaid 800px, 일반 이미지 900px입니다. 사용자가 크기를 지적하면 같은 스크립트의 width 옵션만 조정합니다.
 - 화면이 즉시 안 바뀌면 Confluence ADF의 `mediaSingle.width`를 먼저 검증하고, 사용자에게 hard refresh를 안내합니다.
 
